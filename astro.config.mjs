@@ -1,0 +1,36 @@
+// @ts-check
+import { defineConfig } from 'astro/config';
+import wix from "@wix/astro";
+
+import react from "@astrojs/react";
+import cloudflare from "@astrojs/cloudflare";
+
+// https://astro.build/config
+export default defineConfig({
+  integrations: [wix(), react()],
+
+  adapter: cloudflare({
+    platformProxy: {
+      enabled: false,
+    },
+  }),
+
+  image: {
+    domains: ["static.wixstatic.com"],
+  },
+  security: {
+    checkOrigin: false
+  },
+  server: {
+    allowedHosts: ['.wix-code.com'],
+    host: true,
+  },
+  vite: {
+    server: {
+      cors: true,
+    },
+  },
+  devToolbar: { enabled: false },
+  output: "server",
+});
+
