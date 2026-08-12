@@ -1,5 +1,7 @@
 # Getting Started
 
+This repository contains the Wheel of Fortune MVP: a Wix Dashboard configuration page, an Editor React site widget, and a server-side spin API. See [the architecture and data model](docs/architecture.md) for trust boundaries, collection definitions, and API contracts.
+
 This app was created using the [Wix CLI](https://dev.wix.com/docs/wix-cli/guides/about-the-wix-cli). Develop and release your app locally using the steps below.
 
 ## Project structure
@@ -27,6 +29,8 @@ Start a local development server with `npm run dev` and add new [extensions](htt
 ## Build and release
 
 Use `npm run build`, `npm run preview`, and `npm run release` to build, preview, and publish your app. Learn more about [building and deploying](https://dev.wix.com/docs/wix-cli/guides/development/build-and-deploy-a-project).
+
+Pull the Wix environment once with `npm run env` before a local build. CI must provide `WIX_CLIENT_ID`. Run `npm run typecheck` alongside `npm run build` for full TypeScript validation.
 
 Once released, [submit your app for review](https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/submit-your-first-app-version) to publish it on the [Wix App Market](https://www.wix.com/app-market), or [share an install link](https://dev.wix.com/docs/build-apps/launch-your-app/app-distribution/share-an-app-install-link).
 
