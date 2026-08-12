@@ -8,7 +8,7 @@ import componentPreviewUrl from './component.preview.tsx?url';
 
 export default extensions.editorReactComponent({
   id: '16f33bb4-3757-4240-9844-e5e60f88bc34',
-  type: '16f33bb4-3757-4240-9844-e5e60f88bc34',
+  type: 'DenizUyanikMyAppay2nkx.WheelWidget',
   displayName: 'Wheel of Fortune',
   description: 'An interactive prize wheel backed by secure server-side winner selection.',
   editorElement: {
