@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { WixDesignSystemProvider } from '@wix/design-system';
 import { httpClient } from '@wix/essentials';
+import '@wix/design-system/styles.global.css';
 import type { CampaignInput } from '../../../backend/domain';
 import { appApiUrl, readApiResponse } from '../../../shared/api-client';
 import styles from './wheel.module.css';
@@ -90,7 +92,8 @@ export default function WheelDashboard() {
   if (loading) return <div className={styles.loading}>Loading wheel settings…</div>;
 
   return (
-    <main className={styles.shell}>
+    <WixDesignSystemProvider>
+      <main className={styles.shell}>
         <div className={styles.content}>
           <header className={styles.header}>
             <div><p className={styles.eyebrow}>Engagement</p><h1 className={styles.title}>Wheel of Fortune</h1><p className={styles.subtitle}>Configure the visitor experience and monitor results.</p></div>
@@ -159,6 +162,7 @@ export default function WheelDashboard() {
             </aside>
           </div>
         </div>
-    </main>
+      </main>
+    </WixDesignSystemProvider>
   );
 }
