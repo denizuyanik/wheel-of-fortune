@@ -13,6 +13,7 @@ import {
   saveDevelopmentCampaign,
 } from './development-store';
 import { ApiError } from './http';
+import { resolveParticipantForm } from './forms';
 
 const elevatedQuery = auth.elevate(items.query);
 const elevatedInsert = auth.elevate(items.insert);
@@ -107,8 +108,10 @@ export async function getDashboardData() {
 
 export async function saveDashboardCampaign(input: CampaignInput) {
   await requireDashboardUser();
+  const formConnection = await resolveParticipantForm(input.wixFormId);
+  const connectedInput = { ...input, wixFormId: formConnection.formId };
   return withDevelopmentStore(async () => {
-    const { prizes, id, ...campaignFields } = input;
+    const { prizes, id, ...campaignFields } = connectedInput;
     const savedCampaign = id
       ? await elevatedUpdate(CAMPAIGNS_COLLECTION, { _id: id, ...campaignFields })
       : await elevatedInsert(CAMPAIGNS_COLLECTION, campaignFields);
@@ -130,8 +133,8 @@ export async function saveDashboardCampaign(input: CampaignInput) {
         .filter((prize) => !submittedIds.has(prize._id))
         .map((prize) => elevatedUpdate(PRIZES_COLLECTION, { ...prize, enabled: false })),
     ]);
-    return { id: campaignId };
-  }, () => saveDevelopmentCampaign(input));
+    return { id: campaignId, ...formConnection };
+  }, () => ({ ...saveDevelopmentCampaign(connectedInput), ...formConnection }));
 }
 
 export async function getPublicCampaign(campaignId?: string) {

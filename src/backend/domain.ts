@@ -48,9 +48,6 @@ export const campaignInputSchema = z
     if (campaign.startsAt && campaign.endsAt && campaign.startsAt >= campaign.endsAt) {
       context.addIssue({ code: 'custom', path: ['endsAt'], message: 'End time must follow start time' });
     }
-    if (campaign.status === 'ACTIVE' && !campaign.wixFormId) {
-      context.addIssue({ code: 'custom', path: ['wixFormId'], message: 'An active campaign needs a Wix Form ID' });
-    }
     if (campaign.backgroundMediaType !== 'NONE' && !campaign.backgroundMediaUrl) {
       context.addIssue({ code: 'custom', path: ['backgroundMediaUrl'], message: 'Add a background media URL' });
     }

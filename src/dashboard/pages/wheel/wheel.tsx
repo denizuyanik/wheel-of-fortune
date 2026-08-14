@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-import { WixDesignSystemProvider } from '@wix/design-system';
 import { httpClient } from '@wix/essentials';
-import '@wix/design-system/styles.global.css';
 import type { CampaignInput } from '../../../backend/domain';
 import { appApiUrl, readApiResponse } from '../../../shared/api-client';
 import styles from './wheel.module.css';
@@ -78,10 +76,10 @@ export default function WheelDashboard() {
       const response = await httpClient.fetchWithAuth(appApiUrl('/api/dashboard'), {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(campaign),
       });
-      const body = await readApiResponse<{ data: { id: string }; error?: { message?: string } }>(response);
+      const body = await readApiResponse<{ data: { id: string; wixFormId: string; formName: string }; error?: { message?: string } }>(response);
       if (!response.ok) throw new Error(body.error?.message ?? 'Could not save campaign');
-      setCampaign({ id: body.data.id });
-      setNotice({ kind: 'success', text: 'Campaign saved.' });
+      setCampaign({ id: body.data.id, wixFormId: body.data.wixFormId });
+      setNotice({ kind: 'success', text: `Campaign saved. Wix form connected: ${body.data.formName}.` });
     } catch (error) {
       setNotice({ kind: 'error', text: errorMessage(error) });
     } finally {
@@ -92,8 +90,7 @@ export default function WheelDashboard() {
   if (loading) return <div className={styles.loading}>Loading wheel settings…</div>;
 
   return (
-    <WixDesignSystemProvider>
-      <main className={styles.shell}>
+    <main className={styles.shell}>
         <div className={styles.content}>
           <header className={styles.header}>
             <div><p className={styles.eyebrow}>Engagement</p><h1 className={styles.title}>Wheel of Fortune</h1><p className={styles.subtitle}>Configure the visitor experience and monitor results.</p></div>
@@ -127,8 +124,11 @@ export default function WheelDashboard() {
               <section className={styles.card}>
                 <div className={styles.cardHeader}><h2 className={styles.cardTitle}>Lead form &amp; background</h2><span className={styles.badge}>Wix Forms</span></div>
                 <div className={styles.grid}>
-                  <label className={`${styles.field} ${styles.fieldFull}`}>Wix Form ID<input className={styles.input} placeholder="00000000-0000-0000-0000-000000000000" value={campaign.wixFormId ?? ''} onChange={(event) => setCampaign({ wixFormId: event.target.value.trim() })} /></label>
-                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Use a Wix Form with targets: first_name, last_name, phone, email, contact_consent and marketing_consent. A successful submission can trigger a Wix Automation email to the business.</p>
+                  <div className={`${styles.field} ${styles.fieldFull}`}>
+                    <span>Wix form connection</span>
+                    <div className={styles.input} aria-live="polite">{campaign.wixFormId ? 'Connected automatically' : 'Will connect automatically when you save'}</div>
+                  </div>
+                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Create a Wix Form named <strong>Lead form &amp; background</strong> with required first name, last name, phone and email fields. The app finds its ID and field targets automatically. Configure the business email under the form’s Notifications and automations settings.</p>
                   <label className={`${styles.field} ${styles.fieldFull}`}>Privacy policy URL (optional)<input className={styles.input} type="url" placeholder="https://example.com/privacy" value={campaign.privacyPolicyUrl ?? ''} onChange={(event) => setCampaign({ privacyPolicyUrl: event.target.value })} /></label>
                   <label className={styles.field}>Background media<select className={styles.select} value={campaign.backgroundMediaType ?? 'NONE'} onChange={(event) => setCampaign({ backgroundMediaType: event.target.value as CampaignInput['backgroundMediaType'] })}><option value="NONE">None</option><option value="IMAGE">Image</option><option value="VIDEO">Video</option></select></label>
                   <label className={styles.field}>Media URL<input className={styles.input} type="url" disabled={(campaign.backgroundMediaType ?? 'NONE') === 'NONE'} placeholder="https://..." value={campaign.backgroundMediaUrl ?? ''} onChange={(event) => setCampaign({ backgroundMediaUrl: event.target.value })} /></label>
@@ -159,7 +159,6 @@ export default function WheelDashboard() {
             </aside>
           </div>
         </div>
-      </main>
-    </WixDesignSystemProvider>
+    </main>
   );
 }
