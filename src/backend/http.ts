@@ -1,4 +1,5 @@
 import type { APIContext } from 'astro';
+import { auth } from '@wix/essentials';
 import { z } from 'zod';
 
 const securityHeaders = {
@@ -71,6 +72,14 @@ export function assertSameOrigin(context: APIContext): void {
   const origin = context.request.headers.get('origin');
   if (!origin) return;
   if (origin !== context.url.origin) throw new ApiError(403, 'ORIGIN_REJECTED', 'Request origin is not allowed');
+}
+
+export async function requireWixRequest(): Promise<void> {
+  try {
+    await auth.getTokenInfo();
+  } catch {
+    throw new ApiError(401, 'WIX_AUTH_REQUIRED', 'A valid Wix visitor token is required');
+  }
 }
 
 export function clientAddress(context: APIContext): string {

@@ -1,6 +1,6 @@
 # Getting Started
 
-This repository contains the Wheel of Fortune MVP: a Wix Dashboard configuration page, an Editor React site widget, and a server-side spin API. See [the architecture and data model](docs/architecture.md) for trust boundaries, collection definitions, and API contracts.
+This repository contains the Wheel of Fortune MVP: a Wix Dashboard configuration page, a Custom Element site widget for Wix Studio and Wix Editor, and a server-side spin API. See [the architecture and data model](docs/architecture.md) for trust boundaries, collection definitions, and API contracts.
 
 This app was created using the [Wix CLI](https://dev.wix.com/docs/wix-cli/guides/about-the-wix-cli). Develop and release your app locally using the steps below.
 
@@ -12,6 +12,8 @@ This app was created using the [Wix CLI](https://dev.wix.com/docs/wix-cli/guides
 │   │   └── pages/
 │   ├── site/
 │   │   └── widgets/
+│   ├── extensions/
+│   │   └── site/widgets/
 │   ├── backend/
 │   └── extensions.ts
 ├── astro.config.mjs
