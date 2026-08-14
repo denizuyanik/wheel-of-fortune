@@ -20,6 +20,38 @@ type FormTargets = {
   marketingConsent?: string;
 };
 
+function nestedValue(value: unknown, ...path: string[]): unknown {
+  let current = value;
+  for (const key of path) {
+    if (!current || typeof current !== 'object') return undefined;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
+}
+
+function isPermissionDenied(error: unknown): boolean {
+  const candidates = [
+    nestedValue(error, 'status'),
+    nestedValue(error, 'statusCode'),
+    nestedValue(error, 'response', 'status'),
+    nestedValue(error, 'applicationError', 'code'),
+    nestedValue(error, 'details', 'applicationError', 'code'),
+  ];
+  return candidates.some((candidate) => String(candidate).toUpperCase() === '403' || String(candidate).toUpperCase() === 'FORBIDDEN');
+}
+
+function formApiError(error: unknown, fallbackCode: string, fallbackMessage: string): ApiError {
+  if (error instanceof ApiError) return error;
+  if (isPermissionDenied(error)) {
+    return new ApiError(
+      503,
+      'WIX_FORMS_PERMISSION_REQUIRED',
+      'This app is missing the Wix Forms “Manage Submissions” permission. Add it in the Wix app dashboard, then reinstall or update the app on this test site.',
+    );
+  }
+  return new ApiError(502, fallbackCode, fallbackMessage);
+}
+
 function normalized(value: string | null | undefined): string {
   return (value ?? '').trim().toLowerCase();
 }
@@ -78,7 +110,7 @@ export async function resolveParticipantForm(currentFormId?: string): Promise<{ 
       form = result.items.find((item) => item.enabled !== false) ?? result.items[0];
     } catch (error) {
       console.error('Wix Forms lookup failed', error);
-      throw new ApiError(502, 'FORM_LOOKUP_FAILED', 'Wix Forms could not be reached. Confirm that Wix Forms is installed, then save again');
+      throw formApiError(error, 'FORM_LOOKUP_FAILED', 'Wix Forms could not be reached. Confirm that Wix Forms is installed, then save again');
     }
   }
 
@@ -112,6 +144,6 @@ export async function createParticipantSubmission(formId: string, participant: P
     return submission._id;
   } catch (error) {
     console.error('Wix Forms submission failed', { formId, error });
-    throw new ApiError(502, 'FORM_SUBMISSION_FAILED', 'Your details could not be submitted. Please check the form setup and try again');
+    throw formApiError(error, 'FORM_SUBMISSION_FAILED', 'Your details could not be submitted. Please check the form setup and try again');
   }
 }
