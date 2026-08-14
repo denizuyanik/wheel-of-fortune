@@ -5,7 +5,7 @@
 The MVP has three runtime boundaries:
 
 1. **Dashboard Page** — site owners configure one campaign and inspect aggregate spin metrics.
-2. **Site Widget** — visitors view and spin the active wheel. It never receives prize weights or inventory.
+2. **Site Widget** — visitors view and spin the active wheel through a Custom Element extension compatible with Wix Studio and Wix Editor. It never receives prize weights or inventory.
 3. **Backend API** — validates all input, chooses winners, applies rate limits, and writes an append-only spin record.
 
 The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and widget bundles are independently built by the Wix Astro integration. Server routes live under `src/pages/api` and domain code under `src/backend`.
@@ -13,7 +13,7 @@ The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and wid
 ## Trust boundaries
 
 - Dashboard mutations use the request's Wix identity and non-elevated Wix Data calls. Collection permissions are `PRIVILEGED`, so only an authorized site operator can change configuration.
-- Visitor reads and spins are explicitly elevated only inside the backend after campaign, payload, origin, rate-limit, and idempotency checks.
+- Visitor reads and spins are explicitly elevated only inside the backend after Wix visitor-token, campaign, payload, rate-limit, and idempotency checks.
 - Prize selection happens on the server using `crypto.getRandomValues()`. The widget receives only the selected prize id after the result has been recorded.
 - Raw IP addresses are never stored. A short-lived SHA-256 fingerprint is used only for abuse controls.
 - Spin records are append-only through the application API. Campaign changes do not rewrite historical spin outcomes.
@@ -65,7 +65,7 @@ All collections use `PRIVILEGED` permissions. Public access is possible only thr
 - `PUT /api/dashboard` — privileged, schema-validated campaign replacement.
 - `POST /api/spins` — public spin command with a required idempotency key.
 
-JSON responses include `Cache-Control: no-store`, a request id, and a stable error envelope. Mutating requests require JSON and same-origin browser requests. Wix-hosted extension contexts are also admitted by an explicit host allowlist.
+JSON responses include `Cache-Control: no-store`, a request id, and a stable error envelope. Dashboard mutations require JSON and same-origin browser requests. Site-widget spins use Wix's authenticated HTTP client and the backend requires a valid Wix visitor token before performing elevated data access.
 
 ## MVP constraints and next hardening step
 

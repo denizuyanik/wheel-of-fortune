@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties, type FC } from 'react';
 import classNames from 'classnames';
+import { httpClient } from '@wix/essentials';
 import type { WheelWidgetProps } from './wheel-widget.props';
 import styles from './wheel-widget.module.css';
 
@@ -24,6 +25,11 @@ const previewCampaign: PublicCampaign = {
   ],
 };
 
+function apiUrl(path: string): string {
+  const baseUrl = import.meta.env.BASE_API_URL;
+  return baseUrl ? `${baseUrl.replace(/\/$/, '')}${path}` : path;
+}
+
 const WheelWidget: FC<WheelWidgetProps> = ({ id, className, campaignId, direction, preview = false }) => {
   const [campaign, setCampaign] = useState<PublicCampaign | null>(preview ? previewCampaign : null);
   const [loading, setLoading] = useState(!preview);
@@ -36,7 +42,7 @@ const WheelWidget: FC<WheelWidgetProps> = ({ id, className, campaignId, directio
     if (preview) return;
     const controller = new AbortController();
     const query = campaignId ? `?campaignId=${encodeURIComponent(campaignId)}` : '';
-    fetch(`/api/campaigns/current${query}`, { signal: controller.signal, credentials: 'include' })
+    httpClient.fetchWithAuth(apiUrl(`/api/campaigns/current${query}`), { signal: controller.signal })
       .then(async (response) => {
         const body = await response.json();
         if (!response.ok) throw new Error(body.error?.message ?? 'Campaign is unavailable');
@@ -57,8 +63,8 @@ const WheelWidget: FC<WheelWidgetProps> = ({ id, className, campaignId, directio
     if (!campaign || preview || spinning) return;
     setSpinning(true); setError(''); setResult(null);
     try {
-      const response = await fetch('/api/spins', {
-        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+      const response = await httpClient.fetchWithAuth(apiUrl('/api/spins'), {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaignId: campaign.id, idempotencyKey: crypto.randomUUID() }),
       });
       const body = await response.json();
