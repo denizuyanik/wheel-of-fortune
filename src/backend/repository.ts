@@ -6,6 +6,7 @@ import { ApiError } from './http';
 
 const elevatedQuery = auth.elevate(items.query);
 const elevatedInsert = auth.elevate(items.insert);
+const elevatedUpdate = auth.elevate(items.update);
 
 type QueryOptions = { elevated?: boolean; consistentRead?: boolean };
 
@@ -39,12 +40,30 @@ export async function requireDashboardUser(): Promise<void> {
 
 export async function getDashboardData() {
   await requireDashboardUser();
-  const campaigns = await queryCollection<CampaignRecord>(CAMPAIGNS_COLLECTION, {}, [{ fieldName: '_updatedDate', order: 'DESC' }], 1);
+  const campaigns = await queryCollection<CampaignRecord>(
+    CAMPAIGNS_COLLECTION,
+    {},
+    [{ fieldName: '_updatedDate', order: 'DESC' }],
+    1,
+    { elevated: true },
+  );
   const campaign = campaigns[0];
   if (!campaign) return null;
   const [prizes, spins] = await Promise.all([
-    queryCollection<PrizeRecord>(PRIZES_COLLECTION, { campaignId: campaign._id }, [{ fieldName: 'position', order: 'ASC' }]),
-    queryCollection<SpinRecord>(SPINS_COLLECTION, { campaignId: campaign._id }, [{ fieldName: 'spunAt', order: 'DESC' }], 1_000),
+    queryCollection<PrizeRecord>(
+      PRIZES_COLLECTION,
+      { campaignId: campaign._id },
+      [{ fieldName: 'position', order: 'ASC' }],
+      100,
+      { elevated: true },
+    ),
+    queryCollection<SpinRecord>(
+      SPINS_COLLECTION,
+      { campaignId: campaign._id },
+      [{ fieldName: 'spunAt', order: 'DESC' }],
+      1_000,
+      { elevated: true },
+    ),
   ]);
   return {
     campaign: { ...campaign, id: campaign._id, prizes: prizes.map(({ _id, ...prize }) => ({ ...prize, id: _id })) },
@@ -60,22 +79,25 @@ export async function saveDashboardCampaign(input: CampaignInput) {
   await requireDashboardUser();
   const { prizes, id, ...campaignFields } = input;
   const savedCampaign = id
-    ? await items.update(CAMPAIGNS_COLLECTION, { _id: id, ...campaignFields })
-    : await items.insert(CAMPAIGNS_COLLECTION, campaignFields);
+    ? await elevatedUpdate(CAMPAIGNS_COLLECTION, { _id: id, ...campaignFields })
+    : await elevatedInsert(CAMPAIGNS_COLLECTION, campaignFields);
   const campaignId = savedCampaign._id;
   if (!campaignId) throw new Error('Campaign could not be saved');
 
-  const current = await queryCollection<PrizeRecord>(PRIZES_COLLECTION, { campaignId }, [], 100, { consistentRead: true });
+  const current = await queryCollection<PrizeRecord>(PRIZES_COLLECTION, { campaignId }, [], 100, {
+    elevated: true,
+    consistentRead: true,
+  });
   const submittedIds = new Set(prizes.flatMap((prize) => (prize.id ? [prize.id] : [])));
   await Promise.all([
     ...prizes.map(({ id: prizeId, ...prize }) =>
       prizeId
-        ? items.update(PRIZES_COLLECTION, { _id: prizeId, campaignId, ...prize })
-        : items.insert(PRIZES_COLLECTION, { campaignId, ...prize }),
+        ? elevatedUpdate(PRIZES_COLLECTION, { _id: prizeId, campaignId, ...prize })
+        : elevatedInsert(PRIZES_COLLECTION, { campaignId, ...prize }),
     ),
     ...current
       .filter((prize) => !submittedIds.has(prize._id))
-      .map((prize) => items.update(PRIZES_COLLECTION, { ...prize, enabled: false })),
+      .map((prize) => elevatedUpdate(PRIZES_COLLECTION, { ...prize, enabled: false })),
   ]);
   return { id: campaignId };
 }

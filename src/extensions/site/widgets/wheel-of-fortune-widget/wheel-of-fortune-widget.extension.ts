@@ -12,7 +12,9 @@ export default extensions.customElement({
     defaultHeight: 560,
   },
   installation: {
-    autoAdd: true,
+    // Keep the widget opt-in so Wix lists it under Add Elements > App Widgets.
+    // @wix/astro still emits the legacy manifest field used by the current CLI.
+    autoAdd: false,
   },
   presets: [
     {
