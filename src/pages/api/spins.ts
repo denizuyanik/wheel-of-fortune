@@ -40,9 +40,13 @@ export const POST: APIRoute = async (context) => {
     const used = await countVisitorSpins(visitorHash, input.campaignId, dayStart);
     if (used >= result.campaign.dailySpinLimit) throw new ApiError(429, 'DAILY_LIMIT_REACHED', 'Daily spin limit reached');
 
-    const participantForm = await resolveParticipantForm(result.campaign.wixFormId);
-    const formSubmissionId = await createParticipantSubmission(participantForm.formId, input.participant);
     const prize = chooseWeightedPrize(result.prizes);
+    const participantForm = await resolveParticipantForm(result.campaign.wixFormId);
+    const formSubmissionId = await createParticipantSubmission(
+      participantForm.formId,
+      input.participant,
+      { label: prize.label, couponCode: prize.couponCode },
+    );
     const spin = await recordSpin({
       campaignId: input.campaignId,
       prizeId: prize._id,

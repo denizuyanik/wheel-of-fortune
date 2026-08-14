@@ -6,7 +6,7 @@ The MVP has three runtime boundaries:
 
 1. **Dashboard Page** — site owners configure one campaign and inspect aggregate spin metrics.
 2. **Site Widget** — visitors submit the required contact form and spin the active wheel through a Custom Element extension compatible with Wix Studio and Wix Editor. It never receives prize weights or inventory.
-3. **Backend API** — validates all input, creates the Wix Forms submission, chooses winners, applies rate limits, and writes an append-only spin record.
+3. **Backend API** — validates all input, checks eligibility, chooses the result, creates a Wix Forms submission containing the participant and public reward result, applies rate limits, and writes an append-only spin record.
 
 The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and widget bundles are independently built by the Wix Astro integration. Server routes live under `src/pages/api` and domain code under `src/backend`.
 
@@ -16,7 +16,7 @@ The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and wid
 - Visitor reads and spins are explicitly elevated only inside the backend after Wix visitor-token, campaign, payload, rate-limit, and idempotency checks.
 - Prize selection happens on the server using `crypto.getRandomValues()`. The widget receives only the selected prize id after the result has been recorded.
 - Raw IP addresses and user-agent strings are never stored. A site-scoped SHA-256 hash of the verified Wix visitor/member identity is used for daily limits and abuse controls.
-- Names, phone numbers, email addresses, and consent values are sent directly to Wix Forms. They are not copied into the app's campaign or spin collections.
+- Names, phone numbers, email addresses, consent values, and the selected public reward result are sent directly to Wix Forms. Contact details are not copied into the app's campaign or spin collections.
 - Contact consent is required for result follow-up. Marketing consent is separate and optional, so an operator can segment promotional communication correctly.
 - Spin records are append-only through the application API. Campaign changes do not rewrite historical spin outcomes.
 

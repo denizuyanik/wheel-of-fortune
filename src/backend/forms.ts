@@ -1,6 +1,6 @@
 import { forms, submissions } from '@wix/forms';
 import { auth } from '@wix/essentials';
-import type { ParticipantInput } from './domain';
+import type { ParticipantInput, PrizeRecord } from './domain';
 import { ApiError } from './http';
 
 export const PARTICIPANT_FORM_NAME = 'Lead form & background';
@@ -11,14 +11,21 @@ const elevatedGetForm = auth.elevate(forms.getForm);
 const elevatedQueryForms = auth.elevate(forms.queryForms);
 
 type WixForm = forms.Form;
-type FormTargets = {
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  contactConsent?: string;
-  marketingConsent?: string;
+type SubmissionTarget = {
+  key: string;
+  inputType?: string;
 };
+type FormTargets = {
+  firstName: SubmissionTarget;
+  lastName: SubmissionTarget;
+  phone: SubmissionTarget;
+  email: SubmissionTarget;
+  reward: SubmissionTarget;
+  contactConsent?: SubmissionTarget;
+  marketingConsent?: SubmissionTarget;
+};
+
+type ParticipantOutcome = Pick<PrizeRecord, 'label' | 'couponCode'>;
 
 function nestedValue(value: unknown, ...path: string[]): unknown {
   let current = value;
@@ -53,18 +60,46 @@ function formApiError(error: unknown, fallbackCode: string, fallbackMessage: str
 }
 
 function normalized(value: string | null | undefined): string {
-  return (value ?? '').trim().toLowerCase();
+  return (value ?? '')
+    .trim()
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '_');
 }
 
-function targetFor(form: WixForm, contactField: string, fallbacks: string[]): string | undefined {
+function targetFor(form: WixForm, contactField: string, fallbacks: string[]): SubmissionTarget | undefined {
   const fields = form.formFields ?? [];
-  const mapped = fields.find((field) => field.inputOptions?.contactMapping?.contactField === contactField)?.inputOptions?.target;
-  if (mapped) return mapped;
+  const field =
+    (contactField
+      ? fields.find((candidate) => candidate.inputOptions?.contactMapping?.contactField === contactField)
+      : undefined) ??
+    fields.find((candidate) => {
+      const candidates = [candidate.identifier, candidate.inputOptions?.target].map(normalized);
+      return fallbacks.some((fallback) => candidates.some((value) => value.includes(fallback)));
+    });
+  const key = field?.inputOptions?.target;
+  if (!key) return undefined;
 
-  return fields.find((field) => {
-    const candidates = [field.identifier, field.inputOptions?.target].map(normalized);
-    return fallbacks.some((fallback) => candidates.some((candidate) => candidate.includes(fallback)));
-  })?.inputOptions?.target;
+  return {
+    key,
+    inputType: field.inputOptions?.inputType,
+  };
+}
+
+function consentSubmissionValue(target: SubmissionTarget, value: boolean): string | boolean {
+  if (target.inputType === 'BOOLEAN') return value;
+  if (!target.inputType || target.inputType === 'STRING') return value ? 'Yes' : 'No';
+
+  throw new ApiError(
+    422,
+    'FORM_CONSENT_FIELD_INVALID',
+    `The Wix Form field “${target.key}” must be a Short Answer or boolean field`,
+  );
 }
 
 function formTargets(form: WixForm): FormTargets {
@@ -73,18 +108,36 @@ function formTargets(form: WixForm): FormTargets {
     lastName: targetFor(form, 'LAST_NAME', ['last_name', 'lastname', 'contacts_last_name']),
     phone: targetFor(form, 'PHONE', ['phone', 'telephone', 'contacts_phone']),
     email: targetFor(form, 'EMAIL', ['email', 'contacts_email']),
+    reward: targetFor(form, '', [
+      'kazanilan_hediye',
+      'kazandigi_hediye',
+      'kazandiginiz_hediye',
+      'won_prize',
+      'prize_won',
+      'wheel_reward',
+      'reward',
+      'prize',
+      'hediye',
+    ]),
     contactConsent: targetFor(form, '', ['contact_consent', 'privacy_consent', 'terms_consent']),
     marketingConsent: targetFor(form, 'SUBSCRIPTION', ['marketing_consent', 'subscription', 'newsletter']),
   };
 
   const missing = Object.entries(targets)
-    .filter(([key, value]) => ['firstName', 'lastName', 'phone', 'email'].includes(key) && !value)
+    .filter(([key, value]) => ['firstName', 'lastName', 'phone', 'email', 'reward'].includes(key) && !value)
     .map(([key]) => key);
   if (missing.length) {
+    const labels: Record<string, string> = {
+      firstName: 'first name',
+      lastName: 'last name',
+      phone: 'phone',
+      email: 'email',
+      reward: 'a Short Answer field named “Kazanılan hediye”',
+    };
     throw new ApiError(
       422,
       'FORM_FIELDS_MISSING',
-      `The Wix Form “${PARTICIPANT_FORM_NAME}” is missing required fields: ${missing.join(', ')}`,
+      `The Wix Form “${PARTICIPANT_FORM_NAME}” is missing required fields: ${missing.map((key) => labels[key] ?? key).join(', ')}`,
     );
   }
   return targets as FormTargets;
@@ -121,20 +174,42 @@ export async function resolveParticipantForm(currentFormId?: string): Promise<{ 
   return { formId: form._id, formName: form.name ?? PARTICIPANT_FORM_NAME };
 }
 
-export async function createParticipantSubmission(formId: string, participant: ParticipantInput): Promise<string> {
+function rewardSubmissionValue(target: SubmissionTarget, outcome: ParticipantOutcome): string {
+  if (target.inputType && target.inputType !== 'STRING') {
+    throw new ApiError(
+      422,
+      'FORM_REWARD_FIELD_INVALID',
+      'The “Kazanılan hediye” Wix Form field must use the Short Answer field type',
+    );
+  }
+
+  const couponCode = outcome.couponCode.trim();
+  return couponCode ? `${outcome.label} — Kupon: ${couponCode}` : outcome.label;
+}
+
+export async function createParticipantSubmission(
+  formId: string,
+  participant: ParticipantInput,
+  outcome: ParticipantOutcome,
+): Promise<string> {
   if (!formId) throw new ApiError(503, 'FORM_NOT_CONFIGURED', 'The lead form is not configured yet');
 
   try {
     const form = await elevatedGetForm(formId);
     const targets = formTargets(form);
     const values: Record<string, string | boolean> = {
-      [targets.firstName]: participant.firstName,
-      [targets.lastName]: participant.lastName,
-      [targets.phone]: participant.phone,
-      [targets.email]: participant.email,
+      [targets.firstName.key]: participant.firstName,
+      [targets.lastName.key]: participant.lastName,
+      [targets.phone.key]: participant.phone,
+      [targets.email.key]: participant.email,
+      [targets.reward.key]: rewardSubmissionValue(targets.reward, outcome),
     };
-    if (targets.contactConsent) values[targets.contactConsent] = participant.contactConsent;
-    if (targets.marketingConsent) values[targets.marketingConsent] = participant.marketingConsent;
+    if (targets.contactConsent) {
+      values[targets.contactConsent.key] = consentSubmissionValue(targets.contactConsent, participant.contactConsent);
+    }
+    if (targets.marketingConsent) {
+      values[targets.marketingConsent.key] = consentSubmissionValue(targets.marketingConsent, participant.marketingConsent);
+    }
 
     const submission = await elevatedCreateSubmission({
       formId,
