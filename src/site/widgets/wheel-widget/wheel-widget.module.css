@@ -5,7 +5,7 @@
 .wheelWrap { position: relative; width: min(100%, 360px); aspect-ratio: 1; margin: auto; filter: drop-shadow(0 14px 22px rgba(35, 28, 84, .17)); }
 .pointer { position: absolute; z-index: 4; top: -9px; left: 50%; width: 0; height: 0; transform: translateX(-50%); border-left: 17px solid transparent; border-right: 17px solid transparent; border-top: 32px solid #171923; filter: drop-shadow(0 3px 2px rgba(0,0,0,.2)); }
 .wheel { position: absolute; inset: 0; border: 10px solid #fff; border-radius: 50%; transition: transform 4.6s cubic-bezier(.12,.72,.09,1); }
-.label { position: absolute; top: 50%; left: 50%; width: 47%; height: 42px; display: flex; align-items: center; justify-content: center; padding: 0 7% 0 20%; color: #fff; font-size: clamp(10px, 1.7vw, 14px); font-weight: 800; line-height: 1.08; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,.42); transform-origin: 0 50%; overflow: hidden; }
+.label { position: absolute; top: 50%; left: 50%; box-sizing: border-box; width: 48%; height: 46px; display: flex; align-items: center; justify-content: center; padding: 0 3% 0 12%; color: #fff; font-size: clamp(10px, 1.7vw, 14px); font-weight: 800; line-height: 1.08; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,.42); transform-origin: 0 50%; overflow: hidden; }
 .labelText { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .hub { position: absolute; z-index: 3; inset: 50% auto auto 50%; width: 31%; aspect-ratio: 1; transform: translate(-50%,-50%); border: 7px solid rgba(255,255,255,.92); border-radius: 50%; background: #171923; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 800; letter-spacing: .03em; text-align: center; }
 .copy { text-align: start; }
