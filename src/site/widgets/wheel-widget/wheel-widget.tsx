@@ -14,7 +14,6 @@ type PublicCampaign = {
   backgroundMediaType: 'NONE' | 'IMAGE' | 'VIDEO';
   backgroundMediaUrl: string;
   privacyPolicyUrl: string;
-  formConfigured: boolean;
   prizes: Array<{ id: string; label: string; color: string; position: number }>;
 };
 
@@ -35,7 +34,7 @@ const blankParticipant = (): Participant => ({
 
 const previewCampaign: PublicCampaign = {
   id: 'preview', headline: 'Spin & reveal your reward', buttonLabel: 'Submit & spin', primaryColor: '#6d5dfc', backgroundColor: '#f4f1ff',
-  backgroundMediaType: 'NONE', backgroundMediaUrl: '', privacyPolicyUrl: '', formConfigured: true,
+  backgroundMediaType: 'NONE', backgroundMediaUrl: '', privacyPolicyUrl: '',
   prizes: [
     { id: 'one', label: '10% off', color: '#6d5dfc', position: 0 },
     { id: 'two', label: 'Free shipping', color: '#ffb703', position: 1 },
@@ -82,10 +81,6 @@ const WheelWidget: FC<WheelWidgetProps> = ({ id, className, campaignId, directio
   const spin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!campaign || preview || spinning) return;
-    if (!campaign.formConfigured) {
-      setError('The Wix Form is not configured yet');
-      return;
-    }
     setSpinning(true); setError(''); setResult(null);
     try {
       const response = await httpClient.fetchWithAuth(appApiUrl('/api/spins'), {
@@ -149,13 +144,12 @@ const WheelWidget: FC<WheelWidgetProps> = ({ id, className, campaignId, directio
             </div>
             <label className={styles.consent}><input required type="checkbox" checked={participant.contactConsent} onChange={(event) => updateParticipant({ contactConsent: event.target.checked })} /><span>I agree to the processing of my information and being contacted about my wheel result.{campaign?.privacyPolicyUrl && <> <a href={campaign.privacyPolicyUrl} target="_blank" rel="noreferrer">Privacy policy</a></>}</span></label>
             <label className={styles.consent}><input type="checkbox" checked={participant.marketingConsent} onChange={(event) => updateParticipant({ marketingConsent: event.target.checked })} /><span>I would like to receive marketing messages and offers.</span></label>
-            <button className={styles.spin} disabled={!campaign || loading || spinning || preview || !campaign?.formConfigured} type="submit">{spinning ? 'Spinning…' : campaign?.buttonLabel ?? 'Submit & spin'}</button>
+            <button className={styles.spin} disabled={!campaign || loading || spinning || preview} type="submit">{spinning ? 'Spinning…' : campaign?.buttonLabel ?? 'Submit & spin'}</button>
           </form>
           <div aria-live="polite">
             {error && <div className={`${styles.result} ${styles.error}`}>{error}</div>}
             {result && <div className={styles.result}><strong>{result.label}</strong>{result.couponCode && <span className={styles.coupon}>{result.couponCode}</span>}</div>}
             {preview && <div className={styles.result}>Connect an active campaign to enable submissions and spins.</div>}
-            {!preview && campaign && !campaign.formConfigured && <div className={`${styles.result} ${styles.error}`}>Complete the Wix Form setup in the app dashboard.</div>}
           </div>
         </div>
       </div>

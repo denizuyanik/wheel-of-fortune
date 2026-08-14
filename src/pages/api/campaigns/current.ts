@@ -21,7 +21,6 @@ export const GET: APIRoute = async ({ url }) => {
         backgroundMediaType: result.campaign.backgroundMediaType ?? 'NONE',
         backgroundMediaUrl: result.campaign.backgroundMediaUrl ?? '',
         privacyPolicyUrl: result.campaign.privacyPolicyUrl ?? '',
-        formConfigured: Boolean(result.campaign.wixFormId),
         prizes: result.prizes.map((prize) => ({ id: prize._id, label: prize.label, color: prize.color, position: prize.position })),
       },
       200,
