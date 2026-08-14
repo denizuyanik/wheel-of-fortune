@@ -30,6 +30,12 @@ Start a local development server with `npm run dev` and add new [extensions](htt
 
 During `wix dev`, the app uses an in-memory development store if the release-managed App Data collections are not installed yet. It resets when the development server restarts. Production builds never use this fallback.
 
+## Wix Forms setup
+
+The widget submits participant details to Wix Forms before a spin is recorded. Create a Wix Form whose field targets are `first_name`, `last_name`, `phone`, `email`, `contact_consent`, and `marketing_consent`, then paste its form ID into **Wheel of Fortune → Lead form & background**. The first five fields are required by the app; marketing consent remains optional and is stored separately.
+
+To notify the business, add a Wix Automation triggered by a submission to this form and choose the business notification email as the action. The app stores only the returned submission ID with the spin; contact details remain in Wix Forms.
+
 ## Build and release
 
 Use `npm run build`, `npm run preview`, and `npm run release` to build, preview, and publish your app. Learn more about [building and deploying](https://dev.wix.com/docs/wix-cli/guides/development/build-and-deploy-a-project).

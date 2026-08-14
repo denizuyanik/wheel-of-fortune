@@ -15,6 +15,7 @@ const fallback: DashboardPayload = {
   campaign: {
     name: 'Welcome wheel', status: 'DRAFT', headline: 'Spin the wheel', buttonLabel: 'Spin now',
     primaryColor: '#6d5dfc', backgroundColor: '#f4f1ff', dailySpinLimit: 1, startsAt: null, endsAt: null,
+    backgroundMediaType: 'NONE', backgroundMediaUrl: '', wixFormId: '', privacyPolicyUrl: '',
     prizes: [
       { label: '10% off', couponCode: 'WELCOME10', color: '#6d5dfc', weight: 30, position: 0, enabled: true },
       { label: 'Free shipping', couponCode: 'SHIPFREE', color: '#ffb703', weight: 20, position: 1, enabled: true },
@@ -121,6 +122,17 @@ export default function WheelDashboard() {
                 <div className={styles.colors} style={{ marginTop: 16 }}>
                   <label className={styles.field}>Primary color<input className={`${styles.input} ${styles.colorInput}`} type="color" value={campaign.primaryColor} onChange={(event) => setCampaign({ primaryColor: event.target.value })} /></label>
                   <label className={styles.field}>Background color<input className={`${styles.input} ${styles.colorInput}`} type="color" value={campaign.backgroundColor} onChange={(event) => setCampaign({ backgroundColor: event.target.value })} /></label>
+                </div>
+              </section>
+              <section className={styles.card}>
+                <div className={styles.cardHeader}><h2 className={styles.cardTitle}>Lead form &amp; background</h2><span className={styles.badge}>Wix Forms</span></div>
+                <div className={styles.grid}>
+                  <label className={`${styles.field} ${styles.fieldFull}`}>Wix Form ID<input className={styles.input} placeholder="00000000-0000-0000-0000-000000000000" value={campaign.wixFormId ?? ''} onChange={(event) => setCampaign({ wixFormId: event.target.value.trim() })} /></label>
+                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Use a Wix Form with targets: first_name, last_name, phone, email, contact_consent and marketing_consent. A successful submission can trigger a Wix Automation email to the business.</p>
+                  <label className={`${styles.field} ${styles.fieldFull}`}>Privacy policy URL (optional)<input className={styles.input} type="url" placeholder="https://example.com/privacy" value={campaign.privacyPolicyUrl ?? ''} onChange={(event) => setCampaign({ privacyPolicyUrl: event.target.value })} /></label>
+                  <label className={styles.field}>Background media<select className={styles.select} value={campaign.backgroundMediaType ?? 'NONE'} onChange={(event) => setCampaign({ backgroundMediaType: event.target.value as CampaignInput['backgroundMediaType'] })}><option value="NONE">None</option><option value="IMAGE">Image</option><option value="VIDEO">Video</option></select></label>
+                  <label className={styles.field}>Media URL<input className={styles.input} type="url" disabled={(campaign.backgroundMediaType ?? 'NONE') === 'NONE'} placeholder="https://..." value={campaign.backgroundMediaUrl ?? ''} onChange={(event) => setCampaign({ backgroundMediaUrl: event.target.value })} /></label>
+                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Use a public HTTPS image or an autoplay-safe video. Videos play muted and loop behind the wheel.</p>
                 </div>
               </section>
               <section className={styles.card}>

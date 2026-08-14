@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { chooseWeightedPrize, isCampaignActive, spinInputSchema } from '../../backend/domain';
 import { ApiError, json, jsonError, parseJson, requireWixRequest } from '../../backend/http';
+import { createParticipantSubmission } from '../../backend/forms';
 import { enforceRateLimit } from '../../backend/rate-limit';
 import { countVisitorSpins, findSpinByIdempotencyKey, getPublicCampaign, recordSpin } from '../../backend/repository';
 
@@ -39,6 +40,7 @@ export const POST: APIRoute = async (context) => {
     const used = await countVisitorSpins(visitorHash, input.campaignId, dayStart);
     if (used >= result.campaign.dailySpinLimit) throw new ApiError(429, 'DAILY_LIMIT_REACHED', 'Daily spin limit reached');
 
+    const formSubmissionId = await createParticipantSubmission(result.campaign.wixFormId, input.participant);
     const prize = chooseWeightedPrize(result.prizes);
     const spin = await recordSpin({
       campaignId: input.campaignId,
@@ -47,6 +49,7 @@ export const POST: APIRoute = async (context) => {
       visitorHash,
       outcomeLabel: prize.label,
       couponCode: prize.couponCode,
+      formSubmissionId,
       spunAt: new Date(),
     });
     return json(publicSpin(spin), 201, requestId);

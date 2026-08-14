@@ -5,8 +5,8 @@
 The MVP has three runtime boundaries:
 
 1. **Dashboard Page** — site owners configure one campaign and inspect aggregate spin metrics.
-2. **Site Widget** — visitors view and spin the active wheel through a Custom Element extension compatible with Wix Studio and Wix Editor. It never receives prize weights or inventory.
-3. **Backend API** — validates all input, chooses winners, applies rate limits, and writes an append-only spin record.
+2. **Site Widget** — visitors submit the required contact form and spin the active wheel through a Custom Element extension compatible with Wix Studio and Wix Editor. It never receives prize weights or inventory.
+3. **Backend API** — validates all input, creates the Wix Forms submission, chooses winners, applies rate limits, and writes an append-only spin record.
 
 The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and widget bundles are independently built by the Wix Astro integration. Server routes live under `src/pages/api` and domain code under `src/backend`.
 
@@ -16,6 +16,8 @@ The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and wid
 - Visitor reads and spins are explicitly elevated only inside the backend after Wix visitor-token, campaign, payload, rate-limit, and idempotency checks.
 - Prize selection happens on the server using `crypto.getRandomValues()`. The widget receives only the selected prize id after the result has been recorded.
 - Raw IP addresses and user-agent strings are never stored. A site-scoped SHA-256 hash of the verified Wix visitor/member identity is used for daily limits and abuse controls.
+- Names, phone numbers, email addresses, and consent values are sent directly to Wix Forms. They are not copied into the app's campaign or spin collections.
+- Contact consent is required for result follow-up. Marketing consent is separate and optional, so an operator can segment promotional communication correctly.
 - Spin records are append-only through the application API. Campaign changes do not rewrite historical spin outcomes.
 
 ## Data model
@@ -30,6 +32,10 @@ The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and wid
 | `buttonLabel` | text | Spin CTA |
 | `primaryColor` | text | Validated hex color |
 | `backgroundColor` | text | Validated hex color |
+| `backgroundMediaType` | text | `NONE`, `IMAGE`, or `VIDEO` |
+| `backgroundMediaUrl` | URL | Optional public HTTPS image/video URL |
+| `wixFormId` | text | Server-only Wix Form schema reference |
+| `privacyPolicyUrl` | URL | Optional visitor-facing policy link |
 | `dailySpinLimit` | number | Per visitor fingerprint, 1–20 |
 | `startsAt`, `endsAt` | datetime | Optional campaign window |
 
@@ -54,6 +60,7 @@ The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and wid
 | `visitorHash` | text | Site-scoped hash of the verified Wix subject ID |
 | `outcomeLabel` | text | Immutable historical label snapshot |
 | `couponCode` | text (encrypted) | Historical fulfillment snapshot |
+| `formSubmissionId` | text | Wix Forms audit reference; no contact details |
 | `spunAt` | datetime | Server timestamp |
 
 All collections use `PRIVILEGED` permissions. Public access is possible only through the narrow backend DTOs.
@@ -63,10 +70,10 @@ All collections use `PRIVILEGED` permissions. Public access is possible only thr
 - `GET /api/campaigns/current` — sanitized active campaign DTO; no weights or coupon codes.
 - `GET /api/dashboard` — privileged configuration and metrics.
 - `PUT /api/dashboard` — privileged, schema-validated campaign replacement.
-- `POST /api/spins` — public spin command with a required idempotency key.
+- `POST /api/spins` — public spin command with a required idempotency key, required contact fields, required contact consent, and optional marketing consent. Eligibility is checked before the Wix Forms submission is created.
 
 JSON responses include `Cache-Control: no-store`, a request id, and a stable error envelope. Dashboard mutations require JSON and same-origin browser requests. Site-widget spins use Wix's authenticated HTTP client and the backend requires a valid Wix visitor token before performing elevated data access.
 
 ## MVP constraints and next hardening step
 
-The included rate limiter is process-local, suitable as a first abuse-control layer but not a global quota. Before broad production rollout, move counters and idempotency reservations to a strongly consistent shared store and make prize inventory claims transactional.
+The included rate limiter is process-local, suitable as a first abuse-control layer but not a global quota. Before broad production rollout, move counters and idempotency reservations to a strongly consistent shared store and make prize inventory claims transactional. A Wix Automation should use the form-submission event to notify the business; marketing sends must filter on the separately recorded marketing consent.
