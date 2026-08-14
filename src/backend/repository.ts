@@ -26,7 +26,12 @@ async function queryCollection<T extends Record<string, unknown>>(
 }
 
 export async function requireDashboardUser(): Promise<void> {
-  const token = await auth.getTokenInfo();
+  let token;
+  try {
+    token = await auth.getTokenInfo();
+  } catch {
+    throw new ApiError(401, 'WIX_AUTH_REQUIRED', 'A valid Wix dashboard token is required');
+  }
   if (token.subjectType !== 'USER' && token.subjectType !== 'APP') {
     throw new ApiError(403, 'DASHBOARD_AUTH_REQUIRED', 'Dashboard authorization required');
   }
