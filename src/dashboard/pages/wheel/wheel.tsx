@@ -3,6 +3,7 @@ import { WixDesignSystemProvider } from '@wix/design-system';
 import { httpClient } from '@wix/essentials';
 import '@wix/design-system/styles.global.css';
 import type { CampaignInput } from '../../../backend/domain';
+import { appApiUrl, readApiResponse } from '../../../shared/api-client';
 import styles from './wheel.module.css';
 
 type DashboardPayload = {
@@ -27,19 +28,6 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Something went wrong';
 }
 
-function apiUrl(path: string): string {
-  const baseUrl = import.meta.env.BASE_API_URL;
-  return baseUrl ? `${baseUrl.replace(/\/$/, '')}${path}` : path;
-}
-
-async function readApiResponse<T>(response: Response): Promise<T> {
-  const contentType = response.headers.get('content-type') ?? '';
-  if (!contentType.toLowerCase().includes('application/json')) {
-    throw new Error(`Backend returned an invalid response (${response.status})`);
-  }
-  return response.json() as Promise<T>;
-}
-
 export default function WheelDashboard() {
   const [data, setData] = useState<DashboardPayload>(fallback);
   const [loading, setLoading] = useState(true);
@@ -48,7 +36,7 @@ export default function WheelDashboard() {
 
   useEffect(() => {
     let cancelled = false;
-    httpClient.fetchWithAuth(apiUrl('/api/dashboard'))
+    httpClient.fetchWithAuth(appApiUrl('/api/dashboard'))
       .then(async (response) => {
         const body = await readApiResponse<{ data: DashboardPayload; error?: { message?: string } }>(response);
         if (!response.ok) throw new Error(body.error?.message ?? 'Could not load campaign');
@@ -74,7 +62,7 @@ export default function WheelDashboard() {
     setSaving(true);
     setNotice(null);
     try {
-      const response = await httpClient.fetchWithAuth(apiUrl('/api/dashboard'), {
+      const response = await httpClient.fetchWithAuth(appApiUrl('/api/dashboard'), {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(campaign),
       });
       const body = await readApiResponse<{ data: { id: string }; error?: { message?: string } }>(response);
