@@ -1,10 +1,6 @@
-type WixEmbedsApi = {
-  getExternalBaseUrl?: () => string | undefined;
-};
-
 function runtimeBaseUrl(): string | undefined {
   if (typeof window === 'undefined') return undefined;
-  return (window as Window & { wixEmbedsAPI?: WixEmbedsApi }).wixEmbedsAPI?.getExternalBaseUrl?.();
+  return new URL(import.meta.url).origin;
 }
 
 export function appApiUrl(path: string): string {
