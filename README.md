@@ -28,6 +28,8 @@ Learn more about the [project structure](https://dev.wix.com/docs/wix-cli/guides
 
 Start a local development server with `npm run dev` and add new [extensions](https://dev.wix.com/docs/wix-cli/guides/extensions/about-extensions) with `npm run generate`. Learn more about the [development workflow](https://dev.wix.com/docs/wix-cli/guides/development/development-overview).
 
+During `wix dev`, the app uses an in-memory development store if the release-managed App Data collections are not installed yet. It resets when the development server restarts. Production builds never use this fallback.
+
 ## Build and release
 
 Use `npm run build`, `npm run preview`, and `npm run release` to build, preview, and publish your app. Learn more about [building and deploying](https://dev.wix.com/docs/wix-cli/guides/development/build-and-deploy-a-project).

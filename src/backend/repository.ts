@@ -61,7 +61,7 @@ export async function requireDashboardUser(): Promise<void> {
   } catch {
     throw new ApiError(401, 'WIX_AUTH_REQUIRED', 'A valid Wix dashboard token is required');
   }
-  if (token.subjectType !== 'USER' && token.subjectType !== 'APP') {
+  if (!token.active || (token.subjectType !== 'USER' && token.subjectType !== 'APP')) {
     throw new ApiError(403, 'DASHBOARD_AUTH_REQUIRED', 'Dashboard authorization required');
   }
 }

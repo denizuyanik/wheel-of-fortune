@@ -12,10 +12,10 @@ The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and wid
 
 ## Trust boundaries
 
-- Dashboard mutations use the request's Wix identity and non-elevated Wix Data calls. Collection permissions are `PRIVILEGED`, so only an authorized site operator can change configuration.
+- Dashboard mutations validate the request's Wix user/app identity before narrowly elevating Wix Data calls. Collection permissions are `PRIVILEGED`, so only an authorized site operator can change configuration.
 - Visitor reads and spins are explicitly elevated only inside the backend after Wix visitor-token, campaign, payload, rate-limit, and idempotency checks.
 - Prize selection happens on the server using `crypto.getRandomValues()`. The widget receives only the selected prize id after the result has been recorded.
-- Raw IP addresses are never stored. A short-lived SHA-256 fingerprint is used only for abuse controls.
+- Raw IP addresses and user-agent strings are never stored. A site-scoped SHA-256 hash of the verified Wix visitor/member identity is used for daily limits and abuse controls.
 - Spin records are append-only through the application API. Campaign changes do not rewrite historical spin outcomes.
 
 ## Data model
@@ -51,7 +51,7 @@ The Wix extension manifest is composed in `src/extensions.ts`. Dashboard and wid
 | --- | --- | --- |
 | `campaignId`, `prizeId` | text | Indexed audit dimensions |
 | `idempotencyKey` | text | Unique replay protection key |
-| `visitorHash` | text | Salted request fingerprint, never a raw IP |
+| `visitorHash` | text | Site-scoped hash of the verified Wix subject ID |
 | `outcomeLabel` | text | Immutable historical label snapshot |
 | `couponCode` | text (encrypted) | Historical fulfillment snapshot |
 | `spunAt` | datetime | Server timestamp |

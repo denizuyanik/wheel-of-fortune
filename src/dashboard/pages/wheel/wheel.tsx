@@ -28,6 +28,18 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Something went wrong';
 }
 
+function toDateTimeLocal(value: string | null | undefined): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+function fromDateTimeLocal(value: string): string | null {
+  return value ? new Date(value).toISOString() : null;
+}
+
 export default function WheelDashboard() {
   const [data, setData] = useState<DashboardPayload>(fallback);
   const [loading, setLoading] = useState(true);
@@ -100,6 +112,9 @@ export default function WheelDashboard() {
                   <label className={`${styles.field} ${styles.fieldFull}`}>Internal name<input className={styles.input} value={campaign.name} onChange={(event) => setCampaign({ name: event.target.value })} /></label>
                   <label className={styles.field}>Status<select className={styles.select} value={campaign.status} onChange={(event) => setCampaign({ status: event.target.value as CampaignInput['status'] })}><option value="DRAFT">Draft</option><option value="ACTIVE">Active</option><option value="PAUSED">Paused</option></select></label>
                   <label className={styles.field}>Daily spins per visitor<input className={styles.input} type="number" min="1" max="20" value={campaign.dailySpinLimit} onChange={(event) => setCampaign({ dailySpinLimit: Number(event.target.value) })} /></label>
+                  <label className={styles.field}>Starts at (optional)<input className={styles.input} type="datetime-local" value={toDateTimeLocal(campaign.startsAt)} onChange={(event) => setCampaign({ startsAt: fromDateTimeLocal(event.target.value) })} /></label>
+                  <label className={styles.field}>Ends at (optional)<input className={styles.input} type="datetime-local" min={toDateTimeLocal(campaign.startsAt)} value={toDateTimeLocal(campaign.endsAt)} onChange={(event) => setCampaign({ endsAt: fromDateTimeLocal(event.target.value) })} /></label>
+                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Times use your browser’s timezone. An active campaign is visible only inside this window.</p>
                   <label className={`${styles.field} ${styles.fieldFull}`}>Headline<input className={styles.input} value={campaign.headline} onChange={(event) => setCampaign({ headline: event.target.value })} /></label>
                   <label className={styles.field}>Button label<input className={styles.input} value={campaign.buttonLabel} onChange={(event) => setCampaign({ buttonLabel: event.target.value })} /></label>
                 </div>

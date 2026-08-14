@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { chooseWeightedPrize, isCampaignActive, spinInputSchema } from '../../backend/domain';
-import { ApiError, clientAddress, json, jsonError, parseJson, requireWixRequest } from '../../backend/http';
+import { ApiError, json, jsonError, parseJson, requireWixRequest } from '../../backend/http';
 import { enforceRateLimit } from '../../backend/rate-limit';
 import { countVisitorSpins, findSpinByIdempotencyKey, getPublicCampaign, recordSpin } from '../../backend/repository';
 
@@ -19,9 +19,9 @@ function publicSpin(spin: { prizeId: string; outcomeLabel: string; couponCode: s
 export const POST: APIRoute = async (context) => {
   const requestId = crypto.randomUUID();
   try {
-    await requireWixRequest();
+    const token = await requireWixRequest();
     const input = await parseJson(context, spinInputSchema);
-    const visitorHash = await fingerprint(`${clientAddress(context)}:${context.request.headers.get('user-agent') ?? ''}`);
+    const visitorHash = await fingerprint(`${token.siteId}:${token.subjectType}:${token.subjectId}`);
     enforceRateLimit(`${visitorHash}:${input.campaignId}`);
 
     const replay = await findSpinByIdempotencyKey(input.idempotencyKey);
