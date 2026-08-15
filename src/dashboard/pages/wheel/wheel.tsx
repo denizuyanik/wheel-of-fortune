@@ -15,6 +15,7 @@ const fallback: DashboardPayload = {
   campaign: {
     name: 'Welcome wheel', status: 'DRAFT', headline: 'Spin the wheel', buttonLabel: 'Spin now',
     primaryColor: '#6d5dfc', backgroundColor: '#f4f1ff', dailySpinLimit: 1, startsAt: null, endsAt: null,
+    centerText: 'GOOD LUCK', centerColor: '#171824', centerTextColor: '#FFFFFF', centerImageUrl: '',
     backgroundMediaType: 'NONE', backgroundMediaUrl: '', wixFormId: '', privacyPolicyUrl: '',
     prizes: [
       { label: '10% off', couponCode: 'WELCOME10', color: '#6d5dfc', weight: 30, position: 0, enabled: true },

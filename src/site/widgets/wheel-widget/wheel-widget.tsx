@@ -32,6 +32,36 @@ const blankParticipant = (): Participant => ({
   firstName: '', lastName: '', phone: '', email: '', contactConsent: false, marketingConsent: false,
 });
 
+const splitWheelLabel = (label: string, maxCharactersPerLine: number) => {
+  const tokens = label.trim().split(/\s+/).filter(Boolean).flatMap((token) =>
+    token.length > maxCharactersPerLine
+      ? token.match(new RegExp(`.{1,${maxCharactersPerLine}}`, 'g')) ?? [token]
+      : [token],
+  );
+  const lines: string[] = [];
+
+  tokens.forEach((token) => {
+    const currentLine = lines.at(-1);
+    if (!currentLine || `${currentLine} ${token}`.length > maxCharactersPerLine) {
+      lines.push(token);
+      return;
+    }
+    lines[lines.length - 1] = `${currentLine} ${token}`;
+  });
+
+  return lines.length ? lines : [''];
+};
+
+const getWheelLabelLayout = (label: string, prizeCount: number) => {
+  const maxCharactersPerLine = prizeCount >= 10 ? 11 : prizeCount >= 7 ? 14 : 18;
+  const lines = splitWheelLabel(label, maxCharactersPerLine);
+  const longestLine = Math.max(...lines.map((line) => line.length), 1);
+  const maximumFontSize = prizeCount >= 10 ? 10 : prizeCount >= 7 ? 11 : 13;
+  const fontSize = Math.max(7, Math.min(maximumFontSize, 92 / (longestLine * 0.58), 38 / (lines.length * 1.08)));
+
+  return { fontSize, lines };
+};
+
 const previewCampaign: PublicCampaign = {
   id: 'preview', headline: 'Spin & reveal your reward', buttonLabel: 'Submit & spin', primaryColor: '#6d5dfc', backgroundColor: '#f4f1ff',
   backgroundMediaType: 'NONE', backgroundMediaUrl: '', privacyPolicyUrl: '',
@@ -126,7 +156,24 @@ const WheelWidget: FC<WheelWidgetProps> = ({ id, className, campaignId, directio
               const segment = 360 / campaign.prizes.length;
               const angle = index * segment + segment / 2;
               const flipped = angle > 180;
-              return <span key={prize.id} className={styles.label} style={{ transform: `translateY(-50%) rotate(${angle - 90}deg)` }}><span className={styles.labelText} style={{ transform: flipped ? 'rotate(180deg)' : undefined }}>{prize.label}</span></span>;
+              const labelLayout = getWheelLabelLayout(prize.label, campaign.prizes.length);
+
+              return (
+                <span
+                  key={prize.id}
+                  className={styles.label}
+                  style={{
+                    transform: `translateY(-50%) rotate(${angle - 90}deg)`,
+                    fontSize: `${labelLayout.fontSize}px`,
+                  }}
+                >
+                  <span className={styles.labelText} style={{ transform: flipped ? 'rotate(180deg)' : undefined }}>
+                    {labelLayout.lines.map((line, lineIndex) => (
+                      <span key={`${prize.id}-${lineIndex}`} className={styles.labelLine}>{line}</span>
+                    ))}
+                  </span>
+                </span>
+              );
             })}
           </div>
           <div className={styles.hub}>GOOD<br />LUCK</div>
