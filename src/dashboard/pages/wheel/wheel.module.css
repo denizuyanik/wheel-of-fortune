@@ -27,6 +27,7 @@
 .fieldFull { grid-column: 1 / -1; }
 .input, .select { width: 100%; border: 1px solid #cfd4da; border-radius: 9px; background: #fff; color: #171923; font: inherit; padding: 10px 11px; outline: none; }
 .input:focus, .select:focus { border-color: #116dff; box-shadow: 0 0 0 3px rgba(17,109,255,.12); }
+.scheduleHint { margin: -4px 0 0; color: #6b7280; font-size: 12px; line-height: 1.45; }
 .colors { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .colorInput { min-height: 42px; padding: 4px; }
 .prizeList { display: flex; flex-direction: column; gap: 10px; }

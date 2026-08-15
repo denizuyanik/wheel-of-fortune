@@ -28,6 +28,14 @@ Learn more about the [project structure](https://dev.wix.com/docs/wix-cli/guides
 
 Start a local development server with `npm run dev` and add new [extensions](https://dev.wix.com/docs/wix-cli/guides/extensions/about-extensions) with `npm run generate`. Learn more about the [development workflow](https://dev.wix.com/docs/wix-cli/guides/development/development-overview).
 
+During `wix dev`, the app uses an in-memory development store if the release-managed App Data collections are not installed yet. It resets when the development server restarts. Production builds never use this fallback.
+
+## Wix Forms setup
+
+The widget submits participant details to Wix Forms before a spin is recorded. Create a Wix Form named **Lead form & background** with required first name, last name, phone, and email fields. Add an optional **Short Answer** field named **Kazanılan hediye**. The dashboard discovers the form ID and its generated field targets automatically when the campaign is saved. Each successful spin writes the selected reward and, when present, its coupon code into the same Wix Forms submission. Contact consent is always required by the widget; marketing consent remains optional. Configure the business notification recipient in the Wix Form's **Notifications and automations** settings.
+
+To notify the business, add a Wix Automation triggered by a submission to this form and choose the business notification email as the action. The app stores only the returned submission ID with the spin; contact details remain in Wix Forms and the public reward result is copied to **Kazanılan hediye** for follow-up.
+
 ## Build and release
 
 Use `npm run build`, `npm run preview`, and `npm run release` to build, preview, and publish your app. Learn more about [building and deploying](https://dev.wix.com/docs/wix-cli/guides/development/build-and-deploy-a-project).

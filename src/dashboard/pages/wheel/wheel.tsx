@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { WixDesignSystemProvider } from '@wix/design-system';
+import { httpClient } from '@wix/essentials';
 import '@wix/design-system/styles.global.css';
 import type { CampaignInput } from '../../../backend/domain';
+import { appApiUrl, readApiResponse } from '../../../shared/api-client';
 import styles from './wheel.module.css';
 
 type DashboardPayload = {
@@ -13,6 +15,8 @@ const fallback: DashboardPayload = {
   campaign: {
     name: 'Welcome wheel', status: 'DRAFT', headline: 'Spin the wheel', buttonLabel: 'Spin now',
     primaryColor: '#6d5dfc', backgroundColor: '#f4f1ff', dailySpinLimit: 1, startsAt: null, endsAt: null,
+    centerText: 'GOOD LUCK', centerColor: '#171824', centerTextColor: '#FFFFFF', centerImageUrl: '',
+    backgroundMediaType: 'NONE', backgroundMediaUrl: '', wixFormId: '', privacyPolicyUrl: '',
     prizes: [
       { label: '10% off', couponCode: 'WELCOME10', color: '#6d5dfc', weight: 30, position: 0, enabled: true },
       { label: 'Free shipping', couponCode: 'SHIPFREE', color: '#ffb703', weight: 20, position: 1, enabled: true },
@@ -26,6 +30,18 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Something went wrong';
 }
 
+function toDateTimeLocal(value: string | null | undefined): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+function fromDateTimeLocal(value: string): string | null {
+  return value ? new Date(value).toISOString() : null;
+}
+
 export default function WheelDashboard() {
   const [data, setData] = useState<DashboardPayload>(fallback);
   const [loading, setLoading] = useState(true);
@@ -34,9 +50,9 @@ export default function WheelDashboard() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/dashboard', { credentials: 'include' })
+    httpClient.fetchWithAuth(appApiUrl('/api/dashboard'))
       .then(async (response) => {
-        const body = await response.json();
+        const body = await readApiResponse<{ data: DashboardPayload; error?: { message?: string } }>(response);
         if (!response.ok) throw new Error(body.error?.message ?? 'Could not load campaign');
         if (!cancelled) setData(body.data);
       })
@@ -60,13 +76,13 @@ export default function WheelDashboard() {
     setSaving(true);
     setNotice(null);
     try {
-      const response = await fetch('/api/dashboard', {
-        method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(campaign),
+      const response = await httpClient.fetchWithAuth(appApiUrl('/api/dashboard'), {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(campaign),
       });
-      const body = await response.json();
+      const body = await readApiResponse<{ data: { id: string; wixFormId: string; formName: string }; error?: { message?: string } }>(response);
       if (!response.ok) throw new Error(body.error?.message ?? 'Could not save campaign');
-      setCampaign({ id: body.data.id });
-      setNotice({ kind: 'success', text: 'Campaign saved.' });
+      setCampaign({ id: body.data.id, wixFormId: body.data.wixFormId });
+      setNotice({ kind: 'success', text: `Campaign saved. Wix form connected: ${body.data.formName}.` });
     } catch (error) {
       setNotice({ kind: 'error', text: errorMessage(error) });
     } finally {
@@ -98,12 +114,29 @@ export default function WheelDashboard() {
                   <label className={`${styles.field} ${styles.fieldFull}`}>Internal name<input className={styles.input} value={campaign.name} onChange={(event) => setCampaign({ name: event.target.value })} /></label>
                   <label className={styles.field}>Status<select className={styles.select} value={campaign.status} onChange={(event) => setCampaign({ status: event.target.value as CampaignInput['status'] })}><option value="DRAFT">Draft</option><option value="ACTIVE">Active</option><option value="PAUSED">Paused</option></select></label>
                   <label className={styles.field}>Daily spins per visitor<input className={styles.input} type="number" min="1" max="20" value={campaign.dailySpinLimit} onChange={(event) => setCampaign({ dailySpinLimit: Number(event.target.value) })} /></label>
+                  <label className={styles.field}>Starts at (optional)<input className={styles.input} type="datetime-local" value={toDateTimeLocal(campaign.startsAt)} onChange={(event) => setCampaign({ startsAt: fromDateTimeLocal(event.target.value) })} /></label>
+                  <label className={styles.field}>Ends at (optional)<input className={styles.input} type="datetime-local" min={toDateTimeLocal(campaign.startsAt)} value={toDateTimeLocal(campaign.endsAt)} onChange={(event) => setCampaign({ endsAt: fromDateTimeLocal(event.target.value) })} /></label>
+                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Times use your browser’s timezone. An active campaign is visible only inside this window.</p>
                   <label className={`${styles.field} ${styles.fieldFull}`}>Headline<input className={styles.input} value={campaign.headline} onChange={(event) => setCampaign({ headline: event.target.value })} /></label>
                   <label className={styles.field}>Button label<input className={styles.input} value={campaign.buttonLabel} onChange={(event) => setCampaign({ buttonLabel: event.target.value })} /></label>
                 </div>
                 <div className={styles.colors} style={{ marginTop: 16 }}>
                   <label className={styles.field}>Primary color<input className={`${styles.input} ${styles.colorInput}`} type="color" value={campaign.primaryColor} onChange={(event) => setCampaign({ primaryColor: event.target.value })} /></label>
                   <label className={styles.field}>Background color<input className={`${styles.input} ${styles.colorInput}`} type="color" value={campaign.backgroundColor} onChange={(event) => setCampaign({ backgroundColor: event.target.value })} /></label>
+                </div>
+              </section>
+              <section className={styles.card}>
+                <div className={styles.cardHeader}><h2 className={styles.cardTitle}>Lead form &amp; background</h2><span className={styles.badge}>Wix Forms</span></div>
+                <div className={styles.grid}>
+                  <div className={`${styles.field} ${styles.fieldFull}`}>
+                    <span>Wix form connection</span>
+                    <div className={styles.input} aria-live="polite">{campaign.wixFormId ? 'Connected automatically' : 'Will connect automatically when you save'}</div>
+                  </div>
+                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Create a Wix Form named <strong>Lead form &amp; background</strong> with required first name, last name, phone and email fields, plus an optional Short Answer field named <strong>Kazanılan hediye</strong>. The app finds its ID and field targets automatically and writes the selected reward and coupon into that field. Configure the business email under the form’s Notifications and automations settings.</p>
+                  <label className={`${styles.field} ${styles.fieldFull}`}>Privacy policy URL (optional)<input className={styles.input} type="url" placeholder="https://example.com/privacy" value={campaign.privacyPolicyUrl ?? ''} onChange={(event) => setCampaign({ privacyPolicyUrl: event.target.value })} /></label>
+                  <label className={styles.field}>Background media<select className={styles.select} value={campaign.backgroundMediaType ?? 'NONE'} onChange={(event) => setCampaign({ backgroundMediaType: event.target.value as CampaignInput['backgroundMediaType'] })}><option value="NONE">None</option><option value="IMAGE">Image</option><option value="VIDEO">Video</option></select></label>
+                  <label className={styles.field}>Media URL<input className={styles.input} type="url" disabled={(campaign.backgroundMediaType ?? 'NONE') === 'NONE'} placeholder="https://..." value={campaign.backgroundMediaUrl ?? ''} onChange={(event) => setCampaign({ backgroundMediaUrl: event.target.value })} /></label>
+                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Use a public HTTPS image or an autoplay-safe video. Videos play muted and loop behind the wheel.</p>
                 </div>
               </section>
               <section className={styles.card}>

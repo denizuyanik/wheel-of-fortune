@@ -2,6 +2,12 @@ import { z } from 'zod';
 
 const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i, 'Use a six-digit hex color');
 const optionalDateTime = z.iso.datetime().nullable().optional();
+const optionalHttpsUrl = z
+  .string()
+  .trim()
+  .max(2_048)
+  .refine((value) => !value || /^https:\/\//i.test(value), 'Use an HTTPS URL');
+const optionalFormId = z.union([z.literal(''), z.uuid('Use a valid Wix Form ID')]);
 
 export const prizeInputSchema = z.object({
   id: z.string().min(1).max(80).optional(),
@@ -22,6 +28,14 @@ export const campaignInputSchema = z
     buttonLabel: z.string().trim().min(1).max(32),
     primaryColor: hexColor,
     backgroundColor: hexColor,
+    centerText: z.string().trim().max(50).default('GOOD LUCK'),
+    centerColor: hexColor.default('#171923'),
+    centerTextColor: hexColor.default('#ffffff'),
+    centerImageUrl: optionalHttpsUrl.default(''),
+    backgroundMediaType: z.enum(['NONE', 'IMAGE', 'VIDEO']).default('NONE'),
+    backgroundMediaUrl: optionalHttpsUrl.default(''),
+    wixFormId: optionalFormId.default(''),
+    privacyPolicyUrl: optionalHttpsUrl.default(''),
     dailySpinLimit: z.number().int().min(1).max(20),
     startsAt: optionalDateTime,
     endsAt: optionalDateTime,
@@ -38,15 +52,29 @@ export const campaignInputSchema = z
     if (campaign.startsAt && campaign.endsAt && campaign.startsAt >= campaign.endsAt) {
       context.addIssue({ code: 'custom', path: ['endsAt'], message: 'End time must follow start time' });
     }
+    if (campaign.backgroundMediaType !== 'NONE' && !campaign.backgroundMediaUrl) {
+      context.addIssue({ code: 'custom', path: ['backgroundMediaUrl'], message: 'Add a background media URL' });
+    }
   });
+
+export const participantInputSchema = z.object({
+  firstName: z.string().trim().min(1).max(80),
+  lastName: z.string().trim().min(1).max(80),
+  phone: z.string().trim().min(7).max(32).regex(/^[+()\-\s\d]+$/, 'Enter a valid phone number'),
+  email: z.email().max(254),
+  contactConsent: z.literal(true),
+  marketingConsent: z.boolean().default(false),
+});
 
 export const spinInputSchema = z.object({
   campaignId: z.string().min(1).max(80),
   idempotencyKey: z.string().uuid(),
+  participant: participantInputSchema,
 });
 
 export type CampaignInput = z.infer<typeof campaignInputSchema>;
 export type PrizeInput = z.infer<typeof prizeInputSchema>;
+export type ParticipantInput = z.infer<typeof participantInputSchema>;
 
 export type CampaignRecord = Omit<CampaignInput, 'id' | 'prizes'> & { _id: string };
 export type PrizeRecord = PrizeInput & { _id: string; campaignId: string };
@@ -58,6 +86,7 @@ export type SpinRecord = {
   visitorHash: string;
   outcomeLabel: string;
   couponCode: string;
+  formSubmissionId?: string;
   spunAt: Date;
 };
 
@@ -68,6 +97,14 @@ export const defaultCampaign: CampaignInput = {
   buttonLabel: 'Spin now',
   primaryColor: '#6d5dfc',
   backgroundColor: '#f4f1ff',
+  centerText: 'GOOD LUCK',
+  centerColor: '#171923',
+  centerTextColor: '#ffffff',
+  centerImageUrl: '',
+  backgroundMediaType: 'NONE',
+  backgroundMediaUrl: '',
+  wixFormId: '',
+  privacyPolicyUrl: '',
   dailySpinLimit: 1,
   startsAt: null,
   endsAt: null,

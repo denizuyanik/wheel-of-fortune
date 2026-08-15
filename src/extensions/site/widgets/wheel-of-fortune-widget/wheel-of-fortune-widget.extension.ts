@@ -12,6 +12,8 @@ export default extensions.customElement({
     defaultHeight: 560,
   },
   installation: {
+    // Adding the widget completes the Wix app installation and avoids leaving
+    // site owners with an unrelated generic Custom Element placeholder.
     autoAdd: true,
   },
   presets: [

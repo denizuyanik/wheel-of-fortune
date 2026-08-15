@@ -74,19 +74,14 @@ export function assertSameOrigin(context: APIContext): void {
   if (origin !== context.url.origin) throw new ApiError(403, 'ORIGIN_REJECTED', 'Request origin is not allowed');
 }
 
-export async function requireWixRequest(): Promise<void> {
+export async function requireWixRequest() {
   try {
-    await auth.getTokenInfo();
+    const token = await auth.getTokenInfo();
+    if (!token.active || !token.subjectId || !['VISITOR', 'MEMBER', 'USER'].includes(token.subjectType)) {
+      throw new Error('The Wix token does not represent a site visitor');
+    }
+    return token;
   } catch {
     throw new ApiError(401, 'WIX_AUTH_REQUIRED', 'A valid Wix visitor token is required');
   }
-}
-
-export function clientAddress(context: APIContext): string {
-  return (
-    context.request.headers.get('cf-connecting-ip') ??
-    context.request.headers.get('x-wix-client-ip') ??
-    context.request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'unknown'
-  );
 }

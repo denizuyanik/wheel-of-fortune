@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { campaignInputSchema, defaultCampaign } from '../../backend/domain';
-import { assertSameOrigin, json, jsonError, parseJson } from '../../backend/http';
+import { json, jsonError, parseJson } from '../../backend/http';
 import { getDashboardData, saveDashboardCampaign } from '../../backend/repository';
 
 export const prerender = false;
@@ -18,7 +18,6 @@ export const GET: APIRoute = async () => {
 export const PUT: APIRoute = async (context) => {
   const requestId = crypto.randomUUID();
   try {
-    assertSameOrigin(context);
     const input = await parseJson(context, campaignInputSchema);
     const result = await saveDashboardCampaign(input);
     return json(result, 200, requestId);
