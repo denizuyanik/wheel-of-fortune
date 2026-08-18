@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎡 Wheel of Fortune — Local Test Sandbox & Interactive Studio</title>
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #09090b 100%);
+      --accent: #f59e0b;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-gradient);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Control Bar ─── */
+    .control-header {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-brand h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid #f59e0b;
+      color: #fbbf24;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    .controls-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .ctrl-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    select, button, input {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #f8fafc;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    select:focus, button:hover {
+      border-color: #f59e0b;
+    }
+    .btn-reset {
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      font-weight: 700;
+    }
+    .btn-reset:hover {
+      background: #b91c1c;
+    }
+
+    /* ─── Main Stage ─── */
+    .main-stage {
+      flex: 1;
+      padding: 32px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .widget-wrapper {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* ─── Event Monitor & Log Panel ─── */
+    .log-panel {
+      width: 100%;
+      max-width: 680px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fbbf24;
+    }
+    .log-content {
+      background: #020617;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #a7f3d0;
+      max-height: 140px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Control Bar -->
+  <header class="control-header">
+    <div class="header-brand">
+      <h1>🎡 Wheel of Fortune</h1>
+      <span class="badge">Local Testbench</span>
+    </div>
+
+    <div class="controls-group">
+      <!-- Language Selector -->
+      <div class="ctrl-item">
+        <label for="sel-lang">🌐 Dil:</label>
+        <select id="sel-lang">
+          <option value="en">English 🇺🇸</option>
+          <option value="tr" selected>Türkçe 🇹🇷</option>
+          <option value="de">Deutsch 🇩🇪</option>
+          <option value="fr">Français 🇫🇷</option>
+          <option value="es">Español 🇪🇸</option>
+          <option value="he">עברית 🇮🇱</option>
+          <option value="zh">中文 🇨🇳</option>
+          <option value="ja">日本語 🇯🇵</option>
+          <option value="ko">한국어 🇰🇷</option>
+          <option value="hi">हिन्दी 🇮🇳</option>
+          <option value="pt">Português 🇧🇷</option>
+          <option value="ru">Русский 🇷🇺</option>
+          <option value="uk">Українська 🇺🇦</option>
+          <option value="el">Ελληνικά 🇬🇷</option>
+          <option value="it">Italiano 🇮🇹</option>
+          <option value="ar">العربية 🇸🇦</option>
+        </select>
+      </div>
+
+      <!-- Theme Selector -->
+      <div class="ctrl-item">
+        <label for="sel-theme">🎨 Tema:</label>
+        <select id="sel-theme">
+          <option value="gold" selected>👑 Gold Luxury</option>
+          <option value="dark">🌌 Dark Nebula</option>
+          <option value="neon">⚡ Cyberpunk Neon</option>
+          <option value="light">✨ Clean Light</option>
+        </select>
+      </div>
+
+      <!-- Segments Preset -->
+      <div class="ctrl-item">
+        <label for="sel-segments">🎡 Dilim Sayısı:</label>
+        <select id="sel-segments">
+          <option value="6" selected>6 Dilim</option>
+          <option value="8">8 Dilim</option>
+          <option value="10">10 Dilim</option>
+          <option value="12">12 Dilim</option>
+        </select>
+      </div>
+
+      <!-- Daily Limit -->
+      <div class="ctrl-item">
+        <label for="sel-limit">⚙️ Limit:</label>
+        <select id="sel-limit">
+          <option value="1">1 Çevirme/Gün</option>
+          <option value="3">3 Çevirme/Gün</option>
+          <option value="99" selected>Sınırsız (Test)</option>
+        </select>
+      </div>
+
+      <!-- Actions -->
+      <button type="button" class="btn-reset" id="btn-reset" title="LocalStorage sıfırla">🔄 Limiti Sıfırla</button>
+    </div>
+  </header>
+
+  <!-- Main Sandbox Stage -->
+  <main class="main-stage">
+    <div class="widget-wrapper" id="widget-host">
+      <!-- Native Custom Element -->
+      <wheel-of-fortune-widget
+        id="test-widget"
+        lang="tr"
+        color-theme="gold"
+        daily-limit="99"
+      ></wheel-of-fortune-widget>
+    </div>
+
+    <!-- Live Event & CRM Monitor -->
+    <div class="log-panel">
+      <div class="log-header">
+        <span>📡 Canlı Olay & CRM Günlüğü (Event Monitor)</span>
+        <button type="button" id="btn-clear-log" style="font-size:11px; padding:2px 8px;">Temizle</button>
+      </div>
+      <div class="log-content" id="log-console">[Sistem] Yerel test ortamı hazır. Çarkı çevirerek test başlatabilirsiniz...</div>
+    </div>
+  </main>
+
+  <!-- Local Script & Custom Element Integration -->
+  <script type="module">
+    const widget = document.getElementById("test-widget");
+    const selLang = document.getElementById("sel-lang");
+    const selTheme = document.getElementById("sel-theme");
+    const selSegments = document.getElementById("sel-segments");
+    const selLimit = document.getElementById("sel-limit");
+    const btnReset = document.getElementById("btn-reset");
+    const logConsole = document.getElementById("log-console");
+    const btnClearLog = document.getElementById("btn-clear-log");
+
+    function log(msg) {
+      const time = new Date().toLocaleTimeString();
+      logConsole.textContent = `[${time}] ${msg}\n` + logConsole.textContent;
+    }
+
+    // Dynamic Prize Pools for 6, 8, 10, 12 segments
+    const POOLS = {
+      "6": [
+        { id: "p1", label: "%10 İNDİRİM", code: "CARK10", color: "#6366F1", probability: 25, isWinner: true, isActive: true },
+        { id: "p2", label: "ÜCRETSİZ KARGO", code: "BEDAVAKARGO", color: "#EC4899", probability: 20, isWinner: true, isActive: true },
+        { id: "p3", label: "TEKRAR DENE", code: "", color: "#64748B", probability: 15, isWinner: false, isActive: true },
+        { id: "p4", label: "%20 İNDİRİM", code: "SANSLI20", color: "#F59E0B", probability: 15, isWinner: true, isActive: true },
+        { id: "p5", label: "SÜRPRİZ HEDİYE", code: "GIFT50", color: "#10B981", probability: 10, isWinner: true, isActive: true },
+        { id: "p6", label: "%5 İNDİRİM", code: "HOSGELDIN5", color: "#8B5CF6", probability: 15, isWinner: true, isActive: true },
+      ],
+      "8": [
+        { id: "p1", label: "%10 İNDİRİM", code: "CARK10", color: "#4f46e5", probability: 20, isWinner: true, isActive: true },
+        { id: "p2", label: "ÜCRETSİZ KARGO", code: "KARGO", color: "#ec4899", probability: 15, isWinner: true, isActive: true },
+        { id: "p3", label: "PAS", code: "", color: "#64748b", probability: 10, isWinner: false, isActive: true },
+        { id: "p4", label: "%25 İNDİRİM", code: "SUPER25", color: "#f59e0b", probability: 10, isWinner: true, isActive: true },
+        { id: "p5", label: "HEDİYE ÇEKİ", code: "CEK100", color: "#10b981", probability: 10, isWinner: true, isActive: true },
+        { id: "p6", label: "%15 İNDİRİM", code: "INDIRIM15", color: "#06b6d4", probability: 15, isWinner: true, isActive: true },
+        { id: "p7", label: "TEKRAR DENE", code: "", color: "#475569", probability: 10, isWinner: false, isActive: true },
+        { id: "p8", label: "%5 İNDİRİM", code: "MINI5", color: "#8b5cf6", probability: 10, isWinner: true, isActive: true },
+      ],
+      "10": [
+        { id: "p1", label: "%10 OFF", code: "OFF10", color: "#4f46e5", probability: 15, isWinner: true, isActive: true },
+        { id: "p2", label: "FREE SHIP", code: "SHIPFREE", color: "#ec4899", probability: 10, isWinner: true, isActive: true },
+        { id: "p3", label: "TRY AGAIN", code: "", color: "#64748b", probability: 10, isWinner: false, isActive: true },
+        { id: "p4", label: "%20 OFF", code: "OFF20", color: "#f59e0b", probability: 10, isWinner: true, isActive: true },
+        { id: "p5", label: "MYSTERY", code: "MYSTERY", color: "#10b981", probability: 10, isWinner: true, isActive: true },
+        { id: "p6", label: "%5 OFF", code: "OFF5", color: "#06b6d4", probability: 10, isWinner: true, isActive: true },
+        { id: "p7", label: "%30 VIP", code: "VIP30", color: "#d97706", probability: 5, isWinner: true, isActive: true },
+        { id: "p8", label: "BONUS", code: "BONUS", color: "#7c3aed", probability: 10, isWinner: true, isActive: true },
+        { id: "p9", label: "ZERO", code: "", color: "#334155", probability: 10, isWinner: false, isActive: true },
+        { id: "p10", label: "%15 OFF", code: "OFF15", color: "#db2777", probability: 10, isWinner: true, isActive: true },
+      ],
+      "12": [
+        { id: "p1", label: "10% OFF", code: "C10", color: "#4f46e5", probability: 10, isWinner: true, isActive: true },
+        { id: "p2", label: "FREE SHIP", code: "CFS", color: "#ec4899", probability: 10, isWinner: true, isActive: true },
+        { id: "p3", label: "TRY AGAIN", code: "", color: "#64748b", probability: 10, isWinner: false, isActive: true },
+        { id: "p4", label: "20% OFF", code: "C20", color: "#f59e0b", probability: 10, isWinner: true, isActive: true },
+        { id: "p5", label: "GIFT", code: "CGIFT", color: "#10b981", probability: 8, isWinner: true, isActive: true },
+        { id: "p6", label: "5% OFF", code: "C5", color: "#06b6d4", probability: 10, isWinner: true, isActive: true },
+        { id: "p7", label: "30% OFF", code: "C30", color: "#f97316", probability: 5, isWinner: true, isActive: true },
+        { id: "p8", label: "BONUS", code: "CBONUS", color: "#8b5cf6", probability: 8, isWinner: true, isActive: true },
+        { id: "p9", label: "NO LUCK", code: "", color: "#475569", probability: 10, isWinner: false, isActive: true },
+        { id: "p10", label: "15% OFF", code: "C15", color: "#14b8a6", probability: 9, isWinner: true, isActive: true },
+        { id: "p11", label: "JACKPOT", code: "JACKPOT", color: "#eab308", probability: 2, isWinner: true, isActive: true },
+        { id: "p12", label: "25% OFF", code: "C25", color: "#d946ef", probability: 8, isWinner: true, isActive: true },
+      ]
+    };
+
+    function updateWidget() {
+      widget.setAttribute("lang", selLang.value);
+      widget.setAttribute("color-theme", selTheme.value);
+      widget.setAttribute("daily-limit", selLimit.value);
+      widget.setAttribute("reward-pool", JSON.stringify(POOLS[selSegments.value]));
+      log(`Ayar güncellendi: Dil=${selLang.value.toUpperCase()}, Tema=${selTheme.value}, Dilim=${selSegments.value}, Limit=${selLimit.value}`);
+    }
+
+    selLang.addEventListener("change", updateWidget);
+    selTheme.addEventListener("change", updateWidget);
+    selSegments.addEventListener("change", updateWidget);
+    selLimit.addEventListener("change", updateWidget);
+
+    btnReset.addEventListener("click", () => {
+      localStorage.removeItem("wof_usage");
+      log("🔄 LocalStorage 'wof_usage' temizlendi. Sayfa yenileniyor...");
+      location.reload();
+    });
+
+    btnClearLog.addEventListener("click", () => {
+      logConsole.textContent = "";
+    });
+
+    // Listen to custom DOM events fired by the widget
+    window.addEventListener("onSpinComplete", (e) => {
+      log(`🎡 [onSpinComplete] Sonuç: ${JSON.stringify(e.detail)}`);
+    });
+
+    window.addEventListener("onFormSubmit", (e) => {
+      log(`📝 [onFormSubmit] Lead Bilgisi Alındı: Ad=${e.detail.firstName} ${e.detail.lastName}, Email=${e.detail.email}, Kupon=${e.detail.code}`);
+    });
+
+    // Initial setup
+    updateWidget();
+  </script>
+
+  <!-- Load the built Custom Element bundle -->
+  <script type="module" src="/_wix_126f0f6e-custom-elements/wheel-of-fortune-widget-ZTk2sj0o.js"></script>
+</body>
+</html>
