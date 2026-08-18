@@ -1,169 +1,640 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-import { WixDesignSystemProvider } from '@wix/design-system';
-import { httpClient } from '@wix/essentials';
-import '@wix/design-system/styles.global.css';
-import type { CampaignInput } from '../../../backend/domain';
-import { appApiUrl, readApiResponse } from '../../../shared/api-client';
-import styles from './wheel.module.css';
+import React, { type FC, useState, useEffect, useMemo } from "react";
+import {
+  WixDesignSystemProvider,
+  Page,
+  Tabs,
+  Card,
+  Table,
+  Button,
+  Input,
+  FormField,
+  Dropdown,
+  ToggleSwitch,
+  Badge,
+  Notification,
+  Loader,
+  Divider,
+} from "@wix/design-system";
+import "@wix/design-system/styles.global.css";
+import {
+  fetchSettings,
+  persistSettings,
+  fetchLeads,
+  patchLeadStatus,
+  fetchMetrics,
+  type AppSettings,
+  type PrizeSegment,
+  type Lead,
+  DEFAULT_SETTINGS,
+} from "../../services/leads";
 
-type DashboardPayload = {
-  campaign: CampaignInput;
-  metrics: { totalSpins: number; wins: number; uniqueVisitors: number };
-};
+const TABS = [
+  { id: "overview", title: "📊 Overview & Stats" },
+  { id: "prizes", title: "🎡 Prize Segments" },
+  { id: "leads", title: "👥 Leads & Winners CRM" },
+  { id: "design", title: "🎨 Design & Theme" },
+  { id: "translations", title: "🌍 16 Languages & Texts" },
+];
 
-const fallback: DashboardPayload = {
-  campaign: {
-    name: 'Welcome wheel', status: 'DRAFT', headline: 'Spin the wheel', buttonLabel: 'Spin now',
-    primaryColor: '#6d5dfc', backgroundColor: '#f4f1ff', dailySpinLimit: 1, startsAt: null, endsAt: null,
-    centerText: 'GOOD LUCK', centerColor: '#171824', centerTextColor: '#FFFFFF', centerImageUrl: '',
-    backgroundMediaType: 'NONE', backgroundMediaUrl: '', wixFormId: '', privacyPolicyUrl: '',
-    prizes: [
-      { label: '10% off', couponCode: 'WELCOME10', color: '#6d5dfc', weight: 30, position: 0, enabled: true },
-      { label: 'Free shipping', couponCode: 'SHIPFREE', color: '#ffb703', weight: 20, position: 1, enabled: true },
-      { label: 'Try again', couponCode: '', color: '#ff7a59', weight: 50, position: 2, enabled: true },
-    ],
-  },
-  metrics: { totalSpins: 0, wins: 0, uniqueVisitors: 0 },
-};
+const LANGUAGES = [
+  { id: "en", value: "English 🇺🇸" },
+  { id: "tr", value: "Türkçe 🇹🇷" },
+  { id: "de", value: "Deutsch 🇩🇪" },
+  { id: "fr", value: "Français 🇫🇷" },
+  { id: "es", value: "Español 🇪🇸" },
+  { id: "he", value: "עברית 🇮🇱" },
+  { id: "zh", value: "中文 🇨🇳" },
+  { id: "ja", value: "日本語 🇯🇵" },
+  { id: "ko", value: "한국어 🇰🇷" },
+  { id: "hi", value: "हिन्दी 🇮🇳" },
+  { id: "pt", value: "Português 🇧🇷" },
+  { id: "ru", value: "Русский 🇷🇺" },
+  { id: "uk", value: "Українська 🇺🇦" },
+  { id: "el", value: "Ελληνικά 🇬🇷" },
+  { id: "it", value: "Italiano 🇮🇹" },
+  { id: "ar", value: "العربية 🇸🇦" },
+];
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Something went wrong';
-}
+const THEMES = [
+  { id: "gold", value: "👑 Royal Gold Luxury" },
+  { id: "dark", value: "🌌 Dark Nebula & Glow" },
+  { id: "neon", value: "⚡ Cyberpunk Emerald Neon" },
+  { id: "light", value: "✨ Clean Light Modern" },
+];
 
-function toDateTimeLocal(value: string | null | undefined): string {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return local.toISOString().slice(0, 16);
-}
+const STATUS_OPTIONS = [
+  { id: "all", value: "All Statuses" },
+  { id: "new", value: "New Lead" },
+  { id: "contacted", value: "Contacted" },
+  { id: "converted", value: "Converted / Sale" },
+  { id: "lost", value: "Lost / Expired" },
+];
 
-function fromDateTimeLocal(value: string): string | null {
-  return value ? new Date(value).toISOString() : null;
-}
-
-export default function WheelDashboard() {
-  const [data, setData] = useState<DashboardPayload>(fallback);
+const WheelDashboard: FC = () => {
+  const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [notice, setNotice] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
+  const [notice, setNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // App Settings State
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const [prizes, setPrizes] = useState<PrizeSegment[]>(DEFAULT_SETTINGS.rewardPool);
+
+  // Metrics State
+  const [metrics, setMetrics] = useState({
+    totalSpins: 0,
+    winnersCount: 0,
+    leadsCount: 0,
+    conversionRate: 0,
+  });
+
+  // Leads CRM State
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
+  const [leadStatusFilter, setLeadStatusFilter] = useState("all");
+  const [leadSearch, setLeadSearch] = useState("");
+
+  // Custom Texts
+  const [customTexts, setCustomTexts] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    let cancelled = false;
-    httpClient.fetchWithAuth(appApiUrl('/api/dashboard'))
-      .then(async (response) => {
-        const body = await readApiResponse<{ data: DashboardPayload; error?: { message?: string } }>(response);
-        if (!response.ok) throw new Error(body.error?.message ?? 'Could not load campaign');
-        if (!cancelled) setData(body.data);
-      })
-      .catch((error) => !cancelled && setNotice({ kind: 'error', text: errorMessage(error) }))
-      .finally(() => !cancelled && setLoading(false));
-    return () => { cancelled = true; };
+    loadAllData();
   }, []);
 
-  const campaign = data.campaign;
-  const setCampaign = (patch: Partial<CampaignInput>) => setData((current) => ({ ...current, campaign: { ...current.campaign, ...patch } }));
-  const updatePrize = (index: number, patch: Partial<CampaignInput['prizes'][number]>) => {
-    setCampaign({ prizes: campaign.prizes.map((prize, position) => position === index ? { ...prize, ...patch } : prize) });
-  };
-  const wheelBackground = useMemo(() => {
-    const enabled = campaign.prizes.filter((prize) => prize.enabled);
-    if (!enabled.length) return campaign.backgroundColor;
-    return `conic-gradient(${enabled.map((prize, index) => `${prize.color} ${index * 100 / enabled.length}% ${(index + 1) * 100 / enabled.length}%`).join(',')})`;
-  }, [campaign.prizes, campaign.backgroundColor]);
+  const loadAllData = async () => {
+    setLoading(true);
+    try {
+      const [fetchedSettings, fetchedMetrics, fetchedLeads] = await Promise.all([
+        fetchSettings().catch(() => DEFAULT_SETTINGS),
+        fetchMetrics().catch(() => ({ totalSpins: 0, winnersCount: 0, leadsCount: 0, conversionRate: 0 })),
+        fetchLeads({ page: 1, pageSize: 50 }).catch(() => ({ items: [], total: 0, page: 1, pageSize: 50 })),
+      ]);
 
-  const save = async () => {
+      if (fetchedSettings) {
+        setSettings(fetchedSettings);
+        if (fetchedSettings.rewardPool && Array.isArray(fetchedSettings.rewardPool)) {
+          setPrizes(fetchedSettings.rewardPool);
+        }
+        if (fetchedSettings.customTextsJSON) {
+          try {
+            setCustomTexts(JSON.parse(fetchedSettings.customTextsJSON));
+          } catch {}
+        }
+      }
+      if (fetchedMetrics) setMetrics(fetchedMetrics);
+      if (fetchedLeads && fetchedLeads.items) setLeads(fetchedLeads.items);
+    } catch (err) {
+      console.error("Failed to load dashboard data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
     setSaving(true);
     setNotice(null);
     try {
-      const response = await httpClient.fetchWithAuth(appApiUrl('/api/dashboard'), {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(campaign),
-      });
-      const body = await readApiResponse<{ data: { id: string; wixFormId: string; formName: string }; error?: { message?: string } }>(response);
-      if (!response.ok) throw new Error(body.error?.message ?? 'Could not save campaign');
-      setCampaign({ id: body.data.id, wixFormId: body.data.wixFormId });
-      setNotice({ kind: 'success', text: `Campaign saved. Wix form connected: ${body.data.formName}.` });
-    } catch (error) {
-      setNotice({ kind: 'error', text: errorMessage(error) });
+      const updated: Partial<AppSettings> = {
+        ...settings,
+        rewardPool: prizes,
+        customTextsJSON: JSON.stringify(customTexts),
+      };
+      const res = await persistSettings(updated).then(r => ({ success: r }));
+      if (res.success) {
+        setNotice({ type: "success", text: "Settings and prize pool saved successfully!" });
+      } else {
+        setNotice({ type: "error", text: "Failed to save settings." });
+      }
+    } catch (err) {
+      setNotice({ type: "error", text: String(err) });
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div className={styles.loading}>Loading wheel settings…</div>;
+  const handlePrizeChange = (index: number, patch: Partial<PrizeSegment>) => {
+    setPrizes((curr) => curr.map((p, idx) => (idx === index ? { ...p, ...patch } : p)));
+  };
+
+  const handleAddPrize = () => {
+    if (prizes.length >= 12) return;
+    const newPrize: PrizeSegment = {
+      id: `prize_${Date.now()}`,
+      label: "NEW PRIZE",
+      code: "SAVE" + Math.floor(Math.random() * 90 + 10),
+      color: "#f59e0b",
+      probability: 15,
+      isWinner: true,
+      isActive: true,
+    };
+    setPrizes([...prizes, newPrize]);
+  };
+
+  const handleRemovePrize = (index: number) => {
+    if (prizes.length <= 2) {
+      alert("Wheel must contain at least 2 prize segments.");
+      return;
+    }
+    setPrizes(prizes.filter((_, idx) => idx !== index));
+  };
+
+  const handleUpdateStatus = async (leadId: string, newStatus: "new" | "contacted" | "converted" | "lost") => {
+    try {
+      await patchLeadStatus(leadId, newStatus);
+      setLeads((curr) => curr.map((item) => (item._id === leadId ? { ...item, status: newStatus } : item)));
+    } catch (err) {
+      console.error("Status update error:", err);
+    }
+  };
+
+  // CSV Export for Leads
+  const exportLeadsToCSV = () => {
+    if (leads.length === 0) {
+      alert("No leads to export.");
+      return;
+    }
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Reward Code", "Prize", "Spun Date", "Status", "Marketing Consent"];
+    const rows = leads.map((l) => [
+      `"${l.firstName || ""}"`,
+      `"${l.lastName || ""}"`,
+      `"${l.email || ""}"`,
+      `"${l.phone || ""}"`,
+      `"${l.rewardCode || ""}"`,
+      `"${l.prizeLabel || ""}"`,
+      `"${l.spunAt ? new Date(l.spunAt as string).toLocaleString() : ""}"`,
+      `"${l.status || "new"}"`,
+      `"${l.marketingConsent ? "Yes" : "No"}"`,
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `wheel-of-fortune-leads-${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const filteredLeads = useMemo(() => {
+    return leads.filter((l) => {
+      if (leadStatusFilter !== "all" && l.status !== leadStatusFilter) return false;
+      if (leadSearch) {
+        const query = leadSearch.toLowerCase();
+        const email = String(l.email || "").toLowerCase();
+        const fname = String(l.firstName || "").toLowerCase();
+        const code = String(l.rewardCode || "").toLowerCase();
+        return email.includes(query) || fname.includes(query) || code.includes(query);
+      }
+      return true;
+    });
+  }, [leads, leadStatusFilter, leadSearch]);
+
+  if (loading) {
+    return (
+      <WixDesignSystemProvider>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+          <Loader size="large" text="Loading Wheel of Fortune Dashboard..." />
+        </div>
+      </WixDesignSystemProvider>
+    );
+  }
 
   return (
     <WixDesignSystemProvider>
-      <main className={styles.shell}>
-        <div className={styles.content}>
-          <header className={styles.header}>
-            <div><p className={styles.eyebrow}>Engagement</p><h1 className={styles.title}>Wheel of Fortune</h1><p className={styles.subtitle}>Configure the visitor experience and monitor results.</p></div>
-            <button className={styles.save} disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save campaign'}</button>
-          </header>
-          {notice && <div role="status" className={`${styles.notice} ${notice.kind === 'success' ? styles.success : ''}`}>{notice.text}</div>}
-          <section className={styles.metrics} aria-label="Campaign metrics">
-            {[['Total spins', data.metrics.totalSpins], ['Wins', data.metrics.wins], ['Unique visitors', data.metrics.uniqueVisitors]].map(([label, value]) => (
-              <div className={styles.metric} key={label}><span className={styles.metricLabel}>{label}</span><strong className={styles.metricValue}>{Number(value).toLocaleString()}</strong></div>
-            ))}
-          </section>
-          <div className={styles.layout}>
-            <div>
-              <section className={styles.card}>
-                <div className={styles.cardHeader}><h2 className={styles.cardTitle}>Campaign</h2><span className={styles.badge}>{campaign.status}</span></div>
-                <div className={styles.grid}>
-                  <label className={`${styles.field} ${styles.fieldFull}`}>Internal name<input className={styles.input} value={campaign.name} onChange={(event) => setCampaign({ name: event.target.value })} /></label>
-                  <label className={styles.field}>Status<select className={styles.select} value={campaign.status} onChange={(event) => setCampaign({ status: event.target.value as CampaignInput['status'] })}><option value="DRAFT">Draft</option><option value="ACTIVE">Active</option><option value="PAUSED">Paused</option></select></label>
-                  <label className={styles.field}>Daily spins per visitor<input className={styles.input} type="number" min="1" max="20" value={campaign.dailySpinLimit} onChange={(event) => setCampaign({ dailySpinLimit: Number(event.target.value) })} /></label>
-                  <label className={styles.field}>Starts at (optional)<input className={styles.input} type="datetime-local" value={toDateTimeLocal(campaign.startsAt)} onChange={(event) => setCampaign({ startsAt: fromDateTimeLocal(event.target.value) })} /></label>
-                  <label className={styles.field}>Ends at (optional)<input className={styles.input} type="datetime-local" min={toDateTimeLocal(campaign.startsAt)} value={toDateTimeLocal(campaign.endsAt)} onChange={(event) => setCampaign({ endsAt: fromDateTimeLocal(event.target.value) })} /></label>
-                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Times use your browser’s timezone. An active campaign is visible only inside this window.</p>
-                  <label className={`${styles.field} ${styles.fieldFull}`}>Headline<input className={styles.input} value={campaign.headline} onChange={(event) => setCampaign({ headline: event.target.value })} /></label>
-                  <label className={styles.field}>Button label<input className={styles.input} value={campaign.buttonLabel} onChange={(event) => setCampaign({ buttonLabel: event.target.value })} /></label>
-                </div>
-                <div className={styles.colors} style={{ marginTop: 16 }}>
-                  <label className={styles.field}>Primary color<input className={`${styles.input} ${styles.colorInput}`} type="color" value={campaign.primaryColor} onChange={(event) => setCampaign({ primaryColor: event.target.value })} /></label>
-                  <label className={styles.field}>Background color<input className={`${styles.input} ${styles.colorInput}`} type="color" value={campaign.backgroundColor} onChange={(event) => setCampaign({ backgroundColor: event.target.value })} /></label>
-                </div>
-              </section>
-              <section className={styles.card}>
-                <div className={styles.cardHeader}><h2 className={styles.cardTitle}>Lead form &amp; background</h2><span className={styles.badge}>Wix Forms</span></div>
-                <div className={styles.grid}>
-                  <div className={`${styles.field} ${styles.fieldFull}`}>
-                    <span>Wix form connection</span>
-                    <div className={styles.input} aria-live="polite">{campaign.wixFormId ? 'Connected automatically' : 'Will connect automatically when you save'}</div>
-                  </div>
-                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Create a Wix Form named <strong>Lead form &amp; background</strong> with required first name, last name, phone and email fields, plus an optional Short Answer field named <strong>Kazanılan hediye</strong>. The app finds its ID and field targets automatically and writes the selected reward and coupon into that field. Configure the business email under the form’s Notifications and automations settings.</p>
-                  <label className={`${styles.field} ${styles.fieldFull}`}>Privacy policy URL (optional)<input className={styles.input} type="url" placeholder="https://example.com/privacy" value={campaign.privacyPolicyUrl ?? ''} onChange={(event) => setCampaign({ privacyPolicyUrl: event.target.value })} /></label>
-                  <label className={styles.field}>Background media<select className={styles.select} value={campaign.backgroundMediaType ?? 'NONE'} onChange={(event) => setCampaign({ backgroundMediaType: event.target.value as CampaignInput['backgroundMediaType'] })}><option value="NONE">None</option><option value="IMAGE">Image</option><option value="VIDEO">Video</option></select></label>
-                  <label className={styles.field}>Media URL<input className={styles.input} type="url" disabled={(campaign.backgroundMediaType ?? 'NONE') === 'NONE'} placeholder="https://..." value={campaign.backgroundMediaUrl ?? ''} onChange={(event) => setCampaign({ backgroundMediaUrl: event.target.value })} /></label>
-                  <p className={`${styles.scheduleHint} ${styles.fieldFull}`}>Use a public HTTPS image or an autoplay-safe video. Videos play muted and loop behind the wheel.</p>
-                </div>
-              </section>
-              <section className={styles.card}>
-                <div className={styles.cardHeader}><h2 className={styles.cardTitle}>Prize segments</h2><span className={styles.badge}>{campaign.prizes.filter((prize) => prize.enabled).length} active</span></div>
-                <div className={styles.prizeList}>
-                  {campaign.prizes.map((prize, index) => (
-                    <div className={styles.prize} key={prize.id ?? index}>
-                      <input aria-label={`${prize.label} color`} className={styles.swatch} type="color" value={prize.color} onChange={(event) => updatePrize(index, { color: event.target.value })} />
-                      <input aria-label="Prize label" className={`${styles.input} ${styles.compact}`} value={prize.label} onChange={(event) => updatePrize(index, { label: event.target.value })} />
-                      <input aria-label="Coupon code" className={`${styles.input} ${styles.compact}`} placeholder="Coupon code" value={prize.couponCode} onChange={(event) => updatePrize(index, { couponCode: event.target.value })} />
-                      <input aria-label="Weight" title="Relative probability weight" className={`${styles.input} ${styles.compact}`} type="number" min="1" value={prize.weight} onChange={(event) => updatePrize(index, { weight: Number(event.target.value) })} />
-                      <label className={styles.toggle} title="Enabled"><input type="checkbox" checked={prize.enabled} onChange={(event) => updatePrize(index, { enabled: event.target.checked })} /></label>
-                      <button aria-label={`Remove ${prize.label}`} className={styles.remove} disabled={campaign.prizes.length <= 2} onClick={() => setCampaign({ prizes: campaign.prizes.filter((_, prizeIndex) => prizeIndex !== index).map((item, position) => ({ ...item, position })) })}>×</button>
-                    </div>
-                  ))}
-                </div>
-                <button className={styles.add} disabled={campaign.prizes.length >= 12} onClick={() => setCampaign({ prizes: [...campaign.prizes, { label: 'New prize', couponCode: '', color: '#22c55e', weight: 10, position: campaign.prizes.length, enabled: true }] })}>+ Add prize</button>
-              </section>
+      <Page>
+        <Page.Header
+          title="🎡 Wheel of Fortune (Çarkıfelek)"
+          subtitle="Configure prize probabilities, analyze spin metrics & manage CRM winner leads"
+          actionsBar={
+            <Button priority="primary" skin="standard" onClick={handleSaveSettings} disabled={saving}>
+              {saving ? "Saving..." : "Save All Changes"}
+            </Button>
+          }
+        />
+
+        <Page.Content>
+          {notice && (
+            <div style={{ marginBottom: 16 }}>
+              <Notification type="sticky" theme={notice.type === "success" ? "standard" : "error"}>
+                <Notification.TextLabel>{notice.text}</Notification.TextLabel>
+                <Notification.CloseButton onClick={() => setNotice(null)} />
+              </Notification>
             </div>
-            <aside className={`${styles.card} ${styles.preview}`} style={{ '--preview-background': campaign.backgroundColor } as CSSProperties}>
-              <p className={styles.eyebrow}>Live preview</p><h2 className={styles.cardTitle}>{campaign.headline}</h2>
-              <div className={styles.previewWheel} style={{ background: wheelBackground }}><div className={styles.previewHub}>{campaign.buttonLabel}</div></div>
-              <p className={styles.previewHint}>Weights stay private. Visitors see only segment labels and the result returned by the secure spin endpoint.</p>
-            </aside>
+          )}
+
+          <Tabs
+            activeId={activeTab}
+            onClick={(tab) => setActiveTab(tab.id as string)}
+            items={TABS}
+            type="compact"
+          />
+
+          <div style={{ marginTop: 20 }}>
+            {/* ─── TAB 1: OVERVIEW & STATS ─── */}
+            {activeTab === "overview" && (
+              <div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 24 }}>
+                  <Card>
+                    <Card.Content>
+                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Total Spins</span>
+                      <h2 style={{ fontSize: 32, margin: "8px 0 0 0", color: "#1e293b", fontWeight: 900 }}>{metrics.totalSpins.toLocaleString()}</h2>
+                    </Card.Content>
+                  </Card>
+
+                  <Card>
+                    <Card.Content>
+                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Winners</span>
+                      <h2 style={{ fontSize: 32, margin: "8px 0 0 0", color: "#10b981", fontWeight: 900 }}>{metrics.winnersCount.toLocaleString()}</h2>
+                    </Card.Content>
+                  </Card>
+
+                  <Card>
+                    <Card.Content>
+                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Leads Captured</span>
+                      <h2 style={{ fontSize: 32, margin: "8px 0 0 0", color: "#6366f1", fontWeight: 900 }}>{metrics.leadsCount.toLocaleString()}</h2>
+                    </Card.Content>
+                  </Card>
+
+                  <Card>
+                    <Card.Content>
+                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Conversion Rate</span>
+                      <h2 style={{ fontSize: 32, margin: "8px 0 0 0", color: "#f59e0b", fontWeight: 900 }}>{metrics.conversionRate}%</h2>
+                    </Card.Content>
+                  </Card>
+                </div>
+
+                <Card>
+                  <Card.Header
+                    title="🚀 Quick Campaign Status"
+                    suffix={
+                      <ToggleSwitch
+                        checked={settings.isActive}
+                        onChange={(e) => setSettings({ ...settings, isActive: e.target.checked })}
+                      />
+                    }
+                  />
+                  <Card.Content>
+                    <p style={{ margin: 0, fontSize: 14, color: "#475569" }}>
+                      Status: <strong>{settings.isActive ? "🟢 Active & Visible to Visitors" : "🔴 Inactive (Paused)"}</strong>.
+                      Visitors can spin the wheel up to <strong>{settings.dailyLimit} time(s)</strong> per day in <strong>{settings.defaultLang.toUpperCase()}</strong>.
+                    </p>
+                  </Card.Content>
+                </Card>
+              </div>
+            )}
+
+            {/* ─── TAB 2: PRIZE SEGMENTS & PROBABILITIES ─── */}
+            {activeTab === "prizes" && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24 }}>
+                <Card>
+                  <Card.Header
+                    title="🎡 Prize Wheel Segments (6-12 Segments)"
+                    subtitle="Configure labels, coupon codes, slice colors and server-side random weights"
+                    suffix={
+                      <Button size="small" priority="secondary" onClick={handleAddPrize} disabled={prizes.length >= 12}>
+                        + Add Segment
+                      </Button>
+                    }
+                  />
+                  <Card.Content>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      {prizes.map((prize, idx) => (
+                        <div
+                          key={prize.id || idx}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "40px 140px 140px 90px 80px 40px",
+                            gap: 12,
+                            alignItems: "center",
+                            padding: "12px 14px",
+                            background: "#f8fafc",
+                            borderRadius: 10,
+                            border: "1px solid #e2e8f0",
+                          }}
+                        >
+                          <input
+                            type="color"
+                            value={prize.color || "#6366f1"}
+                            onChange={(e) => handlePrizeChange(idx, { color: e.target.value })}
+                            style={{ width: 36, height: 36, border: "none", borderRadius: 6, cursor: "pointer" }}
+                            title="Slice Color"
+                          />
+                          <Input
+                            placeholder="Prize Label"
+                            value={prize.label}
+                            onChange={(e) => handlePrizeChange(idx, { label: e.target.value })}
+                          />
+                          <Input
+                            placeholder="Coupon Code"
+                            value={prize.code}
+                            onChange={(e) => handlePrizeChange(idx, { code: e.target.value })}
+                          />
+                          <FormField label="Weight %">
+                            <Input
+                              type="number"
+                              value={String(prize.probability || 10)}
+                              onChange={(e) => handlePrizeChange(idx, { probability: Number(e.target.value) })}
+                            />
+                          </FormField>
+                          <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, cursor: "pointer" }}>
+                            <input
+                              type="checkbox"
+                              checked={prize.isWinner !== false}
+                              onChange={(e) => handlePrizeChange(idx, { isWinner: e.target.checked })}
+                            />
+                            Win
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePrize(idx)}
+                            style={{ background: "transparent", border: "none", color: "#ef4444", fontSize: 18, cursor: "pointer" }}
+                            title="Remove slice"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </Card.Content>
+                </Card>
+
+                {/* Live Preview Wheel */}
+                <Card>
+                  <Card.Header title="Live Slice Preview" />
+                  <Card.Content>
+                    <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
+                      <div
+                        style={{
+                          width: 240,
+                          height: 240,
+                          borderRadius: "50%",
+                          background: `conic-gradient(${prizes
+                            .map((p, i) => `${p.color} ${(i * 100) / prizes.length}% ${((i + 1) * 100) / prizes.length}%`)
+                            .join(",")})`,
+                          boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
+                          position: "relative",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: "50%",
+                            background: "#ffffff",
+                            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 900,
+                            fontSize: 12,
+                            color: "#1e1b4b",
+                          }}
+                        >
+                          SPIN
+                        </div>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 12, color: "#64748b", textAlign: "center", margin: 0 }}>
+                      Weights are securely calculated on the server. Visitors only see the slice names and graphics.
+                    </p>
+                  </Card.Content>
+                </Card>
+              </div>
+            )}
+
+            {/* ─── TAB 3: LEADS & WINNERS CRM ─── */}
+            {activeTab === "leads" && (
+              <Card>
+                <Card.Header
+                  title="👥 Leads & Winners CRM Table"
+                  subtitle="Manage visitor contact details, export to CSV and update follow-up statuses"
+                  suffix={
+                    <div style={{ display: "flex", gap: 12 }}>
+                      <Button priority="secondary" onClick={exportLeadsToCSV}>
+                        📥 Export to CSV
+                      </Button>
+                    </div>
+                  }
+                />
+                <Card.Content>
+                  <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+                    <div style={{ width: 280 }}>
+                      <Input
+                        placeholder="Search name, email or coupon..."
+                        value={leadSearch}
+                        onChange={(e) => setLeadSearch(e.target.value)}
+                      />
+                    </div>
+                    <div style={{ width: 180 }}>
+                      <Dropdown
+                        selectedId={leadStatusFilter}
+                        options={STATUS_OPTIONS}
+                        onSelect={(opt) => setLeadStatusFilter(opt.id as string)}
+                      />
+                    </div>
+                  </div>
+
+                  <Table
+                    data={filteredLeads}
+                    columns={[
+                      {
+                        title: "Visitor Name",
+                        render: (row: Lead) => (
+                          <div>
+                            <strong>{String(row.firstName || "")} {String(row.lastName || "")}</strong>
+                          </div>
+                        ),
+                      },
+                      {
+                        title: "Email",
+                        render: (row: Lead) => (
+                          <span
+                            onClick={() => navigator.clipboard.writeText(String(row.email || ""))}
+                            style={{ cursor: "pointer", color: "#4f46e5" }}
+                            title="Click to copy"
+                          >
+                            {String(row.email || "")} 📋
+                          </span>
+                        ),
+                      },
+                      {
+                        title: "Phone",
+                        render: (row: Lead) => (
+                          <span>{String(row.phone || "—")}</span>
+                        ),
+                      },
+                      {
+                        title: "Coupon Code",
+                        render: (row: Lead) => (
+                          <Badge skin="premium">{String(row.rewardCode || "N/A")}</Badge>
+                        ),
+                      },
+                      {
+                        title: "Prize Won",
+                        render: (row: Lead) => (
+                          <span>{String(row.prizeLabel || "—")}</span>
+                        ),
+                      },
+                      {
+                        title: "Spun At",
+                        render: (row: Lead) => (
+                          <span>{row.spunAt ? new Date(row.spunAt as string).toLocaleDateString() : "—"}</span>
+                        ),
+                      },
+                      {
+                        title: "Status",
+                        render: (row: Lead) => (
+                          <select
+                            value={String(row.status || "new")}
+                            onChange={(e) => handleUpdateStatus(String(row._id), e.target.value as any)}
+                            style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #cbd5e1", fontSize: 12 }}
+                          >
+                            <option value="new">New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="converted">Converted</option>
+                            <option value="lost">Lost</option>
+                          </select>
+                        ),
+                      },
+                    ]}
+                  >
+                    <Table.Content />
+                  </Table>
+                </Card.Content>
+              </Card>
+            )}
+
+            {/* ─── TAB 4: DESIGN & THEME ─── */}
+            {activeTab === "design" && (
+              <Card>
+                <Card.Header title="🎨 Theme & Visual Settings" />
+                <Card.Content>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                    <FormField label="Color Theme Preset">
+                      <Dropdown
+                        selectedId={settings.colorTheme}
+                        options={THEMES}
+                        onSelect={(opt) => setSettings({ ...settings, colorTheme: opt.id as string })}
+                      />
+                    </FormField>
+
+                    <FormField label="Daily Spin Limit per Visitor">
+                      <Input
+                        type="number"
+                        value={String(settings.dailyLimit)}
+                        onChange={(e) => setSettings({ ...settings, dailyLimit: Number(e.target.value) || 1 })}
+                      />
+                    </FormField>
+                  </div>
+                </Card.Content>
+              </Card>
+            )}
+
+            {/* ─── TAB 5: 16 LANGUAGES & CUSTOM TEXTS ─── */}
+            {activeTab === "translations" && (
+              <Card>
+                <Card.Header
+                  title="🌍 16 Languages & Custom Texts"
+                  subtitle="Override texts for all languages or select default store language"
+                />
+                <Card.Content>
+                  <div style={{ maxWidth: 400, marginBottom: 20 }}>
+                    <FormField label="Default Store Language">
+                      <Dropdown
+                        selectedId={settings.defaultLang}
+                        options={LANGUAGES}
+                        onSelect={(opt) => setSettings({ ...settings, defaultLang: opt.id as string })}
+                      />
+                    </FormField>
+                  </div>
+
+                  <div style={{ margin: "20px 0" }}><Divider /></div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <FormField label="Custom Widget Title">
+                      <Input
+                        value={customTexts.title || ""}
+                        placeholder="Leave empty for dictionary default"
+                        onChange={(e) => setCustomTexts({ ...customTexts, title: e.target.value })}
+                      />
+                    </FormField>
+
+                    <FormField label="Custom Subtitle">
+                      <Input
+                        value={customTexts.subtitle || ""}
+                        placeholder="Leave empty for dictionary default"
+                        onChange={(e) => setCustomTexts({ ...customTexts, subtitle: e.target.value })}
+                      />
+                    </FormField>
+
+                    <FormField label="Custom Spin Button Label">
+                      <Input
+                        value={customTexts.spinBtn || ""}
+                        placeholder="e.g. SPIN TO WIN"
+                        onChange={(e) => setCustomTexts({ ...customTexts, spinBtn: e.target.value })}
+                      />
+                    </FormField>
+
+                    <FormField label="Custom Claim Button Label">
+                      <Input
+                        value={customTexts.cta || ""}
+                        placeholder="e.g. Claim My Reward"
+                        onChange={(e) => setCustomTexts({ ...customTexts, cta: e.target.value })}
+                      />
+                    </FormField>
+                  </div>
+                </Card.Content>
+              </Card>
+            )}
           </div>
-        </div>
-      </main>
+        </Page.Content>
+      </Page>
     </WixDesignSystemProvider>
   );
-}
+};
+
+export default WheelDashboard;

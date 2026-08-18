@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@wix/astro": "^2.57.0",
+    "@wix/crm": "^1.0.1605",
     "@wix/data": "^1.0.461",
     "@wix/design-system": "^1.285.0",
     "@wix/editor": "^1.356.0",
