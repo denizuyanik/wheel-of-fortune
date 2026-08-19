@@ -683,7 +683,7 @@ const DEFAULT_PRIZES = [
   { id: "p6", label: "5% OFF", code: "WELCOME5", color: "#8B5CF6", probability: 15, isWinner: true, isActive: true },
 ];
 
-export class WheelOfFortuneElement extends HTMLElement {
+class WheelOfFortuneElement extends HTMLElement {
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
