@@ -19,7 +19,7 @@ export default extensions.customElement({
   presets: [
     {
       id: '7513dcbe-1d65-4531-8edb-fc00642dd596',
-      name: 'default',
+      name: 'Wheel of Fortune Widget',
       thumbnailUrl: '{{BASE_URL}}/wheel-of-fortune-widget-thumbnail.png',
     },
   ],
