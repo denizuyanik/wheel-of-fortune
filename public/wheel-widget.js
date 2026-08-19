@@ -807,50 +807,158 @@ class WheelOfFortuneElement extends HTMLElement {
       <style>
         :host {
           display: block;
-          font-family: var(--wof-font, "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+          width: 100%;
           box-sizing: border-box;
-          --wof-bg: ${th.bg};
-          --wof-card-bg: ${th.cardBg};
-          --wof-text-primary: ${th.textPrimary};
-          --wof-text-secondary: ${th.textSecondary};
-          --wof-accent1: ${th.accent1};
-          --wof-accent2: ${th.accent2};
-          --wof-gold-border: ${th.goldBorder};
-          --wof-pointer-color: ${th.pointerColor};
+          --wof-font: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-family: var(--wof-font);
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
-        *, *::before, *::after { box-sizing: inherit; }
 
-        
-        .spinning-boostable {
-          cursor: pointer !important;
-          animation: boostPulse 0.7s infinite alternate ease-in-out !important;
-          box-shadow: 0 0 25px #fbbf24, 0 0 50px rgba(245, 158, 11, 0.6) !important;
+        *, *::before, *::after {
+          box-sizing: border-box;
         }
-        @keyframes boostPulse {
+
+        .wof-container {
+          position: relative;
+          max-width: 680px;
+          margin: 0 auto;
+          background: var(--wof-bg);
+          border-radius: 24px;
+          padding: 32px 24px;
+          color: var(--wof-text-primary);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+          overflow: hidden;
+          text-align: center;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          transition: transform 0.2s ease-out;
+        }
+
+        .wof-container.wind-gust-active {
+          animation: windShockwave 0.35s ease-out;
+        }
+        @keyframes windShockwave {
           0% { transform: scale(1); filter: brightness(1); }
-          100% { transform: scale(1.06); filter: brightness(1.3); }
-        }
-        .boost-flash {
-          animation: textFlash 0.3s ease-out !important;
-        }
-        @keyframes textFlash {
-          0% { transform: scale(1.3); color: #fef08a; }
-          100% { transform: scale(1); color: inherit; }
+          40% { transform: scale(1.02); filter: brightness(1.2) drop-shadow(0 0 30px rgba(251, 191, 36, 0.7)); }
+          100% { transform: scale(1); filter: brightness(1); }
         }
 
-        
+        .header-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(245, 158, 11, 0.15);
+          border: 1px solid rgba(245, 158, 11, 0.4);
+          padding: 6px 14px;
+          border-radius: 9999px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #fbbf24;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          margin-bottom: 12px;
+        }
+
+        h2.title {
+          font-size: 32px;
+          font-weight: 900;
+          margin: 0 0 8px 0;
+          letter-spacing: -0.5px;
+          background: linear-gradient(135deg, #ffffff 40%, var(--wof-accent2) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+          font-size: 15px;
+          color: var(--wof-text-secondary);
+          margin: 0 0 24px 0;
+          line-height: 1.5;
+        }
+
         .wheel-stage-container {
           position: relative;
-          max-width: 540px;
+          max-width: 520px;
           margin: 0 auto 20px auto;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
+        .wheel-stage {
+          position: relative;
+          width: 360px;
+          height: 360px;
+          max-width: 100%;
+          margin: 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        canvas.wheel-canvas {
+          width: 360px;
+          height: 360px;
+          display: block;
+          filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.65));
+        }
+
+        .pointer-arrow {
+          position: absolute;
+          top: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 36px;
+          height: 44px;
+          z-index: 10;
+          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+          transform-origin: 50% 15%;
+          transition: transform 0.08s ease-out;
+          pointer-events: none;
+        }
+        .pointer-arrow.ticking {
+          transform: translateX(-50%) rotate(-12deg);
+        }
+        .pointer-arrow svg {
+          width: 36px;
+          height: 44px;
+          display: block;
+          fill: var(--wof-pointer-color);
+        }
+
+        .center-hub-btn {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 88px;
+          height: 88px;
+          border-radius: 50%;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          z-index: 12;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: transparent;
+          user-select: none;
+          outline: none;
+        }
+        .center-hub-btn:hover:not(:disabled) {
+          transform: translate(-50%, -50%) scale(1.05);
+        }
+        .center-hub-btn:active:not(:disabled) {
+          transform: translate(-50%, -50%) scale(0.95);
+        }
+        .center-hub-btn:disabled {
+          cursor: not-allowed;
+        }
+
+        /* Dedicated Side Turbo Pod */
         .turbo-side-pod {
           position: absolute;
-          right: -10px;
+          right: -14px;
           top: 50%;
           transform: translateY(-50%);
           z-index: 15;
@@ -859,7 +967,7 @@ class WheelOfFortuneElement extends HTMLElement {
           .turbo-side-pod {
             position: static;
             transform: none;
-            margin: 12px auto 0 auto;
+            margin: 14px auto 0 auto;
           }
           .wheel-stage-container {
             flex-direction: column;
@@ -909,18 +1017,6 @@ class WheelOfFortuneElement extends HTMLElement {
           border-radius: 999px;
           border: 1px solid #fbbf24;
         }
-
-        
-        .wof-container.wind-gust-active {
-          animation: windShockwave 0.35s ease-out;
-        }
-        @keyframes windShockwave {
-          0% { transform: scale(1); filter: brightness(1); }
-          40% { transform: scale(1.02); filter: brightness(1.2) drop-shadow(0 0 30px rgba(251, 191, 36, 0.7)); }
-          100% { transform: scale(1); filter: brightness(1); }
-        }
-
-        
 
         .spin-action-btn {
           display: inline-flex;
@@ -1018,42 +1114,38 @@ class WheelOfFortuneElement extends HTMLElement {
         .form-group.full { grid-column: 1 / -1; }
         .form-group label {
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 600;
           color: var(--wof-text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
         }
         .form-group input {
-          background: rgba(0, 0, 0, 0.35);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 10px;
-          padding: 10px 14px;
+          width: 100%;
+          padding: 10px 12px;
+          background: var(--wof-input-bg);
+          border: 1px solid var(--wof-input-border);
+          border-radius: 8px;
+          color: var(--wof-text-primary);
           font-size: 14px;
-          color: #ffffff;
           outline: none;
-          transition: border-color 0.2s, box-shadow 0.2s;
+          transition: border-color 0.2s;
         }
         .form-group input:focus {
-          border-color: #f59e0b;
-          box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+          border-color: var(--wof-accent1);
         }
 
         .checkbox-group {
           display: flex;
           align-items: flex-start;
           gap: 8px;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
           font-size: 12px;
           color: var(--wof-text-secondary);
-          line-height: 1.4;
           cursor: pointer;
+          line-height: 1.4;
+          text-align: left;
         }
         .checkbox-group input {
           margin-top: 2px;
-          accent-color: #f59e0b;
-          width: 16px;
-          height: 16px;
-          flex-shrink: 0;
+          accent-color: var(--wof-accent1);
         }
 
         .claim-btn {
@@ -1062,23 +1154,22 @@ class WheelOfFortuneElement extends HTMLElement {
           background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           color: #ffffff;
           border: none;
-          border-radius: 12px;
+          border-radius: 10px;
           font-size: 16px;
           font-weight: 800;
           cursor: pointer;
-          box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
-          transition: transform 0.15s, box-shadow 0.15s;
+          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+          transition: transform 0.15s;
+          margin-top: 6px;
         }
-        .claim-btn:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 12px 25px rgba(16, 185, 129, 0.45);
-        }
+        .claim-btn:hover:not(:disabled) { transform: translateY(-1px); }
+        .claim-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .success-box {
           display: none;
           margin-top: 24px;
-          background: rgba(6, 78, 59, 0.85);
-          border: 1px solid rgba(52, 211, 153, 0.4);
+          background: rgba(16, 185, 129, 0.15);
+          border: 1px solid rgba(16, 185, 129, 0.4);
           border-radius: 18px;
           padding: 24px 20px;
           text-align: center;
@@ -1127,7 +1218,7 @@ class WheelOfFortuneElement extends HTMLElement {
           padding: 20px;
           text-align: center;
         }
-      </style>
+  </style>
 
       <div class="wof-container" id="widget-container">
         <div class="header-badge">🎡 Official Wheel of Fortune</div>
