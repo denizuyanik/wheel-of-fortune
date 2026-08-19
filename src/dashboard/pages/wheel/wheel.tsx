@@ -28,15 +28,11 @@ import {
   type Lead,
   DEFAULT_SETTINGS,
 } from "../../services/leads";
-import { TEXT_CATEGORIES, I18N_DICTIONARY } from "../../constants/i18nDefaults";
-
-const TABS = [
-  { id: "overview", title: "📊 Overview & Stats" },
-  { id: "prizes", title: "🎡 Prize Segments" },
-  { id: "leads", title: "👥 Leads & Winners CRM" },
-  { id: "design", title: "🎨 Design & Theme" },
-  { id: "translations", title: "🌍 16 Languages & Texts" },
-];
+import {
+  DASHBOARD_I18N,
+  getLocalizedCategories,
+  I18N_DICTIONARY,
+} from "../../constants/i18nDefaults";
 
 const LANGUAGES = [
   { id: "en", value: "English 🇺🇸" },
@@ -78,8 +74,11 @@ const WheelDashboard: FC = () => {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // App Settings State
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  // App Settings State - Default language is English (en)
+  const [settings, setSettings] = useState<AppSettings>({
+    ...DEFAULT_SETTINGS,
+    defaultLang: "en",
+  });
   const [prizes, setPrizes] = useState<PrizeSegment[]>(DEFAULT_SETTINGS.rewardPool);
 
   // Metrics State
@@ -92,13 +91,31 @@ const WheelDashboard: FC = () => {
 
   // Leads CRM State
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [leadsLoading, setLeadsLoading] = useState(false);
   const [leadStatusFilter, setLeadStatusFilter] = useState("all");
   const [leadSearch, setLeadSearch] = useState("");
 
-  // Custom Texts State: { [lang]: { [key]: value } }
+  // Custom Texts & Active Dashboard Language State (Default: "en")
   const [customTexts, setCustomTexts] = useState<Record<string, Record<string, string>>>({});
-  const [selectedEditLang, setSelectedEditLang] = useState<string>("tr");
+  const [selectedEditLang, setSelectedEditLang] = useState<string>("en");
+
+  // Dynamic Dashboard Localization Dictionary
+  const t = useMemo(() => {
+    return DASHBOARD_I18N[selectedEditLang] || DASHBOARD_I18N.en;
+  }, [selectedEditLang]);
+
+  // Localized Tabs
+  const dynamicTabs = useMemo(() => [
+    { id: "overview", title: t.tabOverview },
+    { id: "prizes", title: t.tabPrizes },
+    { id: "leads", title: t.tabLeads },
+    { id: "design", title: t.tabTheme },
+    { id: "translations", title: t.tabTexts },
+  ], [t]);
+
+  // Localized 4 Custom Text Categories
+  const dynamicCategories = useMemo(() => {
+    return getLocalizedCategories(selectedEditLang);
+  }, [selectedEditLang]);
 
   useEffect(() => {
     loadAllData();
@@ -167,7 +184,8 @@ const WheelDashboard: FC = () => {
   };
 
   const handleResetLang = (lang: string) => {
-    if (confirm(`"${LANGUAGES.find((l) => l.id === lang)?.value}" dili için yapılan tüm özel metinler varsayılana sıfırlansın mı?`)) {
+    const langName = LANGUAGES.find((l) => l.id === lang)?.value || lang.toUpperCase();
+    if (confirm(`Reset all custom texts for "${langName}" to default?`)) {
       setCustomTexts((prev) => {
         const copy = { ...prev };
         delete copy[lang];
@@ -182,12 +200,13 @@ const WheelDashboard: FC = () => {
     try {
       const updated: Partial<AppSettings> = {
         ...settings,
+        defaultLang: selectedEditLang,
         rewardPool: prizes,
         customTextsJSON: JSON.stringify(customTexts),
       };
       const res = await persistSettings(updated).then(r => ({ success: r }));
       if (res.success) {
-        setNotice({ type: "success", text: "Settings and prize pool saved successfully!" });
+        setNotice({ type: "success", text: t.saveSuccess });
       } else {
         setNotice({ type: "error", text: "Failed to save settings." });
       }
@@ -198,18 +217,25 @@ const WheelDashboard: FC = () => {
     }
   };
 
-  const handlePrizeChange = (index: number, patch: Partial<PrizeSegment>) => {
-    setPrizes((curr) => curr.map((p, idx) => (idx === index ? { ...p, ...patch } : p)));
+  const handlePrizeChange = (index: number, changes: Partial<PrizeSegment>) => {
+    const updated = [...prizes];
+    updated[index] = { ...updated[index], ...changes };
+    setPrizes(updated);
   };
 
   const handleAddPrize = () => {
-    if (prizes.length >= 12) return;
+    if (prizes.length >= 12) {
+      alert("Maximum 12 prize slices allowed.");
+      return;
+    }
+    const colors = ["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#8b5cf6", "#3b82f6", "#ef4444", "#14b8a6"];
+    const nextColor = colors[prizes.length % colors.length];
     const newPrize: PrizeSegment = {
-      id: `prize_${Date.now()}`,
-      label: "NEW PRIZE",
-      code: "SAVE" + Math.floor(Math.random() * 90 + 10),
-      color: "#f59e0b",
-      probability: 15,
+      id: "p_" + Date.now(),
+      label: "Special Reward",
+      code: "SPECIAL" + (prizes.length + 1),
+      color: nextColor,
+      probability: 10,
       isWinner: true,
       isActive: true,
     };
@@ -299,12 +325,25 @@ const WheelDashboard: FC = () => {
   return (
     <WixDesignSystemProvider>
       <Page>
+        {/* ─── Persistent Header with App Title + Language Selector + Save Button ─── */}
         <Page.Header
-          title="🎡 Wheel of Fortune (Çarkıfelek)"
-          subtitle="Configure prize probabilities, analyze spin metrics & manage CRM winner leads"
+          title={
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              <span>🎡 {t.dashTitle}</span>
+              <div style={{ width: 170, display: "inline-block" }}>
+                <Dropdown
+                  size="small"
+                  selectedId={selectedEditLang}
+                  options={LANGUAGES}
+                  onSelect={(opt) => setSelectedEditLang(opt.id as string)}
+                />
+              </div>
+            </div>
+          }
+          subtitle={t.dashSubtitle}
           actionsBar={
             <Button priority="primary" skin="standard" onClick={handleSaveSettings} disabled={saving}>
-              {saving ? "Saving..." : "Save All Changes"}
+              {saving ? t.saving : t.saveAll}
             </Button>
           }
         />
@@ -319,10 +358,11 @@ const WheelDashboard: FC = () => {
             </div>
           )}
 
+          {/* ─── Dynamic 5 Tabs ─── */}
           <Tabs
             activeId={activeTab}
             onClick={(tab) => setActiveTab(tab.id as string)}
-            items={TABS}
+            items={dynamicTabs}
             type="compact"
           />
 
@@ -333,28 +373,28 @@ const WheelDashboard: FC = () => {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 24 }}>
                   <Card>
                     <Card.Content>
-                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Total Spins</span>
+                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>{t.statSpins}</span>
                       <h2 style={{ fontSize: 32, margin: "8px 0 0 0", color: "#1e293b", fontWeight: 900 }}>{metrics.totalSpins.toLocaleString()}</h2>
                     </Card.Content>
                   </Card>
 
                   <Card>
                     <Card.Content>
-                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Winners</span>
+                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>{t.statCoupons}</span>
                       <h2 style={{ fontSize: 32, margin: "8px 0 0 0", color: "#10b981", fontWeight: 900 }}>{metrics.winnersCount.toLocaleString()}</h2>
                     </Card.Content>
                   </Card>
 
                   <Card>
                     <Card.Content>
-                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Leads Captured</span>
+                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>{t.statLeads}</span>
                       <h2 style={{ fontSize: 32, margin: "8px 0 0 0", color: "#6366f1", fontWeight: 900 }}>{metrics.leadsCount.toLocaleString()}</h2>
                     </Card.Content>
                   </Card>
 
                   <Card>
                     <Card.Content>
-                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Conversion Rate</span>
+                      <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>{t.statRate}</span>
                       <h2 style={{ fontSize: 32, margin: "8px 0 0 0", color: "#f59e0b", fontWeight: 900 }}>{metrics.conversionRate}%</h2>
                     </Card.Content>
                   </Card>
@@ -362,7 +402,7 @@ const WheelDashboard: FC = () => {
 
                 <Card>
                   <Card.Header
-                    title="🚀 Quick Campaign Status"
+                    title={`🚀 ${t.chartTitle}`}
                     suffix={
                       <ToggleSwitch
                         checked={settings.isActive}
@@ -373,7 +413,7 @@ const WheelDashboard: FC = () => {
                   <Card.Content>
                     <p style={{ margin: 0, fontSize: 14, color: "#475569" }}>
                       Status: <strong>{settings.isActive ? "🟢 Active & Visible to Visitors" : "🔴 Inactive (Paused)"}</strong>.
-                      Visitors can spin the wheel up to <strong>{settings.dailyLimit} time(s)</strong> per day in <strong>{settings.defaultLang.toUpperCase()}</strong>.
+                      Visitors can spin the wheel up to <strong>{settings.dailyLimit} time(s)</strong> per day in <strong>{LANGUAGES.find(l => l.id === selectedEditLang)?.value || selectedEditLang.toUpperCase()}</strong>.
                     </p>
                   </Card.Content>
                 </Card>
@@ -385,8 +425,8 @@ const WheelDashboard: FC = () => {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24 }}>
                 <Card>
                   <Card.Header
-                    title="🎡 Prize Wheel Segments (6-12 Segments)"
-                    subtitle="Configure labels, coupon codes, slice colors and server-side random weights"
+                    title={`🎡 ${t.prizesTitle}`}
+                    subtitle={t.prizesSubtitle}
                     suffix={
                       <Button size="small" priority="secondary" onClick={handleAddPrize} disabled={prizes.length >= 12}>
                         + Add Segment
@@ -414,19 +454,19 @@ const WheelDashboard: FC = () => {
                             value={prize.color || "#6366f1"}
                             onChange={(e) => handlePrizeChange(idx, { color: e.target.value })}
                             style={{ width: 36, height: 36, border: "none", borderRadius: 6, cursor: "pointer" }}
-                            title="Slice Color"
+                            title={t.colColor}
                           />
                           <Input
-                            placeholder="Prize Label"
+                            placeholder={t.colLabel}
                             value={prize.label}
                             onChange={(e) => handlePrizeChange(idx, { label: e.target.value })}
                           />
                           <Input
-                            placeholder="Coupon Code"
+                            placeholder={t.colCode}
                             value={prize.code}
                             onChange={(e) => handlePrizeChange(idx, { code: e.target.value })}
                           />
-                          <FormField label="Weight %">
+                          <FormField label={t.colProb}>
                             <Input
                               type="number"
                               value={String(prize.probability || 10)}
@@ -439,7 +479,7 @@ const WheelDashboard: FC = () => {
                               checked={prize.isWinner !== false}
                               onChange={(e) => handlePrizeChange(idx, { isWinner: e.target.checked })}
                             />
-                            Win
+                            {prize.isWinner !== false ? "Win" : "No"}
                           </label>
                           <button
                             type="button"
@@ -455,48 +495,28 @@ const WheelDashboard: FC = () => {
                   </Card.Content>
                 </Card>
 
-                {/* Live Preview Wheel */}
+                {/* Probability Distribution Card */}
                 <Card>
-                  <Card.Header title="Live Slice Preview" />
+                  <Card.Header title="📊 Probability Summary" />
                   <Card.Content>
-                    <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
-                      <div
-                        style={{
-                          width: 240,
-                          height: 240,
-                          borderRadius: "50%",
-                          background: `conic-gradient(${prizes
-                            .map((p, i) => `${p.color} ${(i * 100) / prizes.length}% ${((i + 1) * 100) / prizes.length}%`)
-                            .join(",")})`,
-                          boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
-                          position: "relative",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 60,
-                            height: 60,
-                            borderRadius: "50%",
-                            background: "#ffffff",
-                            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontWeight: 900,
-                            fontSize: 12,
-                            color: "#1e1b4b",
-                          }}
-                        >
-                          SPIN
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {prizes.map((p, idx) => (
+                        <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: p.color || "#6366f1" }} />
+                            {p.label || `Slice ${idx + 1}`}
+                          </span>
+                          <strong>{p.probability || 0}%</strong>
                         </div>
+                      ))}
+                      <Divider />
+                      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 14 }}>
+                        <span>Total:</span>
+                        <span style={{ color: prizes.reduce((sum, p) => sum + (Number(p.probability) || 0), 0) === 100 ? "#10b981" : "#ef4444" }}>
+                          {prizes.reduce((sum, p) => sum + (Number(p.probability) || 0), 0)}%
+                        </span>
                       </div>
                     </div>
-                    <p style={{ fontSize: 12, color: "#64748b", textAlign: "center", margin: 0 }}>
-                      Weights are securely calculated on the server. Visitors only see the slice names and graphics.
-                    </p>
                   </Card.Content>
                 </Card>
               </div>
@@ -506,47 +526,34 @@ const WheelDashboard: FC = () => {
             {activeTab === "leads" && (
               <Card>
                 <Card.Header
-                  title="👥 Leads & Winners CRM Table"
-                  subtitle="Manage visitor contact details, export to CSV and update follow-up statuses"
+                  title={`👥 ${t.leadsTitle}`}
+                  subtitle={t.leadsSubtitle}
                   suffix={
-                    <div style={{ display: "flex", gap: 12 }}>
-                      <Button priority="secondary" onClick={exportLeadsToCSV}>
-                        📥 Export to CSV
+                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                      <Input
+                        size="small"
+                        placeholder="Search lead..."
+                        value={leadSearch}
+                        onChange={(e) => setLeadSearch(e.target.value)}
+                      />
+                      <Button size="small" priority="secondary" onClick={exportLeadsToCSV}>
+                        {t.exportCSV}
                       </Button>
                     </div>
                   }
                 />
                 <Card.Content>
-                  <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-                    <div style={{ width: 280 }}>
-                      <Input
-                        placeholder="Search name, email or coupon..."
-                        value={leadSearch}
-                        onChange={(e) => setLeadSearch(e.target.value)}
-                      />
-                    </div>
-                    <div style={{ width: 180 }}>
-                      <Dropdown
-                        selectedId={leadStatusFilter}
-                        options={STATUS_OPTIONS}
-                        onSelect={(opt) => setLeadStatusFilter(opt.id as string)}
-                      />
-                    </div>
-                  </div>
-
                   <Table
                     data={filteredLeads}
                     columns={[
                       {
-                        title: "Visitor Name",
+                        title: t.colName,
                         render: (row: Lead) => (
-                          <div>
-                            <strong>{String(row.firstName || "")} {String(row.lastName || "")}</strong>
-                          </div>
+                          <strong>{row.firstName} {row.lastName || ""}</strong>
                         ),
                       },
                       {
-                        title: "Email",
+                        title: t.colEmail,
                         render: (row: Lead) => (
                           <span
                             onClick={() => navigator.clipboard.writeText(String(row.email || ""))}
@@ -558,29 +565,29 @@ const WheelDashboard: FC = () => {
                         ),
                       },
                       {
-                        title: "Phone",
+                        title: t.colPhone,
                         render: (row: Lead) => (
                           <span>{String(row.phone || "—")}</span>
                         ),
                       },
                       {
-                        title: "Coupon Code",
+                        title: t.colCouponWon,
                         render: (row: Lead) => (
                           <Badge skin="premium">{String(row.rewardCode || "N/A")}</Badge>
                         ),
                       },
                       {
-                        title: "Prize Won",
+                        title: t.colPrizeWon,
                         render: (row: Lead) => (
                           <span>{String(row.prizeLabel || "—")}</span>
                         ),
                       },
                       {
-                        title: "Notes / Notlar",
+                        title: t.colNotes,
                         render: (row: Lead) => (
                           <input
                             type="text"
-                            placeholder="Not ekle..."
+                            placeholder={t.notePH}
                             defaultValue={String(row.notes || "")}
                             onBlur={(e) => handleUpdateNotes(String(row._id), e.target.value)}
                             onKeyDown={(e) => {
@@ -597,7 +604,6 @@ const WheelDashboard: FC = () => {
                               background: "#ffffff",
                               color: "#0f172a",
                             }}
-                            title="Not yazıp Enter'a basın veya dışarı tıklayın"
                           />
                         ),
                       },
@@ -608,7 +614,7 @@ const WheelDashboard: FC = () => {
                         ),
                       },
                       {
-                        title: "Status",
+                        title: t.colStatus,
                         render: (row: Lead) => (
                           <select
                             value={String(row.status || "new")}
@@ -633,10 +639,10 @@ const WheelDashboard: FC = () => {
             {/* ─── TAB 4: DESIGN & THEME ─── */}
             {activeTab === "design" && (
               <Card>
-                <Card.Header title="🎨 Theme & Visual Settings" />
+                <Card.Header title={`🎨 ${t.themeTitle}`} subtitle={t.themeSubtitle} />
                 <Card.Content>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-                    <FormField label="Color Theme Preset">
+                    <FormField label={t.themeLabel}>
                       <Dropdown
                         selectedId={settings.colorTheme}
                         options={THEMES}
@@ -644,7 +650,7 @@ const WheelDashboard: FC = () => {
                       />
                     </FormField>
 
-                    <FormField label="Daily Spin Limit per Visitor">
+                    <FormField label={t.limitLabel}>
                       <Input
                         type="number"
                         value={String(settings.dailyLimit)}
@@ -662,47 +668,27 @@ const WheelDashboard: FC = () => {
                 {/* Language Selection Bar */}
                 <Card>
                   <Card.Header
-                    title="🌍 16 Dil & Tüm Metinleri Özelleştirme"
-                    subtitle="Uygulama üzerindeki tüm başlık, form, onay ve kupon metinlerini her dil için ayrı ayrı düzenleyebilirsiniz."
+                    title={`🌍 ${t.textsTitle}`}
+                    subtitle={t.textsSubtitle}
                     suffix={
-                      <div style={{ display: "flex", gap: 10 }}>
-                        <Button
-                          priority="secondary"
-                          skin="destructive"
-                          size="small"
-                          onClick={() => handleResetLang(selectedEditLang)}
-                        >
-                          🔄 Dili Varsayılana Sıfırla
-                        </Button>
-                      </div>
+                      <Button
+                        priority="secondary"
+                        skin="destructive"
+                        size="small"
+                        onClick={() => handleResetLang(selectedEditLang)}
+                      >
+                        {t.resetLangBtn}
+                      </Button>
                     }
                   />
-                  <Card.Content>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-                      <FormField label="🌐 Düzenlenen Dil (Edit Language)">
-                        <Dropdown
-                          selectedId={selectedEditLang}
-                          options={LANGUAGES}
-                          onSelect={(opt) => setSelectedEditLang(opt.id as string)}
-                        />
-                      </FormField>
-                      <FormField label="🏪 Sitenin Varsayılan Ana Dili (Default Store Language)">
-                        <Dropdown
-                          selectedId={settings.defaultLang}
-                          options={LANGUAGES}
-                          onSelect={(opt) => setSettings({ ...settings, defaultLang: opt.id as string })}
-                        />
-                      </FormField>
-                    </div>
-                  </Card.Content>
                 </Card>
 
                 {/* 4 Categorized Cards */}
-                {TEXT_CATEGORIES.map((cat, catIdx) => (
+                {dynamicCategories.map((cat, catIdx) => (
                   <Card key={catIdx}>
                     <Card.Header
                       title={`${cat.icon} ${cat.category}`}
-                      subtitle={`${LANGUAGES.find((l) => l.id === selectedEditLang)?.value} dili için metin ayarları`}
+                      subtitle={`${LANGUAGES.find((l) => l.id === selectedEditLang)?.value} translation strings`}
                     />
                     <Card.Content>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -741,15 +727,15 @@ const WheelDashboard: FC = () => {
                                       fontWeight: 700,
                                       cursor: "pointer",
                                     }}
-                                    title="Varsayılan çeviriye geri dön"
+                                    title="Reset to default translation"
                                   >
-                                    ↩️ Varsayılana Dön
+                                    {t.resetFieldBtn}
                                   </button>
                                 )}
                               </div>
                               <Input
                                 value={customVal}
-                                placeholder={`Varsayılan: ${defaultVal}`}
+                                placeholder={`${t.defaultPH}${defaultVal}`}
                                 onChange={(e) => handleTextChange(selectedEditLang, field.key, e.target.value)}
                               />
                               {field.desc && (
