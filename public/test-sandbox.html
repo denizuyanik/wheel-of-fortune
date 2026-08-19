@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🎡 Wheel of Fortune — Local Test Studio & Multilingual Dashboard</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Comic+Neue:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700;900&family=Orbitron:wght@700;900&family=Outfit:wght@600;800&family=Playfair+Display:wght@700;900&family=Poppins:wght@400;600;700;900&family=Roboto:wght@500;700;900&display=swap">
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #09090b 100%);
@@ -267,7 +268,7 @@
       font-weight: 700;
     }
     .dash-table td {
-      padding: 12px;
+      padding: 10px 12px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
     .dash-table tr:hover {
@@ -325,6 +326,21 @@
       </div>
 
       <div class="ctrl-item">
+        <label>🔤 Font:</label>
+        <select class="ctrl-select" id="sel-font">
+          <option value="Poppins" selected>Poppins (Modern)</option>
+          <option value="Inter">Inter (Clean)</option>
+          <option value="Outfit">Outfit (Bold)</option>
+          <option value="Montserrat">Montserrat (Luxury)</option>
+          <option value="Roboto">Roboto (Standard)</option>
+          <option value="Playfair Display">Playfair Display (Serif)</option>
+          <option value="Cinzel">Cinzel (Royal)</option>
+          <option value="Orbitron">Orbitron (Cyberpunk)</option>
+          <option value="Comic Neue">Comic Neue (Casual)</option>
+        </select>
+      </div>
+
+      <div class="ctrl-item">
         <label>🎨 Theme:</label>
         <select class="ctrl-select" id="sel-theme">
           <option value="gold" selected>Royal Gold</option>
@@ -352,6 +368,7 @@
         <wheel-of-fortune-widget
           id="test-widget"
           color-theme="gold"
+          font-family="Poppins"
           lang="en"
           daily-limit="1"
         ></wheel-of-fortune-widget>
@@ -374,7 +391,7 @@
         <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
           <div>
             <h2 id="dash-title-txt" style="margin:0; font-size:22px; color:#fbbf24;">🎡 Wheel of Fortune Dashboard</h2>
-            <p id="dash-sub-txt" style="margin:4px 0 0 0; font-size:13px; color:#94a3b8;">Manage wheel prizes, win odds, CRM leads, theme, and 16-language texts</p>
+            <p id="dash-sub-txt" style="margin:4px 0 0 0; font-size:13px; color:#94a3b8;">Manage wheel prizes, win odds, CRM leads, theme, typography, and 16-language texts</p>
           </div>
           
           <!-- Persistent Language Selector -->
@@ -409,7 +426,7 @@
         <button type="button" class="dash-tab-btn active" data-pane="dash-overview" id="tab-nav-overview">📊 Overview</button>
         <button type="button" class="dash-tab-btn" data-pane="dash-prizes" id="tab-nav-prizes">🎁 Prize Slices</button>
         <button type="button" class="dash-tab-btn" data-pane="dash-leads" id="tab-nav-leads">👥 CRM Leads & Notes</button>
-        <button type="button" class="dash-tab-btn" data-pane="dash-theme" id="tab-nav-theme">🎨 Theme & Rules</button>
+        <button type="button" class="dash-tab-btn" data-pane="dash-theme" id="tab-nav-theme">🎨 Theme & Typography</button>
         <button type="button" class="dash-tab-btn" data-pane="dash-i18n" id="tab-nav-texts">🌍 16 Languages & Texts</button>
       </div>
 
@@ -439,24 +456,32 @@
         </div>
       </div>
 
-      <!-- Tab 2: Prizes -->
+      <!-- Tab 2: UNLIMITED Prize Slices -->
       <div class="dash-content-pane" id="dash-prizes">
-        <div style="margin-bottom:12px;">
-          <h3 id="lbl-prizes-title" style="margin:0 0 4px 0; color:#fbbf24;">🎡 Prize Segments & Probabilities</h3>
-          <p id="lbl-prizes-sub" style="font-size:13px; color:#94a3b8; margin:0;">Configure slice colors, winning discount codes, and win odds (sum must be 100%):</p>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h3 id="lbl-prizes-title" style="margin:0 0 4px 0; color:#fbbf24;">🎡 Wheel Segments & Probability Settings</h3>
+            <p id="lbl-prizes-sub" style="font-size:13px; color:#94a3b8; margin:0;">Add unlimited prize slices, pick custom background colors, text colors, codes and win odds:</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span id="prizes-total-odds-badge" style="background:#10b981; color:#fff; font-weight:700; padding:6px 12px; border-radius:8px; font-size:13px;">Total: 100%</span>
+            <button type="button" style="background:#f59e0b; border:none; color:#0f172a; font-weight:800; padding:8px 16px; border-radius:8px; cursor:pointer;" id="btn-add-slice">+ Add New Slice</button>
+          </div>
         </div>
         <table class="dash-table">
           <thead>
             <tr>
-              <th id="th-color">Color</th>
+              <th id="th-bg-color">BG Color</th>
+              <th id="th-txt-color">Text Color</th>
               <th id="th-label">Slice Title</th>
               <th id="th-code">Coupon Code</th>
               <th id="th-prob">Odds (%)</th>
               <th id="th-status">Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="prizes-tbody">
-            <!-- Rendered by JS -->
+            <!-- Rendered dynamically by JS -->
           </tbody>
         </table>
       </div>
@@ -505,13 +530,13 @@
         </table>
       </div>
 
-      <!-- Tab 4: Theme -->
+      <!-- Tab 4: Theme & Typography -->
       <div class="dash-content-pane" id="dash-theme">
         <div style="margin-bottom:12px;">
-          <h3 id="lbl-theme-title" style="margin:0 0 4px 0; color:#fbbf24;">🎨 Visual Theme & Anti-Cheat Rules</h3>
-          <p id="lbl-theme-sub" style="font-size:13px; color:#94a3b8; margin:0;">Select visual color palette, LED effects, and daily spin limits:</p>
+          <h3 id="lbl-theme-title" style="margin:0 0 4px 0; color:#fbbf24;">🎨 Visual Theme, Typography & Anti-Cheat Rules</h3>
+          <p id="lbl-theme-sub" style="font-size:13px; color:#94a3b8; margin:0;">Select visual color palette, custom Google font typography, and daily spin limits:</p>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
           <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px;">
             <label id="lbl-theme-preset" style="font-size:13px; font-weight:700; color:#fbbf24; display:block; margin-bottom:8px;">Visual Theme Palette</label>
             <select style="width:100%; padding:8px;" id="dash-theme-sel" class="ctrl-select">
@@ -521,6 +546,22 @@
               <option value="light">✨ Clean Light Modern</option>
             </select>
           </div>
+
+          <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px;">
+            <label style="font-size:13px; font-weight:700; color:#fbbf24; display:block; margin-bottom:8px;">🔤 Typography & Font Family</label>
+            <select style="width:100%; padding:8px;" id="dash-font-sel" class="ctrl-select">
+              <option value="Poppins" selected>Poppins (Modern Rounded - Default)</option>
+              <option value="Inter">Inter (Clean & Professional)</option>
+              <option value="Outfit">Outfit (Bold & Elegant)</option>
+              <option value="Montserrat">Montserrat (Geometric Luxury)</option>
+              <option value="Roboto">Roboto (Universal Standard)</option>
+              <option value="Playfair Display">Playfair Display (Classic Serif Luxury)</option>
+              <option value="Cinzel">Cinzel (Royal Classical)</option>
+              <option value="Orbitron">Orbitron (Futuristic Cyberpunk)</option>
+              <option value="Comic Neue">Comic Neue (Playful & Casual)</option>
+            </select>
+          </div>
+
           <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px;">
             <label id="lbl-theme-limit" style="font-size:13px; font-weight:700; color:#fbbf24; display:block; margin-bottom:8px;">Daily Spin Limit per Visitor</label>
             <input type="number" value="1" min="1" max="10" style="width:100%; padding:8px;" id="dash-limit-inp" class="ctrl-input" />
@@ -1980,14 +2021,16 @@
 
     const widget = document.getElementById("test-widget");
     const selLang = document.getElementById("sel-lang");
+    const selFont = document.getElementById("sel-font");
     const selTheme = document.getElementById("sel-theme");
     const selLimit = document.getElementById("sel-limit");
     const btnReset = document.getElementById("btn-reset");
     const logConsole = document.getElementById("log-console");
     const btnClearLog = document.getElementById("btn-clear-log");
 
-    // Header Persistent Language Selector
+    // Header Persistent Language Selector & Font Selector
     const dashHeaderLangSel = document.getElementById("dash-header-lang-sel");
+    const dashFontSel = document.getElementById("dash-font-sel");
 
     // Tab Switching between Widget and Dashboard
     const tabWidget = document.getElementById("tab-btn-widget");
@@ -2024,26 +2067,131 @@
       };
     });
 
-    // Populate Prizes in Dashboard
-    const DEFAULT_PRIZES = [
-      { id: "p1", label: "10% OFF", code: "SPIN10", color: "#6366F1", probability: 25, isWinner: true },
-      { id: "p2", label: "FREE SHIPPING", code: "FREESHIP", color: "#EC4899", probability: 20, isWinner: true },
-      { id: "p3", label: "TRY AGAIN", code: "", color: "#64748B", probability: 15, isWinner: false },
-      { id: "p4", label: "20% OFF", code: "LUCKY20", color: "#F59E0B", probability: 15, isWinner: true },
-      { id: "p5", label: "MYSTERY GIFT", code: "GIFT50", color: "#10B981", probability: 10, isWinner: true },
-      { id: "p6", label: "5% OFF", code: "WELCOME5", color: "#8B5CF6", probability: 15, isWinner: true },
+    // ─── UNLIMITED PRIZES POOL ───
+    let currentPrizes = [
+      { id: "p1", label: "10% OFF", code: "SPIN10", color: "#6366F1", textColor: "#ffffff", probability: 25, isWinner: true },
+      { id: "p2", label: "FREE SHIPPING", code: "FREESHIP", color: "#EC4899", textColor: "#ffffff", probability: 20, isWinner: true },
+      { id: "p3", label: "TRY AGAIN", code: "", color: "#64748B", textColor: "#ffffff", probability: 15, isWinner: false },
+      { id: "p4", label: "20% OFF", code: "LUCKY20", color: "#F59E0B", textColor: "#ffffff", probability: 15, isWinner: true },
+      { id: "p5", label: "MYSTERY GIFT", code: "GIFT50", color: "#10B981", textColor: "#ffffff", probability: 10, isWinner: true },
+      { id: "p6", label: "5% OFF", code: "WELCOME5", color: "#8B5CF6", textColor: "#ffffff", probability: 15, isWinner: true },
     ];
 
     const prizesTbody = document.getElementById("prizes-tbody");
-    prizesTbody.innerHTML = DEFAULT_PRIZES.map((p) => `
-      <tr>
-        <td><input type="color" value="${p.color}" style="width:36px; height:32px; padding:0; border:none; border-radius:4px; cursor:pointer;" /></td>
-        <td><strong>${p.label}</strong></td>
-        <td><span class="badge-win">${p.code || "NO CODE"}</span></td>
-        <td><input type="number" value="${p.probability}" style="width:60px; padding:4px;" class="ctrl-input" /> %</td>
-        <td>${p.isWinner ? "✅ Winner" : "❌ No Prize"}</td>
-      </tr>
-    `).join("");
+    const totalOddsBadge = document.getElementById("prizes-total-odds-badge");
+    const btnAddSlice = document.getElementById("btn-add-slice");
+
+    function renderPrizesTable() {
+      const sumOdds = currentPrizes.reduce((s, p) => s + (Number(p.probability) || 0), 0);
+      totalOddsBadge.textContent = "Total: " + sumOdds + "%";
+      totalOddsBadge.style.background = sumOdds === 100 ? "#10b981" : "#ef4444";
+
+      prizesTbody.innerHTML = currentPrizes.map((p, idx) => `
+        <tr>
+          <td><input type="color" value="${p.color || '#6366f1'}" data-idx="${idx}" class="slice-bg-color" style="width:34px; height:32px; padding:0; border:none; border-radius:4px; cursor:pointer;" title="Slice Color" /></td>
+          <td><input type="color" value="${p.textColor || '#ffffff'}" data-idx="${idx}" class="slice-txt-color" style="width:34px; height:32px; padding:0; border:none; border-radius:4px; cursor:pointer;" title="Text Color" /></td>
+          <td><input type="text" value="${p.label.replace(/"/g, '&quot;')}" data-idx="${idx}" class="slice-label ctrl-input" style="width:140px; padding:4px 8px;" /></td>
+          <td><input type="text" value="${(p.code || '').replace(/"/g, '&quot;')}" data-idx="${idx}" class="slice-code ctrl-input" style="width:110px; padding:4px 8px;" placeholder="Optional code" /></td>
+          <td><input type="number" value="${p.probability}" data-idx="${idx}" class="slice-prob ctrl-input" style="width:60px; padding:4px;" /> %</td>
+          <td>
+            <label style="display:flex; align-items:center; gap:4px; font-size:12px; cursor:pointer;">
+              <input type="checkbox" data-idx="${idx}" class="slice-win" ${p.isWinner !== false ? 'checked' : ''} />
+              ${p.isWinner !== false ? '✅ Win' : '❌ No'}
+            </label>
+          </td>
+          <td>
+            <button type="button" data-idx="${idx}" class="slice-del" style="background:${currentPrizes.length <= 2 ? 'transparent' : '#fee2e2'}; color:${currentPrizes.length <= 2 ? '#64748b' : '#ef4444'}; border:none; padding:4px 8px; border-radius:6px; font-weight:700; cursor:${currentPrizes.length <= 2 ? 'not-allowed' : 'pointer'};" ${currentPrizes.length <= 2 ? 'disabled' : ''}>✕</button>
+          </td>
+        </tr>
+      `).join("");
+
+      // Bind input events
+      prizesTbody.querySelectorAll(".slice-bg-color").forEach((inp) => {
+        inp.onchange = (e) => {
+          const idx = Number(e.target.getAttribute("data-idx"));
+          currentPrizes[idx].color = e.target.value;
+          syncPrizesToWidget();
+        };
+      });
+
+      prizesTbody.querySelectorAll(".slice-txt-color").forEach((inp) => {
+        inp.onchange = (e) => {
+          const idx = Number(e.target.getAttribute("data-idx"));
+          currentPrizes[idx].textColor = e.target.value;
+          syncPrizesToWidget();
+        };
+      });
+
+      prizesTbody.querySelectorAll(".slice-label").forEach((inp) => {
+        inp.oninput = (e) => {
+          const idx = Number(e.target.getAttribute("data-idx"));
+          currentPrizes[idx].label = e.target.value;
+          syncPrizesToWidget();
+        };
+      });
+
+      prizesTbody.querySelectorAll(".slice-code").forEach((inp) => {
+        inp.oninput = (e) => {
+          const idx = Number(e.target.getAttribute("data-idx"));
+          currentPrizes[idx].code = e.target.value;
+          syncPrizesToWidget();
+        };
+      });
+
+      prizesTbody.querySelectorAll(".slice-prob").forEach((inp) => {
+        inp.oninput = (e) => {
+          const idx = Number(e.target.getAttribute("data-idx"));
+          currentPrizes[idx].probability = Number(e.target.value) || 0;
+          const sum = currentPrizes.reduce((s, p) => s + (Number(p.probability) || 0), 0);
+          totalOddsBadge.textContent = "Total: " + sum + "%";
+          totalOddsBadge.style.background = sum === 100 ? "#10b981" : "#ef4444";
+          syncPrizesToWidget();
+        };
+      });
+
+      prizesTbody.querySelectorAll(".slice-win").forEach((inp) => {
+        inp.onchange = (e) => {
+          const idx = Number(e.target.getAttribute("data-idx"));
+          currentPrizes[idx].isWinner = e.target.checked;
+          renderPrizesTable();
+          syncPrizesToWidget();
+        };
+      });
+
+      prizesTbody.querySelectorAll(".slice-del").forEach((btn) => {
+        btn.onclick = (e) => {
+          if (currentPrizes.length <= 2) return;
+          const idx = Number(btn.getAttribute("data-idx"));
+          currentPrizes.splice(idx, 1);
+          renderPrizesTable();
+          syncPrizesToWidget();
+        };
+      });
+    }
+
+    btnAddSlice.onclick = () => {
+      const palette = ["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#8b5cf6", "#3b82f6", "#ef4444", "#14b8a6", "#e11d48", "#059669", "#7c3aed", "#d97706", "#2563eb", "#db2777"];
+      const nextColor = palette[currentPrizes.length % palette.length];
+      const newPrize = {
+        id: "p_" + Date.now(),
+        label: "Reward " + (currentPrizes.length + 1),
+        code: "WIN" + (currentPrizes.length + 1),
+        color: nextColor,
+        textColor: "#ffffff",
+        probability: 10,
+        isWinner: true,
+      };
+      currentPrizes.push(newPrize);
+      renderPrizesTable();
+      syncPrizesToWidget();
+      log("➕ Added new prize segment: " + newPrize.label);
+    };
+
+    function syncPrizesToWidget() {
+      widget.setAttribute("reward-pool", JSON.stringify(currentPrizes));
+    }
+
+    renderPrizesTable();
 
     function log(msg) {
       const time = new Date().toLocaleTimeString();
@@ -2052,14 +2200,24 @@
 
     function updateWidget() {
       widget.setAttribute("lang", selLang.value);
+      widget.setAttribute("font-family", selFont.value);
       widget.setAttribute("color-theme", selTheme.value);
       widget.setAttribute("daily-limit", selLimit.value);
-      log(`Updated settings: Lang=${selLang.value.toUpperCase()}, Theme=${selTheme.value}, Limit=${selLimit.value}`);
+      syncPrizesToWidget();
+      log(`Updated settings: Lang=${selLang.value.toUpperCase()}, Font=${selFont.value}, Theme=${selTheme.value}, Limit=${selLimit.value}`);
     }
 
     selLang.addEventListener("change", (e) => {
       dashHeaderLangSel.value = e.target.value;
       updateDashboardLanguage(e.target.value);
+      updateWidget();
+    });
+    selFont.addEventListener("change", (e) => {
+      dashFontSel.value = e.target.value;
+      updateWidget();
+    });
+    dashFontSel.addEventListener("change", (e) => {
+      selFont.value = e.target.value;
       updateWidget();
     });
     selTheme.addEventListener("change", updateWidget);
@@ -2248,7 +2406,8 @@
       // Tab 2: Prizes
       document.getElementById("lbl-prizes-title").textContent = "🎡 " + t.prizesTitle;
       document.getElementById("lbl-prizes-sub").textContent = t.prizesSubtitle;
-      document.getElementById("th-color").textContent = t.colColor;
+      document.getElementById("th-bg-color").textContent = "BG " + t.colColor;
+      document.getElementById("th-txt-color").textContent = "Text Color";
       document.getElementById("th-label").textContent = t.colLabel;
       document.getElementById("th-code").textContent = t.colCode;
       document.getElementById("th-prob").textContent = t.colProb;
@@ -2306,12 +2465,19 @@
     if (btnSaveDash) {
       btnSaveDash.addEventListener("click", () => {
         const lang = dashHeaderLangSel.value;
+        const font = dashFontSel.value;
+        const theme = document.getElementById("dash-theme-sel").value;
+        const limit = document.getElementById("dash-limit-inp").value;
         const t = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
+
         localStorage.setItem("wheel_of_fortune_custom_texts", JSON.stringify(customTextsState));
         widget.setAttribute("custom-texts", JSON.stringify(customTextsState));
         widget.setAttribute("lang", lang);
-        widget.setAttribute("color-theme", document.getElementById("dash-theme-sel").value);
-        widget.setAttribute("daily-limit", document.getElementById("dash-limit-inp").value);
+        widget.setAttribute("font-family", font);
+        widget.setAttribute("color-theme", theme);
+        widget.setAttribute("daily-limit", limit);
+        syncPrizesToWidget();
+
         log("💾 " + t.saveSuccess);
         alert("✅ " + t.saveSuccess);
       });

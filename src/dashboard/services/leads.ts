@@ -12,6 +12,7 @@ export interface PrizeSegment {
   label: string;
   code: string;
   color: string;
+  textColor?: string;
   probability: number;
   isWinner: boolean;
   isActive: boolean;
@@ -20,6 +21,7 @@ export interface PrizeSegment {
 export interface AppSettings {
   isActive: boolean;
   colorTheme: string;
+  fontFamily?: string;
   defaultLang: string;
   dailyLimit: number;
   rewardPool: PrizeSegment[];
@@ -53,17 +55,18 @@ export interface Lead {
 export const DEFAULT_SETTINGS: AppSettings = {
   isActive: true,
   colorTheme: "gold",
+  fontFamily: "Poppins",
   defaultLang: "en",
   dailyLimit: 1,
   spinButtonText: "SPIN",
   marketingConsentText: "I consent to receiving marketing communications and agree to the Privacy Policy.",
   rewardPool: [
-    { id: "prize_1", label: "10% OFF", code: "SPIN10", color: "#6366F1", probability: 25, isWinner: true, isActive: true },
-    { id: "prize_2", label: "FREE SHIPPING", code: "FREESHIP", color: "#EC4899", probability: 20, isWinner: true, isActive: true },
-    { id: "prize_3", label: "TRY AGAIN", code: "", color: "#64748B", probability: 15, isWinner: false, isActive: true },
-    { id: "prize_4", label: "20% OFF", code: "LUCKY20", color: "#F59E0B", probability: 15, isWinner: true, isActive: true },
-    { id: "prize_5", label: "MYSTERY GIFT", code: "GIFT50", color: "#10B981", probability: 10, isWinner: true, isActive: true },
-    { id: "prize_6", label: "5% OFF", code: "WELCOME5", color: "#8B5CF6", probability: 15, isWinner: true, isActive: true },
+    { id: "prize_1", label: "10% OFF", code: "SPIN10", color: "#6366F1", textColor: "#ffffff", probability: 25, isWinner: true, isActive: true },
+    { id: "prize_2", label: "FREE SHIPPING", code: "FREESHIP", color: "#EC4899", textColor: "#ffffff", probability: 20, isWinner: true, isActive: true },
+    { id: "prize_3", label: "TRY AGAIN", code: "", color: "#64748B", textColor: "#ffffff", probability: 15, isWinner: false, isActive: true },
+    { id: "prize_4", label: "20% OFF", code: "LUCKY20", color: "#F59E0B", textColor: "#ffffff", probability: 15, isWinner: true, isActive: true },
+    { id: "prize_5", label: "MYSTERY GIFT", code: "GIFT50", color: "#10B981", textColor: "#ffffff", probability: 10, isWinner: true, isActive: true },
+    { id: "prize_6", label: "5% OFF", code: "WELCOME5", color: "#8B5CF6", textColor: "#ffffff", probability: 15, isWinner: true, isActive: true },
   ],
   widgetTitle: "Spin & Win!",
   subtitleText: "Spin the wheel of fortune to unlock exclusive discounts",

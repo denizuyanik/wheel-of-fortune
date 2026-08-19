@@ -1627,3 +1627,16 @@ export function getLocalizedCategories(lang: string = "en"): CategoryDefinition[
     },
   ];
 }
+
+export const FONT_OPTIONS = [
+  { id: "Poppins", value: "Poppins (Modern & Rounded - Default)" },
+  { id: "Inter", value: "Inter (Clean & Professional)" },
+  { id: "Outfit", value: "Outfit (Bold & Elegant)" },
+  { id: "Montserrat", value: "Montserrat (Geometric Luxury)" },
+  { id: "Roboto", value: "Roboto (Universal Standard)" },
+  { id: "Playfair Display", value: "Playfair Display (Classic Serif Luxury)" },
+  { id: "Cinzel", value: "Cinzel (Royal Classical)" },
+  { id: "Orbitron", value: "Orbitron (Futuristic Cyberpunk)" },
+  { id: "Comic Neue", value: "Comic Neue (Playful & Casual)" },
+];
+

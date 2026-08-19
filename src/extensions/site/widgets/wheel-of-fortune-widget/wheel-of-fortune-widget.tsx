@@ -15,6 +15,7 @@ export interface PrizeSegment {
   label: string;
   code: string;
   color: string;
+  textColor?: string;
   probability: number;
   isWinner: boolean;
   isActive: boolean;
@@ -720,6 +721,7 @@ export class WheelOfFortuneElement extends HTMLElement {
   // Widget States
   private widgetLang = "en";
   private theme = "gold";
+  private fontFamily = "Poppins";
   private dailyLimit = 1;
   private customTexts: Record<string, string> = {};
   private prizes: PrizeSegment[] = DEFAULT_PRIZES;
@@ -752,6 +754,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     return [
       "lang",
       "color-theme",
+      "font-family",
       "daily-limit",
       "widget-title",
       "subtitle-text",
@@ -781,6 +784,7 @@ export class WheelOfFortuneElement extends HTMLElement {
   private readProps(): void {
     this.widgetLang = this.getAttribute("lang") || "en";
     this.theme = this.getAttribute("color-theme") || "gold";
+    this.fontFamily = this.getAttribute("font-family") || "Poppins";
     this.dailyLimit = Number(this.getAttribute("daily-limit")) || 1;
 
     try {
@@ -898,10 +902,11 @@ export class WheelOfFortuneElement extends HTMLElement {
     const th = THEMES[this.theme] || THEMES.gold;
 
     this.shadow.innerHTML = `
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Comic+Neue:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700;900&family=Orbitron:wght@700;900&family=Outfit:wght@600;800&family=Playfair+Display:wght@700;900&family=Poppins:wght@400;600;700;900&family=Roboto:wght@500;700;900&display=swap">
       <style>
         :host {
           display: block;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          font-family: "${this.fontFamily || "Poppins"}", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           box-sizing: border-box;
           --wof-bg: ${th.bg};
           --wof-card-bg: ${th.cardBg};

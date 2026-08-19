@@ -32,6 +32,7 @@ import {
   DASHBOARD_I18N,
   getLocalizedCategories,
   I18N_DICTIONARY,
+  FONT_OPTIONS,
 } from "../../constants/i18nDefaults";
 
 const LANGUAGES = [
@@ -60,24 +61,17 @@ const THEMES = [
   { id: "light", value: "✨ Clean Light Modern" },
 ];
 
-const STATUS_OPTIONS = [
-  { id: "all", value: "All Statuses" },
-  { id: "new", value: "New Lead" },
-  { id: "contacted", value: "Contacted" },
-  { id: "converted", value: "Converted / Sale" },
-  { id: "lost", value: "Lost / Expired" },
-];
-
 const WheelDashboard: FC = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // App Settings State - Default language is English (en)
+  // App Settings State - Default language is English (en) & font is Poppins
   const [settings, setSettings] = useState<AppSettings>({
     ...DEFAULT_SETTINGS,
     defaultLang: "en",
+    fontFamily: "Poppins",
   });
   const [prizes, setPrizes] = useState<PrizeSegment[]>(DEFAULT_SETTINGS.rewardPool);
 
@@ -223,18 +217,16 @@ const WheelDashboard: FC = () => {
     setPrizes(updated);
   };
 
+  // UNLIMITED SLICE ADDITION (No upper limit)
   const handleAddPrize = () => {
-    if (prizes.length >= 12) {
-      alert("Maximum 12 prize slices allowed.");
-      return;
-    }
-    const colors = ["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#8b5cf6", "#3b82f6", "#ef4444", "#14b8a6"];
+    const colors = ["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#8b5cf6", "#3b82f6", "#ef4444", "#14b8a6", "#e11d48", "#059669", "#7c3aed", "#d97706", "#2563eb", "#db2777"];
     const nextColor = colors[prizes.length % colors.length];
     const newPrize: PrizeSegment = {
-      id: "p_" + Date.now(),
-      label: "Special Reward",
-      code: "SPECIAL" + (prizes.length + 1),
+      id: "p_" + Date.now() + "_" + Math.random().toString(36).substring(2, 5),
+      label: "Reward " + (prizes.length + 1),
+      code: "WIN" + (prizes.length + 1),
       color: nextColor,
+      textColor: "#ffffff",
       probability: 10,
       isWinner: true,
       isActive: true,
@@ -244,7 +236,7 @@ const WheelDashboard: FC = () => {
 
   const handleRemovePrize = (index: number) => {
     if (prizes.length <= 2) {
-      alert("Wheel must contain at least 2 prize segments.");
+      alert("The wheel must have at least 2 segments.");
       return;
     }
     setPrizes(prizes.filter((_, idx) => idx !== index));
@@ -311,6 +303,10 @@ const WheelDashboard: FC = () => {
       return true;
     });
   }, [leads, leadStatusFilter, leadSearch]);
+
+  const totalProb = useMemo(() => {
+    return prizes.reduce((sum, p) => sum + (Number(p.probability) || 0), 0);
+  }, [prizes]);
 
   if (loading) {
     return (
@@ -413,23 +409,23 @@ const WheelDashboard: FC = () => {
                   <Card.Content>
                     <p style={{ margin: 0, fontSize: 14, color: "#475569" }}>
                       Status: <strong>{settings.isActive ? "🟢 Active & Visible to Visitors" : "🔴 Inactive (Paused)"}</strong>.
-                      Visitors can spin the wheel up to <strong>{settings.dailyLimit} time(s)</strong> per day in <strong>{LANGUAGES.find(l => l.id === selectedEditLang)?.value || selectedEditLang.toUpperCase()}</strong>.
+                      Visitors can spin the wheel up to <strong>{settings.dailyLimit} time(s)</strong> per day in <strong>{LANGUAGES.find(l => l.id === selectedEditLang)?.value || selectedEditLang.toUpperCase()}</strong> with font <strong>{settings.fontFamily || "Poppins"}</strong>.
                     </p>
                   </Card.Content>
                 </Card>
               </div>
             )}
 
-            {/* ─── TAB 2: PRIZE SEGMENTS & PROBABILITIES ─── */}
+            {/* ─── TAB 2: UNLIMITED PRIZE SEGMENTS & PROBABILITIES ─── */}
             {activeTab === "prizes" && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24 }}>
                 <Card>
                   <Card.Header
-                    title={`🎡 ${t.prizesTitle}`}
-                    subtitle={t.prizesSubtitle}
+                    title={`🎡 ${t.prizesTitle} (${prizes.length} Slices)`}
+                    subtitle="Add unlimited slices, customize background colors, text colors, discount codes, and win odds"
                     suffix={
-                      <Button size="small" priority="secondary" onClick={handleAddPrize} disabled={prizes.length >= 12}>
-                        + Add Segment
+                      <Button size="small" priority="primary" onClick={handleAddPrize}>
+                        + Add Slice ({prizes.length + 1})
                       </Button>
                     }
                   />
@@ -440,32 +436,50 @@ const WheelDashboard: FC = () => {
                           key={prize.id || idx}
                           style={{
                             display: "grid",
-                            gridTemplateColumns: "40px 140px 140px 90px 80px 40px",
-                            gap: 12,
+                            gridTemplateColumns: "36px 36px 140px 130px 80px 70px 32px",
+                            gap: 10,
                             alignItems: "center",
-                            padding: "12px 14px",
+                            padding: "10px 12px",
                             background: "#f8fafc",
                             borderRadius: 10,
                             border: "1px solid #e2e8f0",
                           }}
                         >
-                          <input
-                            type="color"
-                            value={prize.color || "#6366f1"}
-                            onChange={(e) => handlePrizeChange(idx, { color: e.target.value })}
-                            style={{ width: 36, height: 36, border: "none", borderRadius: 6, cursor: "pointer" }}
-                            title={t.colColor}
-                          />
+                          {/* Slice BG Color */}
+                          <div title="Slice Background Color">
+                            <input
+                              type="color"
+                              value={prize.color || "#6366f1"}
+                              onChange={(e) => handlePrizeChange(idx, { color: e.target.value })}
+                              style={{ width: 34, height: 34, border: "none", borderRadius: 6, cursor: "pointer", padding: 0 }}
+                            />
+                          </div>
+
+                          {/* Slice Text Color */}
+                          <div title="Slice Text Color">
+                            <input
+                              type="color"
+                              value={prize.textColor || "#ffffff"}
+                              onChange={(e) => handlePrizeChange(idx, { textColor: e.target.value })}
+                              style={{ width: 34, height: 34, border: "none", borderRadius: 6, cursor: "pointer", padding: 0 }}
+                            />
+                          </div>
+
+                          {/* Slice Title */}
                           <Input
                             placeholder={t.colLabel}
                             value={prize.label}
                             onChange={(e) => handlePrizeChange(idx, { label: e.target.value })}
                           />
+
+                          {/* Coupon Code */}
                           <Input
                             placeholder={t.colCode}
                             value={prize.code}
                             onChange={(e) => handlePrizeChange(idx, { code: e.target.value })}
                           />
+
+                          {/* Probability */}
                           <FormField label={t.colProb}>
                             <Input
                               type="number"
@@ -473,6 +487,8 @@ const WheelDashboard: FC = () => {
                               onChange={(e) => handlePrizeChange(idx, { probability: Number(e.target.value) })}
                             />
                           </FormField>
+
+                          {/* Is Winner Checkbox */}
                           <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, cursor: "pointer" }}>
                             <input
                               type="checkbox"
@@ -481,11 +497,23 @@ const WheelDashboard: FC = () => {
                             />
                             {prize.isWinner !== false ? "Win" : "No"}
                           </label>
+
+                          {/* Delete Button */}
                           <button
                             type="button"
                             onClick={() => handleRemovePrize(idx)}
-                            style={{ background: "transparent", border: "none", color: "#ef4444", fontSize: 18, cursor: "pointer" }}
-                            title="Remove slice"
+                            style={{
+                              background: prizes.length <= 2 ? "transparent" : "#fee2e2",
+                              border: "none",
+                              color: prizes.length <= 2 ? "#cbd5e1" : "#ef4444",
+                              fontSize: 16,
+                              fontWeight: 700,
+                              borderRadius: 6,
+                              height: 32,
+                              cursor: prizes.length <= 2 ? "not-allowed" : "pointer",
+                            }}
+                            title={prizes.length <= 2 ? "Minimum 2 slices required" : "Delete slice"}
+                            disabled={prizes.length <= 2}
                           >
                             ✕
                           </button>
@@ -497,23 +525,32 @@ const WheelDashboard: FC = () => {
 
                 {/* Probability Distribution Card */}
                 <Card>
-                  <Card.Header title="📊 Probability Summary" />
+                  <Card.Header
+                    title="📊 Probability Summary"
+                    suffix={
+                      <Badge skin={totalProb === 100 ? "success" : "danger"}>
+                        {totalProb}%
+                      </Badge>
+                    }
+                  />
                   <Card.Content>
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {prizes.map((p, idx) => (
-                        <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
-                          <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: p.color || "#6366f1" }} />
-                            {p.label || `Slice ${idx + 1}`}
-                          </span>
-                          <strong>{p.probability || 0}%</strong>
-                        </div>
-                      ))}
+                      <div style={{ maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingRight: 4 }}>
+                        {prizes.map((p, idx) => (
+                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
+                            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: "50%", background: p.color || "#6366f1" }} />
+                              {p.label || `Slice ${idx + 1}`}
+                            </span>
+                            <strong>{p.probability || 0}%</strong>
+                          </div>
+                        ))}
+                      </div>
                       <Divider />
                       <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 14 }}>
-                        <span>Total:</span>
-                        <span style={{ color: prizes.reduce((sum, p) => sum + (Number(p.probability) || 0), 0) === 100 ? "#10b981" : "#ef4444" }}>
-                          {prizes.reduce((sum, p) => sum + (Number(p.probability) || 0), 0)}%
+                        <span>Total Sum:</span>
+                        <span style={{ color: totalProb === 100 ? "#10b981" : "#ef4444" }}>
+                          {totalProb}% {totalProb === 100 ? "✅" : "⚠️ (Adjust to 100%)"}
                         </span>
                       </div>
                     </div>
@@ -636,17 +673,26 @@ const WheelDashboard: FC = () => {
               </Card>
             )}
 
-            {/* ─── TAB 4: DESIGN & THEME ─── */}
+            {/* ─── TAB 4: DESIGN & THEME & TYPOGRAPHY ─── */}
             {activeTab === "design" && (
               <Card>
-                <Card.Header title={`🎨 ${t.themeTitle}`} subtitle={t.themeSubtitle} />
+                <Card.Header title={`🎨 ${t.themeTitle}`} subtitle="Select visual color palette, typography font family, and daily spin limits" />
                 <Card.Content>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
                     <FormField label={t.themeLabel}>
                       <Dropdown
                         selectedId={settings.colorTheme}
                         options={THEMES}
                         onSelect={(opt) => setSettings({ ...settings, colorTheme: opt.id as string })}
+                      />
+                    </FormField>
+
+                    {/* FONT FAMILY SELECTOR */}
+                    <FormField label="🔤 Typography & Font Family">
+                      <Dropdown
+                        selectedId={settings.fontFamily || "Poppins"}
+                        options={FONT_OPTIONS}
+                        onSelect={(opt) => setSettings({ ...settings, fontFamily: opt.id as string })}
                       />
                     </FormField>
 
