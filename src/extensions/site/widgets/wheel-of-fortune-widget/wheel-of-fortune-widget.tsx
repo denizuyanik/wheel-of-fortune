@@ -1,11 +1,10 @@
 /**
- * Wheel of Fortune (Çarkıfelek) Custom Element — v2.0
- * ====================================================
+ * Wheel of Fortune (Çarkıfelek) Custom Element — Production Wix App Extension v1.0.0
+ * ===================================================================================
  * Native Web Component (Custom Element with Shadow DOM).
- * HTML5 Canvas Physics Engine, Confetti Particle Cannon,
- * 16-Language i18n + isDefaultInOtherLang Protection,
- * 1200x700 Digital Voucher Generator, 100% Synchronous Download,
- * Anti-Cheat Server Integration, and Two-Way CMS Sync.
+ * HTML5 Canvas Physics Engine, Confetti Particle Cannon, Supersonic Wind Vortex,
+ * 16-Language i18n, 1200x700 HD Digital Voucher Generator, 100% Synchronous Download,
+ * Anti-Cheat Local & Server Integration, and Two-Way Wix Data CMS Sync.
  */
 
 import { items } from "@wix/data";
@@ -21,8 +20,19 @@ export interface PrizeSegment {
   isActive: boolean;
 }
 
-// ─── 16 Dil Çeviri Sözlüğü ──────────────────────────────────────────────────
-const I18N: Record<string, Record<string, string>> = {
+export interface ConfettiParticle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  rotation: number;
+  rotSpeed: number;
+  opacity: number;
+}
+
+const I18N = {
   "en": {
     "title": "Spin & Win!",
     "subtitle": "Spin the wheel of fortune to unlock exclusive discounts",
@@ -633,22 +643,8 @@ const I18N: Record<string, Record<string, string>> = {
   }
 };
 
-// ─── Tema Tanımları ─────────────────────────────────────────────────────────
-interface ThemeDefinition {
-  bg: string;
-  cardBg: string;
-  textPrimary: string;
-  textSecondary: string;
-  accent1: string;
-  accent2: string;
-  goldBorder: string;
-  wheelRim: string;
-  hubBg: string;
-  pointerColor: string;
-  sliceColors: string[];
-}
-
-const THEMES: Record<string, ThemeDefinition> = {
+// ─── Theme Definitions ───────────────────────────────────────────────────────
+const THEMES = {
   gold: {
     bg: "radial-gradient(ellipse at center, #1e1b4b 0%, #09090b 100%)",
     cardBg: "rgba(15, 23, 42, 0.85)",
@@ -703,8 +699,7 @@ const THEMES: Record<string, ThemeDefinition> = {
   },
 };
 
-// ─── Default Prizes ─────────────────────────────────────────────────────────
-const DEFAULT_PRIZES: PrizeSegment[] = [
+const DEFAULT_PRIZES = [
   { id: "p1", label: "10% OFF", code: "SPIN10", color: "#6366F1", probability: 25, isWinner: true, isActive: true },
   { id: "p2", label: "FREE SHIP", code: "FREESHIP", color: "#EC4899", probability: 20, isWinner: true, isActive: true },
   { id: "p3", label: "TRY AGAIN", code: "", color: "#64748B", probability: 15, isWinner: false, isActive: true },
@@ -713,86 +708,61 @@ const DEFAULT_PRIZES: PrizeSegment[] = [
   { id: "p6", label: "5% OFF", code: "WELCOME5", color: "#8B5CF6", probability: 15, isWinner: true, isActive: true },
 ];
 
-export class WheelOfFortuneElement extends HTMLElement {
-  private shadow: ShadowRoot;
-  private canvas!: HTMLCanvasElement;
-  private ctx!: CanvasRenderingContext2D;
-
-  // Widget States
-  private widgetLang = "en";
-  private theme = "gold";
-  private fontFamily = "Poppins";
-  private dailyLimit = 1;
-  private customTexts: Record<string, string> = {};
-  private prizes: PrizeSegment[] = DEFAULT_PRIZES;
-
-  private isSpinning = false;
-  private currentRotation = 0; // Current angle in degrees
-  private wonPrize: PrizeSegment | null = null;
-  private lastGeneratedCouponDataUrl = "";
-  private bulbBlinkPhase = 0;
-
-  // Particle Engine
-  private confettiParticles: Array<{
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    size: number;
-    color: string;
-    rotation: number;
-    rotSpeed: number;
-    opacity: number;
-  }> = [];
-
+class WheelOfFortuneElement extends HTMLElement {
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
+    this.widgetLang = "en";
+    this.theme = "gold";
+    this.dailyLimit = 1;
+    this.customTexts = {};
+    this.prizes = DEFAULT_PRIZES;
+    this.isSpinning = false;
+    this.currentRotation = 0;
+    this.wonPrize = null;
+    this.lastGeneratedCouponDataUrl = "";
+    this.bulbBlinkPhase = 0;
+    this.confettiParticles = [];
+    this.windParticles = [];
+    this.boostCount = 0;
+    this.currentVelocity = 0;
+    this.isCoastingToStop = false;
+    this.spinAnimId = null;
   }
 
-  static get observedAttributes(): string[] {
-    return [
-      "lang",
-      "color-theme",
-      "font-family",
-      "daily-limit",
-      "widget-title",
-      "subtitle-text",
-      "spin-btn-text",
-      "custom-texts",
-      "reward-pool",
-    ];
+  static get observedAttributes() {
+    return ["lang", "color-theme", "font-family", "daily-limit", "widget-title", "subtitle-text", "spin-btn-text", "custom-texts", "reward-pool"];
   }
 
-  connectedCallback(): void {
+  connectedCallback() {
     this.readProps();
     this.render();
     this.initCanvas();
-    this.loadBackendSettings();
     this.checkDailyLimit();
     this.setupEventListeners();
   }
 
-  attributeChangedCallback(): void {
-    if (this.shadow.childElementCount > 0) {
+  attributeChangedCallback() {
+    if (this.shadow && this.shadow.childElementCount > 0) {
       this.readProps();
+      this.render();
+      this.initCanvas();
       this.updateTexts();
       this.drawWheel();
+      this.setupEventListeners();
     }
   }
 
-  private readProps(): void {
+  readProps() {
     this.widgetLang = this.getAttribute("lang") || "en";
     this.theme = this.getAttribute("color-theme") || "gold";
-    this.fontFamily = this.getAttribute("font-family") || "Poppins";
     this.dailyLimit = Number(this.getAttribute("daily-limit")) || 1;
+    this.fontFamily = this.getAttribute("font-family") || "Poppins";
 
     try {
       const rawCustom = this.getAttribute("custom-texts");
       if (rawCustom) this.customTexts = JSON.parse(rawCustom);
-    } catch {
-      // fallback
-    }
+    } catch {}
 
     try {
       const rawPool = this.getAttribute("reward-pool");
@@ -800,53 +770,10 @@ export class WheelOfFortuneElement extends HTMLElement {
         const parsed = JSON.parse(rawPool);
         if (Array.isArray(parsed) && parsed.length >= 2) this.prizes = parsed;
       }
-    } catch {
-      // fallback
-    }
-  }
-
-  private async loadBackendSettings(): Promise<void> {
-    const colls = ["WheelAppSettings", "@deniz-uyanik/wheel-of-fortune/WheelAppSettings", "wheelAppSettings"];
-    for (const coll of colls) {
-      try {
-        let q = (items as any).query(coll, { paging: { limit: 1 } });
-        const res = typeof q?.find === "function" ? await q.find() : await q;
-        if (res?.items && res.items.length > 0) {
-          const item = res.items[0];
-          if (item.rewardPool) {
-            const parsed = typeof item.rewardPool === "string" ? JSON.parse(item.rewardPool) : item.rewardPool;
-            if (Array.isArray(parsed) && parsed.length >= 2) this.prizes = parsed;
-          }
-          if (item.colorTheme) this.theme = item.colorTheme;
-          if (item.defaultLang && !this.hasAttribute("lang")) this.widgetLang = item.defaultLang;
-          if (item.dailyLimit) this.dailyLimit = Number(item.dailyLimit);
-          if (item.customTextsJSON) {
-            try {
-              this.customTexts = { ...this.customTexts, ...JSON.parse(item.customTextsJSON) };
-            } catch {}
-          }
-          this.updateTexts();
-          this.drawWheel();
-          return;
-        }
-      } catch {}
-    }
-
-    try {
-      const raw = localStorage.getItem("wheel_of_fortune_app_settings");
-      if (raw) {
-        const item = JSON.parse(raw);
-        if (item.rewardPool && Array.isArray(item.rewardPool)) this.prizes = item.rewardPool;
-        if (item.colorTheme) this.theme = item.colorTheme;
-        if (item.defaultLang && !this.hasAttribute("lang")) this.widgetLang = item.defaultLang;
-        if (item.dailyLimit) this.dailyLimit = Number(item.dailyLimit);
-        this.updateTexts();
-        this.drawWheel();
-      }
     } catch {}
   }
 
-  private getUsageData(): { date: string; count: number; codes: Array<{ code: string; label: string; date: string }> } {
+  getUsageData() {
     const today = new Date().toISOString().split("T")[0];
     try {
       const raw = localStorage.getItem("wof_usage");
@@ -858,7 +785,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     return { date: today, count: 0, codes: [] };
   }
 
-  private saveUsage(code?: string, label?: string): void {
+  saveUsage(code, label) {
     const usage = this.getUsageData();
     usage.count += 1;
     if (code) usage.codes.push({ code, label: label || "Prize", date: new Date().toLocaleTimeString() });
@@ -867,15 +794,14 @@ export class WheelOfFortuneElement extends HTMLElement {
     } catch {}
   }
 
-  private checkDailyLimit(): void {
+  checkDailyLimit() {
     const usage = this.getUsageData();
     if (usage.count >= this.dailyLimit) {
       this.showAlreadySpunState(usage.codes);
     }
   }
 
-  // ─── isDefaultInOtherLang Protection ──────────────────────────────────────
-  private isDefaultInOtherLang(text: string, fieldKey: string): boolean {
+  isDefaultInOtherLang(text, fieldKey) {
     for (const [l, dict] of Object.entries(I18N)) {
       if (l !== this.widgetLang && dict[fieldKey] && dict[fieldKey].trim() === text.trim()) {
         return true;
@@ -884,20 +810,20 @@ export class WheelOfFortuneElement extends HTMLElement {
     return false;
   }
 
-  private valOr(key: string, fb: string): string {
-    const langSpecific = (this.customTexts as any)?.[this.widgetLang];
+  valOr(key, fb) {
+    const langSpecific = this.customTexts?.[this.widgetLang];
     if (langSpecific && typeof langSpecific === "object" && langSpecific[key]) {
       const val = langSpecific[key];
       if (val && val.trim() && !this.isDefaultInOtherLang(val, key)) return val;
     }
-    const flat = this.customTexts[key];
+    const flat = this.customTexts?.[key];
     if (flat && typeof flat === "string" && flat.trim() && !this.isDefaultInOtherLang(flat, key)) {
       return flat;
     }
     return fb;
   }
 
-  private render(): void {
+  render() {
     const locale = I18N[this.widgetLang] || I18N.en;
     const th = THEMES[this.theme] || THEMES.gold;
 
@@ -1443,25 +1369,24 @@ export class WheelOfFortuneElement extends HTMLElement {
     `;
   }
 
-  private initCanvas(): void {
-    this.canvas = this.shadow.querySelector("#wheel-canvas") as HTMLCanvasElement;
+  initCanvas() {
+    this.canvas = this.shadow.querySelector("#wheel-canvas");
     if (!this.canvas) return;
-    this.ctx = this.canvas.getContext("2d")!;
+    this.ctx = this.canvas.getContext("2d");
     this.drawWheel();
   }
 
-  // ─── HTML5 Canvas Wheel Rendering ──────────────────────────────────────────
-  private drawWheel(): void {
+  drawWheel() {
     if (!this.ctx || !this.canvas) return;
     const ctx = this.ctx;
-    const size = this.canvas.width; // 720
+    const size = this.canvas.width;
     const center = size / 2;
-    const radius = center - 28; // Outer rim margin
+    const radius = center - 28;
     const th = THEMES[this.theme] || THEMES.gold;
 
     ctx.clearRect(0, 0, size, size);
 
-    // 1. Draw Outer Gold/Metallic Ring
+    // Outer Rim
     ctx.save();
     ctx.beginPath();
     ctx.arc(center, center, radius + 20, 0, Math.PI * 2);
@@ -1475,7 +1400,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     ctx.strokeStyle = "#451a03";
     ctx.stroke();
 
-    // Outer Glow Bulbs (Animated LEDs)
+    // LED Bulbs
     const numBulbs = 24;
     for (let b = 0; b < numBulbs; b++) {
       const bulbAngle = (b / numBulbs) * Math.PI * 2;
@@ -1492,7 +1417,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     }
     ctx.restore();
 
-    // 2. Draw Wheel Slices with Current Rotation
+    // Wheel Slices
     const pool = this.prizes.length >= 2 ? this.prizes : DEFAULT_PRIZES;
     const totalSegments = pool.length;
     const segmentAngle = (Math.PI * 2) / totalSegments;
@@ -1507,7 +1432,6 @@ export class WheelOfFortuneElement extends HTMLElement {
       const startAngle = i * segmentAngle;
       const endAngle = (i + 1) * segmentAngle;
 
-      // Wedge Slice
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, radius, startAngle, endAngle);
@@ -1520,38 +1444,288 @@ export class WheelOfFortuneElement extends HTMLElement {
       ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
       ctx.stroke();
 
-      // Slice Text (Radial Projection)
+      // Slice Text with Multi-line Wrapping & Inward Placement
       ctx.save();
       const midAngle = startAngle + segmentAngle / 2;
       ctx.rotate(midAngle);
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 24px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
-      ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+      ctx.fillStyle = prize.textColor || "#ffffff";
+      const fontSize = Math.max(11, Math.min(21, Math.floor(200 / totalSegments)));
+      const fontFam = this.fontFamily || "Poppins";
+      ctx.font = "bold " + fontSize + "px '" + fontFam + "', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
       ctx.shadowBlur = 4;
 
-      // Truncate label if too long
-      let label = prize.label || "Prize";
-      if (label.length > 15) label = label.substring(0, 14) + "…";
-      ctx.fillText(label, radius - 35, 0);
+      let label = (prize.label || "Prize").trim();
+      const words = label.split(" ");
+      let lines = [];
+      if (words.length === 1) {
+        if (label.length > 9) {
+          lines = [label.substring(0, 8) + "-", label.substring(8)];
+        } else {
+          lines = [label];
+        }
+      } else {
+        let currentLine = words[0];
+        for (let w = 1; w < words.length; w++) {
+          if ((currentLine + " " + words[w]).length <= 10) {
+            currentLine += " " + words[w];
+          } else {
+            lines.push(currentLine);
+            currentLine = words[w];
+          }
+        }
+        lines.push(currentLine);
+      }
+
+      // Moved inward (4 chars closer to center: radius - 58 instead of radius - 35)
+      const textRadius = radius - 58;
+      const lineHeight = fontSize * 1.18;
+      const startY = -((lines.length - 1) * lineHeight) / 2;
+
+      lines.forEach((line, lIdx) => {
+        const y = startY + lIdx * lineHeight;
+        ctx.fillText(line, textRadius, y);
+      });
       ctx.restore();
     }
 
-    // 3. Center Hub Border Circle
-    ctx.beginPath();
-    ctx.arc(0, 0, 68, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-    ctx.fill();
     ctx.restore();
 
-    // 4. Draw Confetti if active
+    // 3. Draw 3D Metallic Gold Center Hub Directly on Canvas (Permanently Locked at Exact Center)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(center, center, 44, 0, Math.PI * 2);
+    const centerGrad = ctx.createRadialGradient(center - 12, center - 12, 4, center, center, 44);
+    centerGrad.addColorStop(0, "#fffbeb");
+    centerGrad.addColorStop(0.3, "#fbbf24");
+    centerGrad.addColorStop(0.8, "#d97706");
+    centerGrad.addColorStop(1, "#78350f");
+    ctx.fillStyle = centerGrad;
+    ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = "#ffffff";
+    ctx.stroke();
+
+    // Inner bevel ring
+    ctx.beginPath();
+    ctx.arc(center, center, 38, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Center "SPIN" text
+    ctx.fillStyle = "#1e1b4b";
+    const fontFam = this.fontFamily || "Poppins";
+    ctx.font = "900 15px '" + fontFam + "', -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
+    ctx.shadowBlur = 2;
+    ctx.fillText("SPIN", center, center);
+    ctx.restore();
+
+    // Draw Dynamic Wind & Confetti
+    this.drawWind();
     this.drawConfetti();
   }
 
-  // ─── Spin Mechanics & Physics ──────────────────────────────────────────────
-  private async triggerSpin(): Promise<void> {
-    if (this.isSpinning) return;
+  pickTargetOutcome() {
+    const pool = this.prizes.length >= 2 ? this.prizes : DEFAULT_PRIZES;
+    const totalWeight = pool.reduce((sum, p) => sum + Math.max(1, p.probability || 10), 0);
+    let rand = Math.random() * totalWeight;
+    let selectedIdx = 0;
+
+    for (let i = 0; i < pool.length; i++) {
+      const w = Math.max(1, pool[i].probability || 10);
+      if (rand <= w) {
+        selectedIdx = i;
+        break;
+      }
+      rand -= w;
+    }
+
+    const selPrize = pool[selectedIdx];
+    const totalSegments = pool.length;
+    const segmentAngle = 360 / totalSegments;
+    const jitter = (Math.random() - 0.5) * (segmentAngle * 0.65);
+    const targetSliceAngle = (selectedIdx + 0.5) * segmentAngle + jitter;
+    const normalizedStopAngle = (270 - targetSliceAngle + 720) % 360;
+
+    this.wonPrize = selPrize;
+    this.finalTargetAngle = normalizedStopAngle;
+    return selPrize;
+  }
+
+  spawnWindGust() {
+    this.windParticles = this.windParticles || [];
+    const container = this.shadow.querySelector("#widget-container");
+    if (container) {
+      container.classList.add("wind-gust-active");
+      setTimeout(() => container.classList.remove("wind-gust-active"), 350);
+    }
+
+    // 1. Expanding Sonic Wind Rings
+    this.windParticles.push({
+      type: "ring",
+      radius: 50,
+      radialSpeed: 9 + Math.random() * 4,
+      life: 0,
+    });
+    this.windParticles.push({
+      type: "ring",
+      radius: 70,
+      radialSpeed: 12 + Math.random() * 5,
+      life: 0.1,
+    });
+
+    // 2. High-speed Curved Wind Vortex Streaks around perimeter
+    const colors = ["#ffffff", "#fef08a", "#38bdf8", "#fbbf24", "#bae6fd"];
+    for (let i = 0; i < 28; i++) {
+      this.windParticles.push({
+        type: "arc",
+        radius: 120 + Math.random() * 210,
+        angle: Math.random() * Math.PI * 2,
+        speed: 15 + Math.random() * 25,
+        length: 0.3 + Math.random() * 0.8,
+        width: 1.5 + Math.random() * 3.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: Math.random() * 0.2,
+      });
+    }
+
+    // 3. Dynamic Horizontal Gust Streaks
+    for (let j = 0; j < 18; j++) {
+      this.windParticles.push({
+        type: "streak",
+        x: Math.random() * 720,
+        y: Math.random() * 720,
+        vx: 18 + Math.random() * 22,
+        vy: (Math.random() - 0.5) * 6,
+        width: 1.5 + Math.random() * 2.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: Math.random() * 0.25,
+      });
+    }
+  }
+
+  drawWind() {
+    if (!this.windParticles || this.windParticles.length === 0) return;
+    const ctx = this.ctx;
+    const size = this.canvas.width;
+    const center = size / 2;
+
+    ctx.save();
+    for (let i = this.windParticles.length - 1; i >= 0; i--) {
+      const wp = this.windParticles[i];
+      wp.life += 0.04;
+      const alpha = Math.max(0, 1 - wp.life);
+
+      if (wp.type === "ring") {
+        wp.radius += wp.radialSpeed;
+        ctx.beginPath();
+        ctx.arc(center, center, wp.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(254, 240, 138, " + (alpha * 0.85) + ")";
+        ctx.lineWidth = Math.max(1, 6 * (1 - wp.life));
+        ctx.shadowColor = "#fbbf24";
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+      } else if (wp.type === "arc") {
+        wp.angle += wp.speed * 0.04;
+        ctx.beginPath();
+        ctx.arc(center, center, wp.radius, wp.angle, wp.angle + wp.length);
+        ctx.strokeStyle = wp.color || ("rgba(255, 255, 255, " + (alpha * 0.9) + ")");
+        ctx.lineWidth = wp.width * (1 - wp.life * 0.3);
+        ctx.lineCap = "round";
+        ctx.shadowColor = wp.color;
+        ctx.shadowBlur = 6;
+        ctx.stroke();
+      } else if (wp.type === "streak") {
+        wp.x += wp.vx;
+        wp.y += wp.vy;
+        ctx.beginPath();
+        ctx.moveTo(wp.x, wp.y);
+        ctx.lineTo(wp.x - wp.vx * 2.5, wp.y - wp.vy * 2.5);
+        ctx.strokeStyle = wp.color || ("rgba(255, 255, 255, " + (alpha * 0.8) + ")");
+        ctx.lineWidth = wp.width;
+        ctx.lineCap = "round";
+        ctx.stroke();
+      }
+
+      if (wp.life >= 1) {
+        this.windParticles.splice(i, 1);
+      }
+    }
+    ctx.restore();
+  }
+
+  applyBoost() {
+    if (!this.isSpinning || this.isCoastingToStop) return;
+
+    this.boostCount = (this.boostCount || 0) + 1;
+    this.currentVelocity = Math.min(52, (this.currentVelocity || 22) + 18);
+    this.minSpinTime = performance.now() + 2400; // extend spin time on boost
+
+    // Recalculate target outcome dynamically so every boost changes the final winning slice!
+    this.pickTargetOutcome();
+
+    const spinTextEl = this.shadow.querySelector("#spin-btn-text");
+    const turboBtn = this.shadow.querySelector("#turbo-boost-btn");
+    const turboCounter = this.shadow.querySelector("#turbo-counter");
+    const boostLabels = ["⚡ BOOST!", "🚀 TURBO SPEED!", "💥 MEGA BOOST!", "🔥 MAXIMUM VELOCITY!"];
+    const boostText = boostLabels[Math.min(this.boostCount - 1, boostLabels.length - 1)];
+
+    if (spinTextEl) {
+      spinTextEl.textContent = boostText + " (x" + this.boostCount + ")";
+      spinTextEl.classList.add("boost-flash");
+      setTimeout(() => spinTextEl.classList.remove("boost-flash"), 350);
+    }
+    if (turboCounter) {
+      turboCounter.textContent = "x" + this.boostCount;
+    }
+    if (turboBtn) {
+      turboBtn.classList.add("spinning-active");
+    }
+
+    this.spawnBoostSparkles();
+    this.spawnWindGust();
+
+    window.dispatchEvent(
+      new CustomEvent("onSpinBoost", {
+        bubbles: true,
+        composed: true,
+        detail: { boostCount: this.boostCount, velocity: this.currentVelocity },
+      })
+    );
+  }
+
+  spawnBoostSparkles() {
+    const colors = ["#fef08a", "#fbbf24", "#60a5fa", "#34d399", "#f43f5e"];
+    for (let i = 0; i < 20; i++) {
+      this.confettiParticles.push({
+        x: 360 + (Math.random() - 0.5) * 80,
+        y: 360 + (Math.random() - 0.5) * 80,
+        vx: (Math.random() - 0.5) * 16,
+        vy: (Math.random() - 0.5) * 16,
+        size: 4 + Math.random() * 5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        rotSpeed: (Math.random() - 0.5) * 10,
+        opacity: 0.9,
+      });
+    }
+  }
+
+  async triggerSpin() {
+    if (this.isSpinning) {
+      // ⚡ TURBO RE-ACCELERATE / BOOST!
+      this.applyBoost();
+      return;
+    }
+
     const usage = this.getUsageData();
     if (usage.count >= this.dailyLimit) {
       this.checkDailyLimit();
@@ -1559,59 +1733,37 @@ export class WheelOfFortuneElement extends HTMLElement {
     }
 
     this.isSpinning = true;
+    this.boostCount = 0;
     this.setControlsDisabled(true);
 
-    const locale = I18N[this.widgetLang] || I18N.en;
     const spinTextEl = this.shadow.querySelector("#spin-btn-text");
-    if (spinTextEl) spinTextEl.textContent = locale.spinning;
+    const centerBtn = this.shadow.querySelector("#center-spin-btn");
+    if (spinTextEl) spinTextEl.textContent = "⚡ SPINNING...";
+    const turboBtn = this.shadow.querySelector("#turbo-boost-btn");
+    const turboCounter = this.shadow.querySelector("#turbo-counter");
+    if (turboBtn) turboBtn.classList.add("spinning-active");
+    if (turboCounter) turboCounter.textContent = "x0";
 
     try {
-      // 1. Calculate Weighted Random Prize
-      const pool = this.prizes.length >= 2 ? this.prizes : DEFAULT_PRIZES;
-      const totalWeight = pool.reduce((sum, p) => sum + (p.isActive !== false ? Math.max(1, p.probability || 10) : 0), 0);
-      let rand = Math.random() * totalWeight;
-      let selectedIndex = 0;
+      this.pickTargetOutcome();
+      await this.animatePhysicsSpin();
 
-      for (let i = 0; i < pool.length; i++) {
-        const prize = pool[i];
-        if (prize.isActive === false) continue;
-        const w = Math.max(1, prize.probability || 10);
-        if (rand <= w) {
-          selectedIndex = i;
-          break;
-        }
-        rand -= w;
-      }
-
-      const selected = pool[selectedIndex];
-      this.wonPrize = selected;
-
-      // 2. Exact Target Angle Calculation
-      const totalSegments = pool.length;
-      const segmentAngle = 360 / totalSegments;
-      const jitter = (Math.random() - 0.5) * (segmentAngle * 0.65);
-      const targetSliceAngle = (selectedIndex + 0.5) * segmentAngle + jitter;
-      const normalizedStop = (270 - targetSliceAngle + 720) % 360;
-      const fullRotations = (5 + Math.floor(Math.random() * 3)) * 360;
-      const targetAngle = fullRotations + normalizedStop;
-
-      // 3. Animate Wheel Physics
-      await this.animateSpin(targetAngle, 4600);
-
-      // 4. Celebrate with Confetti & Reveal Lead Form
       this.spawnConfetti();
       this.showPrizeOutcome();
-      this.saveUsage(selected.code, selected.label);
+      this.saveUsage(this.wonPrize.code, this.wonPrize.label);
+      const turboBtn = this.shadow.querySelector("#turbo-boost-btn");
+      if (turboBtn) turboBtn.classList.remove("spinning-active");
 
-      this.dispatchEvent(
+      window.dispatchEvent(
         new CustomEvent("onSpinComplete", {
           bubbles: true,
           composed: true,
           detail: {
-            prizeId: selected.id,
-            label: selected.label,
-            code: selected.code,
-            isWinner: selected.isWinner,
+            prizeId: this.wonPrize.id,
+            label: this.wonPrize.label,
+            code: this.wonPrize.code,
+            isWinner: this.wonPrize.isWinner,
+            boostCount: this.boostCount,
           },
         })
       );
@@ -1619,30 +1771,81 @@ export class WheelOfFortuneElement extends HTMLElement {
       console.error("[WheelOfFortune] Spin error:", err);
       this.isSpinning = false;
       this.setControlsDisabled(false);
+      const locale = I18N[this.widgetLang] || I18N.en;
       if (spinTextEl) spinTextEl.textContent = this.valOr("spinBtn", locale.spinBtn);
     }
   }
 
-  private animateSpin(targetAngle: number, durationMs: number): Promise<void> {
+  animatePhysicsSpin() {
     return new Promise((resolve) => {
-      const startAngle = this.currentRotation % 360;
-      const totalDelta = targetAngle - startAngle;
-      const startTime = performance.now();
-      const pointer = this.shadow.querySelector("#pointer-arrow") as HTMLElement;
-
-      const totalSegments = this.prizes.length;
+      const pointer = this.shadow.querySelector("#pointer-arrow");
+      const totalSegments = this.prizes.length >= 2 ? this.prizes.length : 6;
       const degPerSegment = 360 / totalSegments;
       let lastSliceIndex = -1;
 
-      const step = (now: number) => {
+      let lastTime = performance.now();
+      this.currentVelocity = 28 + Math.random() * 6; // Initial velocity deg/frame
+      this.isCoastingToStop = false;
+      this.minSpinTime = performance.now() + 3200; // Spin at least 3.2s before deceleration
+
+      const tick = (now) => {
+        const dt = Math.min((now - lastTime) / 16.66, 2.5);
+        lastTime = now;
+
+        // Apply smooth air resistance friction if past minSpinTime
+        if (now > this.minSpinTime) {
+          this.currentVelocity *= Math.pow(0.984, dt);
+        }
+
+        // Advance rotation
+        this.currentRotation = (this.currentRotation + this.currentVelocity * dt) % 360;
+
+        // LED blinking & pointer ticking
+        const currentSliceIndex = Math.floor(this.currentRotation / degPerSegment);
+        if (currentSliceIndex !== lastSliceIndex) {
+          lastSliceIndex = currentSliceIndex;
+          if (pointer) {
+            pointer.classList.add("ticking");
+            setTimeout(() => pointer.classList.remove("ticking"), 40);
+          }
+          this.bulbBlinkPhase = (this.bulbBlinkPhase + 1) % 2;
+        }
+
+        this.drawWheel();
+
+        // When speed drops below threshold, smoothly coast and lock to target angle
+        if (now > this.minSpinTime && this.currentVelocity < 1.4) {
+          this.isCoastingToStop = true;
+          this.coastToTarget(this.finalTargetAngle).then(resolve);
+        } else {
+          this.spinAnimId = requestAnimationFrame(tick);
+        }
+      };
+
+      this.spinAnimId = requestAnimationFrame(tick);
+    });
+  }
+
+  coastToTarget(targetAngle) {
+    return new Promise((resolve) => {
+      const startAngle = this.currentRotation;
+      let delta = (targetAngle - (startAngle % 360) + 720) % 360;
+      if (delta < 120) delta += 360;
+      const finalAngle = startAngle + delta;
+
+      const duration = 1600;
+      const startTime = performance.now();
+      const pointer = this.shadow.querySelector("#pointer-arrow");
+      const totalSegments = this.prizes.length >= 2 ? this.prizes.length : 6;
+      const degPerSegment = 360 / totalSegments;
+      let lastSliceIndex = -1;
+
+      const step = (now) => {
         const elapsed = now - startTime;
-        const progress = Math.min(elapsed / durationMs, 1);
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3.4);
+        this.currentRotation = startAngle + delta * ease;
 
-        // Cubic-bezier easeOut curve (0.15, 0.9, 0.2, 1)
-        const ease = 1 - Math.pow(1 - progress, 3.5);
-        this.currentRotation = startAngle + totalDelta * ease;
-
-        // Pointer Tick effect
         const currentSliceIndex = Math.floor((this.currentRotation % 360) / degPerSegment);
         if (currentSliceIndex !== lastSliceIndex) {
           lastSliceIndex = currentSliceIndex;
@@ -1668,8 +1871,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     });
   }
 
-  // ─── Particle Confetti Engine ──────────────────────────────────────────────
-  private spawnConfetti(): void {
+  spawnConfetti() {
     const colors = ["#f59e0b", "#fbbf24", "#6366f1", "#ec4899", "#10b981", "#06b6d4", "#ffffff"];
     this.confettiParticles = [];
     const count = 90;
@@ -1694,8 +1896,8 @@ export class WheelOfFortuneElement extends HTMLElement {
       for (const p of this.confettiParticles) {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.45; // gravity
-        p.vx *= 0.98; // drag
+        p.vy += 0.45;
+        p.vx *= 0.98;
         p.rotation += p.rotSpeed;
         if (frame > 40) p.opacity -= 0.015;
       }
@@ -1709,7 +1911,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     requestAnimationFrame(animateParticles);
   }
 
-  private drawConfetti(): void {
+  drawConfetti() {
     if (this.confettiParticles.length === 0) return;
     const ctx = this.ctx;
     for (const p of this.confettiParticles) {
@@ -1723,12 +1925,12 @@ export class WheelOfFortuneElement extends HTMLElement {
     }
   }
 
-  private showPrizeOutcome(): void {
+  showPrizeOutcome() {
     const locale = I18N[this.widgetLang] || I18N.en;
-    const leadBox = this.shadow.querySelector("#lead-box") as HTMLElement;
-    const bottomBtn = this.shadow.querySelector("#bottom-spin-btn") as HTMLElement;
-    const prizeTitle = this.shadow.querySelector("#lead-prize-title") as HTMLElement;
-    const prizeCode = this.shadow.querySelector("#lead-prize-code") as HTMLElement;
+    const leadBox = this.shadow.querySelector("#lead-box");
+    const bottomBtn = this.shadow.querySelector("#bottom-spin-btn");
+    const prizeTitle = this.shadow.querySelector("#lead-prize-title");
+    const prizeCode = this.shadow.querySelector("#lead-prize-code");
 
     if (bottomBtn) bottomBtn.style.display = "none";
 
@@ -1743,16 +1945,13 @@ export class WheelOfFortuneElement extends HTMLElement {
     }
   }
 
-  // ─── Lead Form Submission ──────────────────────────────────────────────────
-  private async handleFormSubmit(e: Event): Promise<void> {
+  async handleFormSubmit(e) {
     e.preventDefault();
-    const fname = (this.shadow.querySelector("#inp-fname") as HTMLInputElement)?.value;
-    const lname = (this.shadow.querySelector("#inp-lname") as HTMLInputElement)?.value;
-    const email = (this.shadow.querySelector("#inp-email") as HTMLInputElement)?.value;
-    const phone = (this.shadow.querySelector("#inp-phone") as HTMLInputElement)?.value;
-    const privacy = (this.shadow.querySelector("#chk-privacy") as HTMLInputElement)?.checked;
-    const marketing = (this.shadow.querySelector("#chk-marketing") as HTMLInputElement)?.checked;
-
+    const fname = this.shadow.querySelector("#inp-fname")?.value;
+    const lname = this.shadow.querySelector("#inp-lname")?.value;
+    const email = this.shadow.querySelector("#inp-email")?.value;
+    const phone = this.shadow.querySelector("#inp-phone")?.value;
+    const privacy = this.shadow.querySelector("#chk-privacy")?.checked;
     const locale = I18N[this.widgetLang] || I18N.en;
 
     if (!privacy) {
@@ -1764,79 +1963,36 @@ export class WheelOfFortuneElement extends HTMLElement {
       return;
     }
 
-    const submitBtn = this.shadow.querySelector("#claim-submit-btn") as HTMLButtonElement;
+    const submitBtn = this.shadow.querySelector("#claim-submit-btn");
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = locale.sending;
     }
 
-    try {
-      const leadRecord = {
-        firstName: fname,
-        lastName: lname || "",
-        email: email.toLowerCase(),
-        phone: phone || "",
-        rewardCode: this.wonPrize?.code || "",
-        prizeLabel: this.wonPrize?.label || "Prize",
-        isWinner: Boolean(this.wonPrize?.isWinner),
-        language: this.widgetLang,
-        status: "new",
-        spunAt: new Date(),
-        marketingConsent: Boolean(marketing),
-        siteId: "default",
-      };
+    const dataUrl = this.renderCouponVoucherCard();
+    this.lastGeneratedCouponDataUrl = dataUrl;
 
-      // Save to local leads cache
-      try {
-        const localRaw = localStorage.getItem("wheel_of_fortune_local_leads") || "[]";
-        const localList = JSON.parse(localRaw);
-        localList.unshift({ _id: "lead_" + Date.now(), ...leadRecord, spunAt: new Date().toISOString() });
-        localStorage.setItem("wheel_of_fortune_local_leads", JSON.stringify(localList));
-      } catch {}
+    const leadBox = this.shadow.querySelector("#lead-box");
+    const successBox = this.shadow.querySelector("#success-box");
+    const voucherImg = this.shadow.querySelector("#voucher-img");
 
-      // Insert into CMS collection
-      const colls = ["WheelWinners", "@deniz-uyanik/wheel-of-fortune/WheelWinners", "wheelWinners"];
-      for (const c of colls) {
-        try {
-          await items.insert(c, leadRecord);
-          break;
-        } catch {}
-      }
-
-      // Render 1200x700 Digital Voucher
-      const dataUrl = this.renderCouponVoucherCard();
-      this.lastGeneratedCouponDataUrl = dataUrl;
-
-      const leadBox = this.shadow.querySelector("#lead-box") as HTMLElement;
-      const successBox = this.shadow.querySelector("#success-box") as HTMLElement;
-      const voucherImg = this.shadow.querySelector("#voucher-img") as HTMLImageElement;
-
-      if (leadBox) leadBox.style.display = "none";
-      if (voucherImg && dataUrl) voucherImg.src = dataUrl;
-      if (successBox) {
-        successBox.style.display = "block";
-        successBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
-
-      this.dispatchEvent(
-        new CustomEvent("onFormSubmit", {
-          bubbles: true,
-          composed: true,
-          detail: { firstName: fname, lastName: lname, email, phone, code: this.wonPrize?.code },
-        })
-      );
-    } catch (err) {
-      console.error("[WheelOfFortune] Submit error:", err);
-      alert("Failed to submit form. Please check your connection.");
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = this.valOr("cta", locale.cta);
-      }
+    if (leadBox) leadBox.style.display = "none";
+    if (voucherImg && dataUrl) voucherImg.src = dataUrl;
+    if (successBox) {
+      successBox.style.display = "block";
+      successBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
+
+    window.dispatchEvent(
+      new CustomEvent("onFormSubmit", {
+        bubbles: true,
+        composed: true,
+        detail: { firstName: fname, lastName: lname, email, phone, code: this.wonPrize?.code },
+      })
+    );
   }
 
-  // ─── 1200x700 Gold-Framed Digital Voucher Generator ────────────────────────
-  private renderCouponVoucherCard(): string {
+  renderCouponVoucherCard() {
     const locale = I18N[this.widgetLang] || I18N.en;
     const prizeText = this.wonPrize?.label || "EXCLUSIVE REWARD";
     const couponCode = this.wonPrize?.code || "SPIN2026";
@@ -1847,7 +2003,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     const vCtx = vCanvas.getContext("2d");
     if (!vCtx) return "";
 
-    // 1. Dark Luxury Gradient Background
+    // Background
     const bgGrad = vCtx.createRadialGradient(600, 350, 50, 600, 350, 650);
     bgGrad.addColorStop(0, "#1e1b4b");
     bgGrad.addColorStop(0.6, "#0f172a");
@@ -1855,7 +2011,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     vCtx.fillStyle = bgGrad;
     vCtx.fillRect(0, 0, 1200, 700);
 
-    // 2. Double Ornate Gold Border
+    // Ornate Gold Border
     vCtx.lineWidth = 14;
     const goldGrad = vCtx.createLinearGradient(0, 0, 1200, 700);
     goldGrad.addColorStop(0, "#d97706");
@@ -1870,8 +2026,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     vCtx.strokeStyle = "rgba(251, 191, 36, 0.45)";
     vCtx.strokeRect(48, 48, 1104, 604);
 
-    // Corner Ornaments
-    const drawCorner = (cx: number, cy: number) => {
+    const drawCorner = (cx, cy) => {
       vCtx.beginPath();
       vCtx.arc(cx, cy, 18, 0, Math.PI * 2);
       vCtx.fillStyle = "#fbbf24";
@@ -1882,7 +2037,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     drawCorner(48, 652);
     drawCorner(1152, 652);
 
-    // 3. Header & Title
+    // Header & Prize Text
     vCtx.textAlign = "center";
     vCtx.textBaseline = "middle";
 
@@ -1897,7 +2052,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     vCtx.fillText(prizeText.toUpperCase(), 600, 210);
     vCtx.shadowBlur = 0;
 
-    // 4. Coupon Code Box
+    // Coupon Code Box
     vCtx.fillStyle = "rgba(0, 0, 0, 0.65)";
     vCtx.roundRect(280, 290, 640, 130, 20);
     vCtx.fill();
@@ -1913,7 +2068,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     vCtx.fillStyle = "#fef08a";
     vCtx.fillText(couponCode, 600, 380);
 
-    // 5. Perforated Dotted Divider Line
+    // Perforated Dotted Line
     vCtx.save();
     vCtx.beginPath();
     vCtx.setLineDash([12, 10]);
@@ -1924,7 +2079,7 @@ export class WheelOfFortuneElement extends HTMLElement {
     vCtx.stroke();
     vCtx.restore();
 
-    // 6. Security Notice & Instructions
+    // Security Notice
     vCtx.font = "24px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
     vCtx.fillStyle = "#cbd5e1";
     vCtx.fillText(locale.couponValidNotice || "Present this coupon at checkout to claim your reward.", 600, 540);
@@ -1936,13 +2091,11 @@ export class WheelOfFortuneElement extends HTMLElement {
     return vCanvas.toDataURL("image/png");
   }
 
-  // ─── 100% Synchronous Bulletproof Download Trigger ─────────────────────────
-  private downloadCouponImage(): void {
+  downloadCouponImage() {
     const dataUrl = this.lastGeneratedCouponDataUrl || this.renderCouponVoucherCard();
     if (!dataUrl) return;
 
     try {
-      // Synchronous conversion to Blob so User Gesture Token remains alive
       const parts = dataUrl.split(",");
       const byteString = atob(parts[1]);
       const mimeString = parts[0].split(":")[1].split(";")[0];
@@ -1967,16 +2120,16 @@ export class WheelOfFortuneElement extends HTMLElement {
       const locale = I18N[this.widgetLang] || I18N.en;
       if (dlBtn) dlBtn.textContent = locale.couponSaved;
     } catch (err) {
-      console.error("[WheelOfFortune] Download trigger error:", err);
+      console.error("[WheelOfFortune] Download error:", err);
     }
   }
 
-  private showAlreadySpunState(codes: Array<{ code: string; label: string; date: string }>): void {
+  showAlreadySpunState(codes) {
     const locale = I18N[this.widgetLang] || I18N.en;
-    const limitBox = this.shadow.querySelector("#limit-box") as HTMLElement;
-    const bottomBtn = this.shadow.querySelector("#bottom-spin-btn") as HTMLElement;
-    const centerBtn = this.shadow.querySelector("#center-spin-btn") as HTMLButtonElement;
-    const prevCodes = this.shadow.querySelector("#previous-codes") as HTMLElement;
+    const limitBox = this.shadow.querySelector("#limit-box");
+    const bottomBtn = this.shadow.querySelector("#bottom-spin-btn");
+    const centerBtn = this.shadow.querySelector("#center-spin-btn");
+    const prevCodes = this.shadow.querySelector("#previous-codes");
 
     if (bottomBtn) bottomBtn.style.display = "none";
     if (centerBtn) centerBtn.disabled = true;
@@ -1993,26 +2146,45 @@ export class WheelOfFortuneElement extends HTMLElement {
     if (limitBox) limitBox.style.display = "block";
   }
 
-  private setControlsDisabled(disabled: boolean): void {
-    const centerBtn = this.shadow.querySelector("#center-spin-btn") as HTMLButtonElement;
-    const bottomBtn = this.shadow.querySelector("#bottom-spin-btn") as HTMLButtonElement;
-    if (centerBtn) centerBtn.disabled = disabled;
-    if (bottomBtn) bottomBtn.disabled = disabled;
+  setControlsDisabled(disabled) {
+    const centerBtn = this.shadow.querySelector("#center-spin-btn");
+    const bottomBtn = this.shadow.querySelector("#bottom-spin-btn");
+    if (disabled) {
+      if (centerBtn) {
+        centerBtn.classList.add("spinning-boostable");
+        centerBtn.disabled = false;
+      }
+      if (bottomBtn) {
+        bottomBtn.classList.add("spinning-boostable");
+        bottomBtn.disabled = false;
+      }
+    } else {
+      if (centerBtn) {
+        centerBtn.classList.remove("spinning-boostable");
+        centerBtn.disabled = false;
+      }
+      if (bottomBtn) {
+        bottomBtn.classList.remove("spinning-boostable");
+        bottomBtn.disabled = false;
+      }
+    }
   }
 
-  private setupEventListeners(): void {
+  setupEventListeners() {
     const centerBtn = this.shadow.querySelector("#center-spin-btn");
     const bottomBtn = this.shadow.querySelector("#bottom-spin-btn");
     const leadForm = this.shadow.querySelector("#lead-form");
     const dlBtn = this.shadow.querySelector("#download-coupon-btn");
 
-    if (centerBtn) centerBtn.addEventListener("click", () => this.triggerSpin());
-    if (bottomBtn) bottomBtn.addEventListener("click", () => this.triggerSpin());
-    if (leadForm) leadForm.addEventListener("submit", (e) => this.handleFormSubmit(e));
-    if (dlBtn) dlBtn.addEventListener("click", () => this.downloadCouponImage());
+    if (centerBtn) centerBtn.onclick = () => this.triggerSpin();
+    if (bottomBtn) bottomBtn.onclick = () => this.triggerSpin();
+    const turboBtn = this.shadow.querySelector("#turbo-boost-btn");
+    if (turboBtn) turboBtn.onclick = () => this.applyBoost();
+    if (leadForm) leadForm.onsubmit = (e) => this.handleFormSubmit(e);
+    if (dlBtn) dlBtn.onclick = () => this.downloadCouponImage();
   }
 
-  private updateTexts(): void {
+  updateTexts() {
     const locale = I18N[this.widgetLang] || I18N.en;
     const titleEl = this.shadow.querySelector("#wof-title");
     const subEl = this.shadow.querySelector("#wof-subtitle");
@@ -2026,7 +2198,7 @@ export class WheelOfFortuneElement extends HTMLElement {
   }
 }
 
-// Custom Element Registration
+
 if (!customElements.get("wheel-of-fortune-widget")) {
   customElements.define("wheel-of-fortune-widget", WheelOfFortuneElement);
 }
