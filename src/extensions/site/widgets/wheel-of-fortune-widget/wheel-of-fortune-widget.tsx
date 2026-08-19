@@ -919,6 +919,24 @@ export class WheelOfFortuneElement extends HTMLElement {
         }
         *, *::before, *::after { box-sizing: inherit; }
 
+        
+        .spinning-boostable {
+          cursor: pointer !important;
+          animation: boostPulse 0.7s infinite alternate ease-in-out !important;
+          box-shadow: 0 0 25px #fbbf24, 0 0 50px rgba(245, 158, 11, 0.6) !important;
+        }
+        @keyframes boostPulse {
+          0% { transform: scale(1); filter: brightness(1); }
+          100% { transform: scale(1.06); filter: brightness(1.3); }
+        }
+        .boost-flash {
+          animation: textFlash 0.3s ease-out !important;
+        }
+        @keyframes textFlash {
+          0% { transform: scale(1.3); color: #fef08a; }
+          100% { transform: scale(1); color: inherit; }
+        }
+
         .wof-container {
           position: relative;
           max-width: 680px;
