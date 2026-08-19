@@ -3,31 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎡 Wheel of Fortune — Local Test Studio & Multilingual Dashboard</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Comic+Neue:wght@700&family=Inter:wght@400;700;900&family=Montserrat:wght@700;900&family=Orbitron:wght@700;900&family=Outfit:wght@600;800&family=Playfair+Display:wght@700;900&family=Poppins:wght@400;600;700;900&family=Roboto:wght@500;700;900&display=swap">
+  <title>Wheel of Fortune — Official Management Dashboard</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Comic+Neue:wght@700&family=Inter:wght@400;600;700;900&family=Montserrat:wght@600;700;900&family=Orbitron:wght@700;900&family=Outfit:wght@500;600;700;800&family=Playfair+Display:wght@700;900&family=Poppins:wght@400;600;700;900&family=Roboto:wght@500;700;900&display=swap">
   <style>
     :root {
-      --bg-gradient: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #09090b 100%);
+      --bg-gradient: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #09090b 100%);
       --accent: #f59e0b;
       --card-bg: rgba(15, 23, 42, 0.85);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
     }
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg-gradient);
-      color: #f8fafc;
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
-    /* ─── Control Bar ─── */
-    .control-header {
+    /* ─── Top Executive Header ─── */
+    .dash-header {
       background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 12px 24px;
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 28px;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -35,278 +41,296 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      gap: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
     }
     .header-brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
     .header-brand h1 {
       margin: 0;
-      font-size: 18px;
+      font-size: 19px;
       font-weight: 800;
       background: linear-gradient(135deg, #fbbf24, #f59e0b);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .badge {
-      background: rgba(245, 158, 11, 0.2);
-      border: 1px solid #f59e0b;
-      color: #fbbf24;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 999px;
-      text-transform: uppercase;
+    .header-brand p {
+      margin: 2px 0 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
     }
 
-    /* View Switcher Tabs */
-    .view-switcher {
+    /* ─── Language Selector & Controls ─── */
+    .lang-bar {
       display: flex;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px;
-      padding: 4px;
-      gap: 4px;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.06);
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
     }
-    .view-tab {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
+    .lang-bar label {
+      font-size: 12px;
       font-weight: 700;
+      color: #fbbf24;
+    }
+    .lang-select {
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .btn-save-main {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      font-weight: 800;
       font-size: 13px;
-      padding: 8px 16px;
+      color: #fff;
+      padding: 9px 18px;
       border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s;
-    }
-    .view-tab.active {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: #0f172a;
-      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
-    }
-
-    .controls-group {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-    }
-    .ctrl-item {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 13px;
-    }
-    select, input, button {
-      font-family: inherit;
-    }
-    .ctrl-select, .ctrl-input {
-      background: #0f172a;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #f8fafc;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      outline: none;
-    }
-    .ctrl-btn {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      color: #fff;
-      border: none;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    /* ─── Main Sandbox Area ─── */
-    .sandbox-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px;
-      box-sizing: border-box;
-      max-width: 1280px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    /* ─── Widget View ─── */
-    .widget-view {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    /* ─── Event Monitor & Log Console ─── */
-    .log-panel {
-      width: 100%;
-      max-width: 680px;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 16px;
-      margin-top: 10px;
-      box-sizing: border-box;
-    }
-    .log-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      font-weight: 700;
-      color: #fbbf24;
-      margin-bottom: 8px;
-    }
-    .log-content {
-      font-family: monospace;
-      font-size: 12px;
-      color: #94a3b8;
-      background: #09090b;
-      padding: 10px;
-      border-radius: 8px;
-      height: 120px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-    }
-
-    /* ─── Dashboard View ─── */
-    .dashboard-view {
-      width: 100%;
-      display: none;
-      background: var(--card-bg);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 20px;
-      padding: 24px;
-      box-sizing: border-box;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-    }
-    .dash-header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      margin-bottom: 20px;
-      gap: 16px;
-    }
-    .dash-nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    .dash-tab-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #cbd5e1;
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(16,185,129,0.35);
       transition: all 0.2s;
     }
-    .dash-tab-btn.active {
-      background: #f59e0b;
-      color: #0f172a;
-      border-color: #f59e0b;
-      font-weight: 700;
+    .btn-save-main:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16,185,129,0.5);
     }
-    .dash-content-pane {
+
+    /* ─── Navigation Tabs ─── */
+    .dash-nav {
+      padding: 12px 28px 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--card-border);
+      overflow-x: auto;
+    }
+    .dash-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+    .dash-tab-btn:hover {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .dash-tab-btn.active {
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.1);
+      border-bottom-color: #fbbf24;
+    }
+
+    /* ─── Dashboard Container ─── */
+    .dash-container {
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 28px 60px;
+    }
+    .dash-pane {
       display: none;
     }
-    .dash-content-pane.active {
+    .dash-pane.active {
       display: block;
     }
 
-    /* Stats Grid */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fbbf24;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ─── Stats Grid ─── */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
     .stat-card {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      padding: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: center;
     }
     .stat-card h4 {
-      margin: 0;
       font-size: 12px;
+      color: var(--text-muted);
       text-transform: uppercase;
-      color: #94a3b8;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
     }
     .stat-card .val {
       font-size: 28px;
-      font-weight: 800;
-      margin-top: 8px;
+      font-weight: 900;
     }
 
-    /* Tables */
-    .dash-table {
+    /* ─── Tables ─── */
+    .table-responsive {
+      overflow-x: auto;
+    }
+    table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
-      margin-top: 12px;
-    }
-    .dash-table th {
       text-align: left;
+    }
+    th {
+      background: rgba(0,0,0,0.3);
+      color: var(--text-muted);
       padding: 10px 12px;
-      background: rgba(0, 0, 0, 0.4);
-      color: #94a3b8;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--card-border);
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: middle;
+    }
+    tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+
+    input[type="text"], input[type="number"], select {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: #f59e0b;
+    }
+
+    .btn-action {
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
       font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .dash-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    .btn-action:hover {
+      opacity: 0.9;
     }
-    .dash-table tr:hover {
-      background: rgba(255, 255, 255, 0.02);
-    }
-    .badge-win {
-      background: rgba(16, 185, 129, 0.2);
-      color: #34d399;
-      border: 1px solid #10b981;
-      padding: 2px 6px;
+    .btn-delete {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 4px 8px;
       border-radius: 4px;
+      cursor: pointer;
       font-size: 11px;
       font-weight: 700;
+    }
+    .btn-delete:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .badge-win {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #34d399;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* ─── Toast Banner ─── */
+    .save-banner {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #fff;
+      font-weight: 800;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      z-index: 1000;
+      animation: slideUp 0.3s forwards;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Global Header -->
-  <header class="control-header">
+  <!-- Top Executive Header -->
+  <header class="dash-header">
     <div class="header-brand">
-      <span style="font-size: 24px;">🎡</span>
-      <h1>Wheel of Fortune</h1>
-      <span class="badge">LOCAL STUDIO</span>
+      <span style="font-size:26px;">🎡</span>
+      <div>
+        <h1 id="dash-title-txt">Wheel of Fortune Dashboard</h1>
+        <p id="dash-sub-txt">Manage prizes, probabilities, CRM leads, theme, typography, and 16 languages</p>
+      </div>
     </div>
 
-    <!-- View Switcher (Widget vs Dashboard) -->
-    <div class="view-switcher">
-      <button type="button" class="view-tab active" id="tab-btn-widget">🎡 Site Widget Preview</button>
-      <button type="button" class="view-tab" id="tab-btn-dashboard">📊 Dashboard Management Panel</button>
-    </div>
-
-    <!-- Quick Live Widget Controls -->
-    <div class="controls-group" id="widget-controls">
-      <div class="ctrl-item">
-        <label>🌍 Language:</label>
-        <select class="ctrl-select" id="sel-lang">
-          <option value="en" selected>English 🇺🇸</option>
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <div class="lang-bar">
+        <label id="dash-lang-label">🌐 Language:</label>
+        <select class="lang-select" id="dash-header-lang-sel">
+          <option value="en" selected>English 🇺🇸 (Default)</option>
           <option value="tr">Türkçe 🇹🇷</option>
           <option value="de">Deutsch 🇩🇪</option>
           <option value="fr">Français 🇫🇷</option>
@@ -325,271 +349,207 @@
         </select>
       </div>
 
-      <div class="ctrl-item">
-        <label>🔤 Font:</label>
-        <select class="ctrl-select" id="sel-font">
-          <option value="Poppins" selected>Poppins (Modern)</option>
-          <option value="Inter">Inter (Clean)</option>
-          <option value="Outfit">Outfit (Bold)</option>
-          <option value="Montserrat">Montserrat (Luxury)</option>
-          <option value="Roboto">Roboto (Standard)</option>
-          <option value="Playfair Display">Playfair Display (Serif)</option>
-          <option value="Cinzel">Cinzel (Royal)</option>
-          <option value="Orbitron">Orbitron (Cyberpunk)</option>
-          <option value="Comic Neue">Comic Neue (Casual)</option>
-        </select>
-      </div>
-
-      <div class="ctrl-item">
-        <label>🎨 Theme:</label>
-        <select class="ctrl-select" id="sel-theme">
-          <option value="gold" selected>Royal Gold</option>
-          <option value="dark">Dark Nebula</option>
-          <option value="neon">Cyberpunk Neon</option>
-          <option value="light">Clean Light</option>
-        </select>
-      </div>
-
-      <div class="ctrl-item">
-        <label>⏱️ Limit:</label>
-        <input type="number" class="ctrl-input" id="sel-limit" value="1" min="1" max="10" style="width: 50px;" />
-      </div>
-
-      <button type="button" class="ctrl-btn" id="btn-reset" title="Clear spin daily limit in LocalStorage">🔄 Reset Limit</button>
+      <button type="button" class="btn-save-main" id="btn-save-dash">
+        💾 Save All Changes
+      </button>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="sandbox-main">
+  <!-- Navigation Tabs -->
+  <nav class="dash-nav" id="dash-nav-tabs">
+    <button type="button" class="dash-tab-btn active" data-pane="dash-overview" id="tab-nav-overview">📊 Overview</button>
+    <button type="button" class="dash-tab-btn" data-pane="dash-prizes" id="tab-nav-prizes">🎁 Prize Slices</button>
+    <button type="button" class="dash-tab-btn" data-pane="dash-leads" id="tab-nav-leads">👥 CRM Leads & Notes</button>
+    <button type="button" class="dash-tab-btn" data-pane="dash-theme" id="tab-nav-theme">🎨 Design & Theme</button>
+    <button type="button" class="dash-tab-btn" data-pane="dash-i18n" id="tab-nav-texts">🌍 16 Languages & Texts</button>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="dash-container">
     
-    <!-- ─── 1. WIDGET PREVIEW VIEW ─── -->
-    <div class="widget-view" id="view-widget">
-      <div style="width: 100%; max-width: 680px;">
-        <wheel-of-fortune-widget
-          id="test-widget"
-          color-theme="gold"
-          font-family="Poppins"
-          lang="en"
-          daily-limit="1"
-        ></wheel-of-fortune-widget>
-      </div>
-
-      <div class="log-panel">
-        <div class="log-header">
-          <span>📡 Live Event & CRM Monitor</span>
-          <button type="button" id="btn-clear-log" style="font-size:11px; padding:2px 8px; background:rgba(255,255,255,0.1); border:none; color:#cbd5e1; border-radius:4px; cursor:pointer;">Clear</button>
+    <!-- ─── 1. OVERVIEW TAB ─── -->
+    <div class="dash-pane active" id="dash-overview">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h4 id="lbl-stat-spins">Total Spins</h4>
+          <div class="val" style="color:#60a5fa;" id="stat-spins">42</div>
         </div>
-        <div class="log-content" id="log-console">[System] Local test sandbox initialized. Spin the wheel to test live events...</div>
-      </div>
-    </div>
-
-    <!-- ─── 2. DASHBOARD VIEW ─── -->
-    <div class="dashboard-view" id="view-dashboard">
-      
-      <!-- Persistent Header with Title, Language Selector and Save Button -->
-      <div class="dash-header">
-        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
-          <div>
-            <h2 id="dash-title-txt" style="margin:0; font-size:22px; color:#fbbf24;">🎡 Wheel of Fortune Dashboard</h2>
-            <p id="dash-sub-txt" style="margin:4px 0 0 0; font-size:13px; color:#94a3b8;">Manage wheel prizes, win odds, CRM leads, theme, typography, and 16-language texts</p>
-          </div>
-          
-          <!-- Persistent Language Selector -->
-          <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:6px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.15);">
-            <label id="dash-lang-label" style="font-size:13px; font-weight:700; color:#fbbf24;">🌐 Language:</label>
-            <select id="dash-header-lang-sel" style="background:#0f172a; color:#fff; border:1px solid rgba(255,255,255,0.25); padding:6px 12px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:600;">
-              <option value="en" selected>English 🇺🇸</option>
-              <option value="tr">Türkçe 🇹🇷</option>
-              <option value="de">Deutsch 🇩🇪</option>
-              <option value="fr">Français 🇫🇷</option>
-              <option value="es">Español 🇪🇸</option>
-              <option value="he">עברית 🇮🇱</option>
-              <option value="zh">中文 🇨🇳</option>
-              <option value="ja">日本語 🇯🇵</option>
-              <option value="ko">한국어 🇰🇷</option>
-              <option value="hi">हिन्दी 🇮🇳</option>
-              <option value="pt">Português 🇧🇷</option>
-              <option value="ru">Русский 🇷🇺</option>
-              <option value="uk">Українська 🇺🇦</option>
-              <option value="el">Ελληνικά 🇬🇷</option>
-              <option value="it">Italiano 🇮🇹</option>
-              <option value="ar">العربية 🇸🇦</option>
-            </select>
-          </div>
+        <div class="stat-card">
+          <h4 id="lbl-stat-coupons">Coupons Won</h4>
+          <div class="val" style="color:#34d399;" id="stat-winners">35</div>
         </div>
-
-        <button type="button" style="background:#10b981; border:none; font-weight:700; color:#fff; padding:10px 20px; border-radius:8px; cursor:pointer;" id="btn-save-dash">💾 Save All Changes</button>
-      </div>
-
-      <!-- Dashboard Dynamic Tabs -->
-      <div class="dash-nav" id="dash-nav-tabs">
-        <button type="button" class="dash-tab-btn active" data-pane="dash-overview" id="tab-nav-overview">📊 Overview</button>
-        <button type="button" class="dash-tab-btn" data-pane="dash-prizes" id="tab-nav-prizes">🎁 Prize Slices</button>
-        <button type="button" class="dash-tab-btn" data-pane="dash-leads" id="tab-nav-leads">👥 CRM Leads & Notes</button>
-        <button type="button" class="dash-tab-btn" data-pane="dash-theme" id="tab-nav-theme">🎨 Theme & Typography</button>
-        <button type="button" class="dash-tab-btn" data-pane="dash-i18n" id="tab-nav-texts">🌍 16 Languages & Texts</button>
-      </div>
-
-      <!-- Tab 1: Overview -->
-      <div class="dash-content-pane active" id="dash-overview">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h4 id="lbl-stat-spins">Total Spins</h4>
-            <div class="val" style="color:#60a5fa;" id="stat-spins">24</div>
-          </div>
-          <div class="stat-card">
-            <h4 id="lbl-stat-coupons">Coupons Won</h4>
-            <div class="val" style="color:#34d399;" id="stat-winners">19</div>
-          </div>
-          <div class="stat-card">
-            <h4 id="lbl-stat-leads">Leads Collected</h4>
-            <div class="val" style="color:#a78bfa;" id="stat-leads">16</div>
-          </div>
-          <div class="stat-card">
-            <h4 id="lbl-stat-rate">Conversion Rate</h4>
-            <div class="val" style="color:#fbbf24;" id="stat-conv">67%</div>
-          </div>
+        <div class="stat-card">
+          <h4 id="lbl-stat-leads">Leads Collected</h4>
+          <div class="val" style="color:#a78bfa;" id="stat-leads">31</div>
         </div>
-        <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px; border:1px solid rgba(255,255,255,0.08);">
-          <h4 id="lbl-campaign-title" style="margin:0 0 8px 0; color:#fbbf24;">🚀 Spin & Conversion Performance</h4>
-          <p id="lbl-campaign-desc" style="margin:0; font-size:13px; color:#cbd5e1;">Status: <strong style="color:#34d399;">🟢 Active & Visible to Visitors</strong>. Visitors can spin up to 1 time per day. Anti-cheat prevents multiple attempts per calendar day.</p>
+        <div class="stat-card">
+          <h4 id="lbl-stat-rate">Conversion Rate</h4>
+          <div class="val" style="color:#fbbf24;" id="stat-conv">74%</div>
         </div>
       </div>
 
-      <!-- Tab 2: UNLIMITED Prize Slices -->
-      <div class="dash-content-pane" id="dash-prizes">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
-          <div>
-            <h3 id="lbl-prizes-title" style="margin:0 0 4px 0; color:#fbbf24;">🎡 Wheel Segments & Probability Settings</h3>
-            <p id="lbl-prizes-sub" style="font-size:13px; color:#94a3b8; margin:0;">Add unlimited prize slices, pick custom background colors, text colors, codes and win odds:</p>
-          </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <span id="prizes-total-odds-badge" style="background:#10b981; color:#fff; font-weight:700; padding:6px 12px; border-radius:8px; font-size:13px;">Total: 100%</span>
-            <button type="button" style="background:#f59e0b; border:none; color:#0f172a; font-weight:800; padding:8px 16px; border-radius:8px; cursor:pointer;" id="btn-add-slice">+ Add New Slice</button>
-          </div>
-        </div>
-        <table class="dash-table">
-          <thead>
-            <tr>
-              <th id="th-bg-color">BG Color</th>
-              <th id="th-txt-color">Text Color</th>
-              <th id="th-label">Slice Title</th>
-              <th id="th-code">Coupon Code</th>
-              <th id="th-prob">Odds (%)</th>
-              <th id="th-status">Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="prizes-tbody">
-            <!-- Rendered dynamically by JS -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Tab 3: CRM Leads -->
-      <div class="dash-content-pane" id="dash-leads">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
-          <div>
-            <h3 id="lbl-leads-title" style="margin:0 0 4px 0; color:#fbbf24;">👥 CRM Leads & Winner Management</h3>
-            <p id="lbl-leads-sub" style="font-size:13px; color:#94a3b8; margin:0;">Real-time captured leads from wheel spins with editable follow-up notes:</p>
-          </div>
-          <button type="button" style="background:#6366f1; border:none; color:#fff; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer;" id="btn-export-csv">📥 Export CSV</button>
-        </div>
-        <table class="dash-table">
-          <thead>
-            <tr>
-              <th id="th-name">Full Name</th>
-              <th id="th-email">Email</th>
-              <th id="th-phone">Phone</th>
-              <th id="th-coupon">Coupon Won</th>
-              <th id="th-prize">Prize Won</th>
-              <th id="th-notes">Follow-up Notes</th>
-              <th id="th-lead-status">Status</th>
-            </tr>
-          </thead>
-          <tbody id="leads-tbody">
-            <tr>
-              <td><strong>Ahmet Yilmaz</strong></td>
-              <td>ahmet@example.com</td>
-              <td>+90 532 123 4567</td>
-              <td><span class="badge-win">CARK10</span></td>
-              <td>10% OFF</td>
-              <td><input type="text" class="lead-note-input" value="Customer used code on checkout." style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:4px 8px; border-radius:6px; font-size:12px; width:200px;" /></td>
-              <td><span style="color:#34d399;">New Lead</span></td>
-            </tr>
-            <tr>
-              <td><strong>Sarah Jenkins</strong></td>
-              <td>sarah.j@email.com</td>
-              <td>+1 555 019 2834</td>
-              <td><span class="badge-win">FREESHIP</span></td>
-              <td>FREE SHIPPING</td>
-              <td><input type="text" class="lead-note-input" value="Confirmed via email, pending order." style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:4px 8px; border-radius:6px; font-size:12px; width:200px;" /></td>
-              <td><span style="color:#60a5fa;">Contacted</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Tab 4: Theme & Typography -->
-      <div class="dash-content-pane" id="dash-theme">
-        <div style="margin-bottom:12px;">
-          <h3 id="lbl-theme-title" style="margin:0 0 4px 0; color:#fbbf24;">🎨 Visual Theme, Typography & Anti-Cheat Rules</h3>
-          <p id="lbl-theme-sub" style="font-size:13px; color:#94a3b8; margin:0;">Select visual color palette, custom Google font typography, and daily spin limits:</p>
-        </div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
-          <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px;">
-            <label id="lbl-theme-preset" style="font-size:13px; font-weight:700; color:#fbbf24; display:block; margin-bottom:8px;">Visual Theme Palette</label>
-            <select style="width:100%; padding:8px;" id="dash-theme-sel" class="ctrl-select">
-              <option value="gold">👑 Royal Gold Luxury</option>
-              <option value="dark">🌌 Dark Nebula</option>
-              <option value="neon">⚡ Cyberpunk Emerald Neon</option>
-              <option value="light">✨ Clean Light Modern</option>
-            </select>
-          </div>
-
-          <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px;">
-            <label style="font-size:13px; font-weight:700; color:#fbbf24; display:block; margin-bottom:8px;">🔤 Typography & Font Family</label>
-            <select style="width:100%; padding:8px;" id="dash-font-sel" class="ctrl-select">
-              <option value="Poppins" selected>Poppins (Modern Rounded - Default)</option>
-              <option value="Inter">Inter (Clean & Professional)</option>
-              <option value="Outfit">Outfit (Bold & Elegant)</option>
-              <option value="Montserrat">Montserrat (Geometric Luxury)</option>
-              <option value="Roboto">Roboto (Universal Standard)</option>
-              <option value="Playfair Display">Playfair Display (Classic Serif Luxury)</option>
-              <option value="Cinzel">Cinzel (Royal Classical)</option>
-              <option value="Orbitron">Orbitron (Futuristic Cyberpunk)</option>
-              <option value="Comic Neue">Comic Neue (Playful & Casual)</option>
-            </select>
-          </div>
-
-          <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px;">
-            <label id="lbl-theme-limit" style="font-size:13px; font-weight:700; color:#fbbf24; display:block; margin-bottom:8px;">Daily Spin Limit per Visitor</label>
-            <input type="number" value="1" min="1" max="10" style="width:100%; padding:8px;" id="dash-limit-inp" class="ctrl-input" />
-            <span id="lbl-theme-desc" style="font-size:11px; color:#94a3b8; display:block; margin-top:4px;">Anti-cheat prevents multiple attempts per visitor per calendar day.</span>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+        <div class="card">
+          <div class="card-title">⚡ Quick Configuration</div>
+          <div style="margin-top:14px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label style="font-size:13px; font-weight:600;">Wheel Active on Live Site</label>
+              <input type="checkbox" id="chk-is-active" checked style="width:18px; height:18px; cursor:pointer;" />
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label style="font-size:13px; font-weight:600;">Daily Spin Limit Per Visitor</label>
+              <input type="number" id="inp-daily-limit" value="1" min="1" max="100" style="width:70px;" />
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label style="font-size:13px; font-weight:600;">Primary Typography Font</label>
+              <select id="sel-dash-font" style="width:170px;">
+                <option value="Outfit">Outfit (Clean & Modern)</option>
+                <option value="Poppins">Poppins (Geometric)</option>
+                <option value="Inter">Inter (Ultra Legible)</option>
+                <option value="Montserrat">Montserrat (Bold Header)</option>
+                <option value="Roboto">Roboto (Standard)</option>
+                <option value="Playfair Display">Playfair Display (Luxury Serif)</option>
+                <option value="Cinzel">Cinzel (Royal)</option>
+                <option value="Orbitron">Orbitron (Cyberpunk)</option>
+                <option value="Comic Neue">Comic Neue (Playful)</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Tab 5: Translations & Custom Texts -->
-      <div class="dash-content-pane" id="dash-i18n">
-        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:14px 18px; border-radius:12px; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
-          <div>
-            <h3 id="lbl-texts-title" style="margin:0 0 4px 0; color:#fbbf24;">🌍 16 Languages & Text Customization</h3>
-            <p id="lbl-texts-sub" style="font-size:13px; color:#94a3b8; margin:0;">Override any of the 36 text strings for each language independently</p>
-          </div>
-          <button type="button" id="btn-reset-lang-texts" style="background:#dc2626; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">🔄 Reset This Language to Default</button>
-        </div>
-
-        <div id="i18n-categories-container" style="display:flex; flex-direction:column; gap:20px;">
-          <!-- Dynamically populated by JS for all 4 categories & 36 fields -->
+        <div class="card">
+          <div class="card-title" style="color:#34d399;">💎 Pro Gamification Highlights</div>
+          <ul style="color:var(--text-muted); font-size:13px; line-height:1.8; margin-top:10px; padding-left:18px;">
+            <li>⚡ <strong>Turbo Boost:</strong> Dynamic re-acceleration with supersonic wind gust effects.</li>
+            <li>🎁 <strong>Unlimited Slices:</strong> Add 2, 6, 8, 12, 20+ slices with custom odds.</li>
+            <li>🎟️ <strong>HD 1200x700 Branded Vouchers:</strong> 1-click instant PNG voucher download.</li>
+            <li>🛡️ <strong>Smart Anti-Cheat:</strong> 1 spin per calendar day per visitor protection.</li>
+          </ul>
         </div>
       </div>
     </div>
+
+    <!-- ─── 2. PRIZE SLICES TAB ─── -->
+    <div class="dash-pane" id="dash-prizes">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title" id="lbl-prize-table-title">Wheel Prize Slices (Unlimited)</div>
+            <div class="card-desc" id="lbl-prize-table-desc">Add or remove as many slices as you want. Customize slice colors, text colors, labels, coupon codes, and win odds.</div>
+          </div>
+          <button type="button" class="btn-action" id="btn-add-slice" style="background:#3b82f6;">➕ Add New Slice</button>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>BG Color</th>
+                <th>Text Color</th>
+                <th>Prize Label</th>
+                <th>Coupon Code</th>
+                <th>Win Probability (%)</th>
+                <th>Is Winner?</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-prizes">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 3. CRM LEADS TAB ─── -->
+    <div class="dash-pane" id="dash-leads">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title" id="lbl-crm-title">Captured CRM Leads & Winner Contacts</div>
+            <div class="card-desc" id="lbl-crm-desc">Real-time visitor lead database with prize history, follow-up status, and custom notes.</div>
+          </div>
+          <button type="button" class="btn-action" id="btn-export-csv" style="background:#10b981;">📥 Export to CSV</button>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Visitor Name</th>
+                <th>Email Address</th>
+                <th>Phone</th>
+                <th>Won Prize</th>
+                <th>Coupon Code</th>
+                <th>Language</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>CRM Notes</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-leads">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 4. THEME TAB ─── -->
+    <div class="dash-pane" id="dash-theme">
+      <div class="card">
+        <div class="card-title" id="lbl-theme-title">Color Themes & Visual Branding</div>
+        <div class="card-desc" style="margin-bottom:18px;">Choose a luxury theme that matches your website style.</div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:20px;">
+          <div class="theme-option active" data-theme="gold" onclick="selectTheme('gold')" style="background:linear-gradient(135deg, #1e1b4b, #0f172a); border:2px solid #fbbf24; border-radius:10px; padding:16px; cursor:pointer; text-align:center;">
+            <div style="font-size:24px;">👑</div>
+            <h4 style="margin:6px 0; color:#fbbf24;">Royal Gold</h4>
+            <p style="margin:0; font-size:11px; color:#94a3b8;">Rich dark blue & gold luxury accents</p>
+          </div>
+          <div class="theme-option" data-theme="dark" onclick="selectTheme('dark')" style="background:#09090b; border:2px solid #27272a; border-radius:10px; padding:16px; cursor:pointer; text-align:center;">
+            <div style="font-size:24px;">🌌</div>
+            <h4 style="margin:6px 0; color:#a855f7;">Dark Nebula</h4>
+            <p style="margin:0; font-size:11px; color:#94a3b8;">Deep space dark mode with purple glow</p>
+          </div>
+          <div class="theme-option" data-theme="neon" onclick="selectTheme('neon')" style="background:#022c22; border:2px solid #064e3b; border-radius:10px; padding:16px; cursor:pointer; text-align:center;">
+            <div style="font-size:24px;">⚡</div>
+            <h4 style="margin:6px 0; color:#10b981;">Emerald Cyber</h4>
+            <p style="margin:0; font-size:11px; color:#94a3b8;">Vibrant neon green & cyber grid</p>
+          </div>
+          <div class="theme-option" data-theme="light" onclick="selectTheme('light')" style="background:#f8fafc; border:2px solid #e2e8f0; border-radius:10px; padding:16px; cursor:pointer; text-align:center;">
+            <div style="font-size:24px;">☀️</div>
+            <h4 style="margin:6px 0; color:#0f172a;">Clean Light</h4>
+            <p style="margin:0; font-size:11px; color:#64748b;">Crisp light mode with high contrast</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 5. 16 LANGUAGES TAB ─── -->
+    <div class="dash-pane" id="dash-i18n">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title" id="lbl-i18n-title">16 Languages & 36 Custom Text Fields</div>
+            <div class="card-desc" id="lbl-i18n-desc">Select any language and fully customize all 36 text labels across the wheel, form, and voucher.</div>
+          </div>
+          <button type="button" class="btn-action" id="btn-reset-lang-texts" style="background:#ef4444;">🔄 Reset Language to Defaults</button>
+        </div>
+
+        <div id="i18n-fields-container" style="display:flex; flex-direction:column; gap:16px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
   </main>
 
-  <!-- Scripts -->
-  <script type="module">
-    // Master 16-Language Dashboard UI Dictionary
+  <div class="save-banner" id="save-banner">
+    ✅ All Settings Successfully Saved & Applied!
+  </div>
+
+  <script>
     const DASHBOARD_I18N = {
   en: {
     dashTitle: "Wheel of Fortune Dashboard",
@@ -2046,28 +2006,644 @@
       viewDashboard.style.display = "none";
       widgetControls.style.display = "flex";
     };
+    const I18N_DICTIONARY = {
+  en: {
+    title: "Spin & Win!",
+    subtitle: "Spin the wheel of fortune to unlock exclusive discounts",
+    spinBtn: "SPIN TO WIN",
+    spinning: "Spinning...",
+    rewardWon: "Congratulations! You Won! 🎉",
+    noReward: "Better luck next time!",
+    formTitle: "🎊 Fill in Your Details to Claim Your Prize",
+    formMandatoryNotice: "⚠️ You must complete and submit this form to claim and activate your prize.",
+    firstName: "First Name",
+    lastName: "Last Name",
+    phone: "Phone",
+    email: "Email",
+    firstNamePH: "Your first name",
+    lastNamePH: "Your last name",
+    phonePH: "+1 XXX XXX XXXX",
+    emailPH: "you@email.com",
+    cta: "🎁 Claim My Prize",
+    sending: "⏳ Sending...",
+    success: "🎉 Congratulations! Your details have been received.\nYour official coupon is ready below.",
+    privacyConsent: "I agree to the processing of my personal data according to the Privacy Policy.",
+    marketingConsent: "I consent to receiving marketing communications and exclusive offers.",
+    errorConsent: "Please accept the privacy policy to proceed.",
+    errorRequired: "Please fill in all required fields.",
+    errorEmail: "Please enter a valid email address.",
+    codeBadge: "COUPON CODE",
+    alreadySpun: "⚠️ Daily Spin Limit Reached",
+    comeBackTomorrow: "Come back tomorrow for more chances! 🌟",
+    yourCodes: "Your won codes:",
+    useThisCode: "🎁 Use this code at checkout",
+    playAgain: "🎮 Spin Again (Remaining: {count})",
+    screenshotNotice: "📸 Take a screenshot or download your coupon below so you don't lose it!",
+    downloadCoupon: "📸 Download / Save Coupon",
+    couponSaved: "✅ Coupon Saved!",
+    couponVoucherTitle: "OFFICIAL REWARD COUPON",
+    couponValidNotice: "Present this code at checkout to claim your reward",
+    couponTip: "💡 Tip: Long-press or right-click the image to save to your photos.",
+  },
+  tr: {
+    title: "Çevir & Kazan!",
+    subtitle: "Şanslı çarkı çevirerek sana özel sürpriz indirimi keşfet",
+    spinBtn: "ÇEVİR & KAZAN",
+    spinning: "Çark Dönüyor...",
+    rewardWon: "Tebrikler! Kazandınız! 🎉",
+    noReward: "Bu sefer olmadı, tekrar deneyin!",
+    formTitle: "🎊 Ödülünüzü Almak İçin Formu Doldurun",
+    formMandatoryNotice: "⚠️ Hediyenizi alabilmek ve kuponunuzu aktifleştirmek için formu doldurmanız zorunludur.",
+    firstName: "Ad",
+    lastName: "Soyad",
+    phone: "Telefon",
+    email: "E-Posta",
+    firstNamePH: "Adınız",
+    lastNamePH: "Soyadınız",
+    phonePH: "05XX XXX XXXX",
+    emailPH: "ornek@mail.com",
+    cta: "🎁 Ödülümü Al",
+    sending: "⏳ Gönderiliyor...",
+    success: "🎉 Tebrikler! Bilgileriniz başarıyla alındı.\nResmi indirim kuponunuz aşağıda hazır.",
+    privacyConsent: "Gizlilik Politikası kapsamında kişisel verilerimin işlenmesini onaylıyorum.",
+    marketingConsent: "Kampanya ve fırsatlardan haberdar olmak için tarafıma e-posta ve SMS gönderilmesine izin veriyorum.",
+    errorConsent: "Lütfen zorunlu gizlilik politikasını onaylayın.",
+    errorRequired: "Lütfen tüm zorunlu alanları doldurun.",
+    errorEmail: "Geçerli bir e-posta adresi girin.",
+    codeBadge: "KUPON KODU",
+    alreadySpun: "⚠️ Günlük Çevirme Hakkınız Bitti",
+    comeBackTomorrow: "Yarın yeni şanslarınızla tekrar deneyin! 🌟",
+    yourCodes: "Kazanılmış kuponlarınız:",
+    useThisCode: "🎁 Bu Kodu Ödemede Kullan",
+    playAgain: "🎮 Tekrar Çevir (Kalan Hak: {count})",
+    screenshotNotice: "📸 Kuponunuzu kaybetmemek için ekran görüntüsünü alın veya aşağıdan indirin!",
+    downloadCoupon: "📸 Kuponu İndir / Kaydet",
+    couponSaved: "✅ Kupon Kaydedildi!",
+    couponVoucherTitle: "RESMİ ÖDÜL KUPONU",
+    couponValidNotice: "Ödülünüzü almak için ödeme sırasında bu kodu gösterin",
+    couponTip: "💡 İpucu: Görsele basılı tutarak veya sağ tıklayarak galerinize kaydedebilirsiniz.",
+  },
+  de: {
+    title: "Drehen & Gewinnen!",
+    subtitle: "Drehen Sie das Glücksrad, um exklusive Rabatte freizuschalten",
+    spinBtn: "DREHEN & GEWINNEN",
+    spinning: "Glücksrad dreht sich...",
+    rewardWon: "Herzlichen Glückwunsch! Sie haben gewonnen! 🎉",
+    noReward: "Viel Glück beim nächsten Mal!",
+    formTitle: "🎊 Füllen Sie Ihre Daten aus, um Ihren Preis einzulösen",
+    formMandatoryNotice: "⚠️ Sie müssen dieses Formular ausfüllen, um Ihren Gutschein zu aktivieren.",
+    firstName: "Vorname",
+    lastName: "Nachname",
+    phone: "Telefon",
+    email: "E-Mail",
+    firstNamePH: "Ihr Vorname",
+    lastNamePH: "Ihr Nachname",
+    phonePH: "+49 XXX XXXXXXX",
+    emailPH: "name@beispiel.de",
+    cta: "🎁 Meinen Preis anfordern",
+    sending: "⏳ Wird gesendet...",
+    success: "🎉 Herzlichen Glückwunsch! Ihre Daten wurden empfangen.\nIhr offizieller Gutschein ist unten bereit.",
+    privacyConsent: "Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu.",
+    marketingConsent: "Ich willige ein, Angebote per E-Mail/SMS zu erhalten.",
+    errorConsent: "Bitte akzeptieren Sie die Datenschutzerklärung.",
+    errorRequired: "Bitte füllen Sie alle erforderlichen Felder aus.",
+    errorEmail: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    codeBadge: "GUTSCHEINCODE",
+    alreadySpun: "⚠️ Tägliches Limit erreicht",
+    comeBackTomorrow: "Kommen Sie morgen wieder für neue Chancen! 🌟",
+    yourCodes: "Ihre gewonnenen Codes:",
+    useThisCode: "🎁 Code beim Bezahlen nutzen",
+    playAgain: "🎮 Erneut drehen (Verbleibend: {count})",
+    screenshotNotice: "📸 Machen Sie einen Screenshot oder laden Sie Ihren Gutschein herunter!",
+    downloadCoupon: "📸 Gutschein herunterladen / speichern",
+    couponSaved: "✅ Gutschein gespeichert!",
+    couponVoucherTitle: "OFFIZIELLER GUTSCHEIN",
+    couponValidNotice: "Diesen Code an der Kasse vorzeigen",
+    couponTip: "💡 Tipp: Bild lange gedrückt halten, um es zu speichern.",
+  },
+  fr: {
+    title: "Tournez & Gagnez !",
+    subtitle: "Tournez la roue de la fortune pour débloquer des réductions",
+    spinBtn: "TOURNER LA ROUE",
+    spinning: "La roue tourne...",
+    rewardWon: "Félicitations ! Vous avez gagné ! 🎉",
+    noReward: "Plus de chance la prochaine fois !",
+    formTitle: "🎊 Remplissez vos coordonnées pour réclamer votre prix",
+    formMandatoryNotice: "⚠️ Vous devez soumettre ce formulaire pour activer votre coupon.",
+    firstName: "Prénom",
+    lastName: "Nom",
+    phone: "Téléphone",
+    email: "E-mail",
+    firstNamePH: "Votre prénom",
+    lastNamePH: "Votre nom",
+    phonePH: "+33 X XX XX XX XX",
+    emailPH: "vous@exemple.fr",
+    cta: "🎁 Réclamer mon prix",
+    sending: "⏳ Envoi...",
+    success: "🎉 Félicitations ! Vos informations ont été enregistrées.\nVotre coupon officiel est prêt ci-dessous.",
+    privacyConsent: "J'accepte le traitement de mes données conformément à la politique de confidentialité.",
+    marketingConsent: "J'accepte de recevoir des offres par e-mail et SMS.",
+    errorConsent: "Veuillez accepter la politique de confidentialité.",
+    errorRequired: "Veuillez remplir tous les champs obligatoires.",
+    errorEmail: "Veuillez entrer une adresse e-mail valide.",
+    codeBadge: "CODE PROMO",
+    alreadySpun: "⚠️ Limite quotidienne atteinte",
+    comeBackTomorrow: "Revenez demain pour retenter votre chance ! 🌟",
+    yourCodes: "Vos codes gagnés :",
+    useThisCode: "🎁 Utiliser ce code",
+    playAgain: "🎮 Rejouer (Restant : {count})",
+    screenshotNotice: "📸 Prenez une capture d'écran ou téléchargez votre coupon ci-dessous !",
+    downloadCoupon: "📸 Télécharger / Sauvegarder le coupon",
+    couponSaved: "✅ Coupon sauvegardé !",
+    couponVoucherTitle: "COUPON OFFICIEL",
+    couponValidNotice: "Présentez ce code lors du paiement",
+    couponTip: "💡 Astuce : Maintenez l'image appuyée pour l'enregistrer.",
+  },
+  es: {
+    title: "¡Gira y Gana!",
+    subtitle: "Gira la ruleta de la suerte y desbloquea descuentos",
+    spinBtn: "GIRAR PARA GANAR",
+    spinning: "Girando...",
+    rewardWon: "¡Felicidades! ¡Has ganado! 🎉",
+    noReward: "¡Más suerte la próxima vez!",
+    formTitle: "🎊 Completa tus datos para reclamar tu premio",
+    formMandatoryNotice: "⚠️ Debes completar este formulario para activar tu cupón.",
+    firstName: "Nombre",
+    lastName: "Apellido",
+    phone: "Teléfono",
+    email: "Correo electrónico",
+    firstNamePH: "Tu nombre",
+    lastNamePH: "Tu apellido",
+    phonePH: "+34 XXX XXX XXX",
+    emailPH: "tu@ejemplo.es",
+    cta: "🎁 Reclamar mi premio",
+    sending: "⏳ Enviando...",
+    success: "🎉 ¡Felicidades! Tus datos han sido recibidos.\nTu cupón oficial está listo abajo.",
+    privacyConsent: "Acepto el tratamiento de mis datos según la Política de Privacidad.",
+    marketingConsent: "Doy mi consentimiento para recibir ofertas y promociones.",
+    errorConsent: "Por favor acepta la política de privacidad.",
+    errorRequired: "Por favor completa todos los campos requeridos.",
+    errorEmail: "Por favor ingresa un correo válido.",
+    codeBadge: "CÓDIGO DE CUPÓN",
+    alreadySpun: "⚠️ Límite diario alcanzado",
+    comeBackTomorrow: "¡Vuelve mañana para más oportunidades! 🌟",
+    yourCodes: "Tus códigos ganados:",
+    useThisCode: "🎁 Usa este código al pagar",
+    playAgain: "🎮 Girar de nuevo (Restante: {count})",
+    screenshotNotice: "📸 ¡Haz una captura o descarga tu cupón abajo!",
+    downloadCoupon: "📸 Descargar / Guardar Cupón",
+    couponSaved: "✅ ¡Cupón guardado!",
+    couponVoucherTitle: "CUPÓN OFICIAL DE PREMIO",
+    couponValidNotice: "Presenta este código al finalizar la compra",
+    couponTip: "💡 Consejo: Mantén presionada la imagen para guardarla.",
+  },
+  he: {
+    title: "סובב וזכה!",
+    subtitle: "סובב את גלגל המזל כדי לגלות הנחות בלעדיות",
+    spinBtn: "סובב לזכייה",
+    spinning: "מסתובב...",
+    rewardWon: "מזל טוב! זכית! 🎉",
+    noReward: "אולי בפעם הבאה!",
+    formTitle: "🎊 מלא את פרטיך לקבלת הפרס",
+    formMandatoryNotice: "⚠️ יש למלא טופס זה כדי להפעיל את הקופון שלך.",
+    firstName: "שם פרטי",
+    lastName: "שם משפחה",
+    phone: "טלפון",
+    email: "אימייל",
+    firstNamePH: "שמך הפרטי",
+    lastNamePH: "שם משפחתך",
+    phonePH: "05X-XXXXXXX",
+    emailPH: "you@email.com",
+    cta: "🎁 קבל את הפרס שלי",
+    sending: "⏳ שולח...",
+    success: "🎉 מזל טוב! הפרטים התקבלו בהצלחה.\nהקופון הרשמי שלך מוכן למטה.",
+    privacyConsent: "אני מסכים/ה לעיבוד הפרטים בהתאם למדיניות הפרטיות.",
+    marketingConsent: "אני מאשר/ת קבלת הצעות שיווקיות.",
+    errorConsent: "יש לאשר את מדיניות הפרטיות.",
+    errorRequired: "נא למלא את כל שדות החובה.",
+    errorEmail: "נא להזין כתובת אימייל תקינה.",
+    codeBadge: "קוד קופון",
+    alreadySpun: "⚠️ הגעת למגבלה היומית",
+    comeBackTomorrow: "חזור מחר לסיבובים נוספים! 🌟",
+    yourCodes: "הקודים שזכית בהם:",
+    useThisCode: "🎁 השתמש בקוד זה",
+    playAgain: "🎮 סובב שוב (נותרו: {count})",
+    screenshotNotice: "📸 צלם מסך או הורד את הקופון שלך למטה!",
+    downloadCoupon: "📸 הורד / שמור קופון",
+    couponSaved: "✅ הקופון נשמר!",
+    couponVoucherTitle: "קופון רשמי",
+    couponValidNotice: "הצג קוד זה בעת התשלום",
+    couponTip: "💡 טיפ: לחץ לחיצה ארוכה לשמירת התמונה.",
+  },
+  zh: {
+    title: "幸运大转盘！",
+    subtitle: "转动幸运转盘，赢取专属折扣奖励",
+    spinBtn: "立即抽奖",
+    spinning: "转盘旋转中...",
+    rewardWon: "恭喜您！中奖了！🎉",
+    noReward: "再接再厉，下次好运！",
+    formTitle: "🎊 填写信息以领取您的奖品",
+    formMandatoryNotice: "⚠️ 您必须填写并提交此表单以激活您的优惠券。",
+    firstName: "名",
+    lastName: "姓",
+    phone: "电话",
+    email: "电子邮箱",
+    firstNamePH: "您的名字",
+    lastNamePH: "您的姓氏",
+    phonePH: "手机号码",
+    emailPH: "you@email.com",
+    cta: "🎁 立即领取奖品",
+    sending: "⏳ 正在提交...",
+    success: "🎉 恭喜！信息已成功提交。\n您的专属优惠券已在下方生成。",
+    privacyConsent: "我同意根据隐私政策处理我的个人数据。",
+    marketingConsent: "我同意接收营销推广信息与优惠通知。",
+    errorConsent: "请同意隐私政策以继续。",
+    errorRequired: "请填写所有必填字段。",
+    errorEmail: "请输入有效的电子邮箱地址。",
+    codeBadge: "优惠券代码",
+    alreadySpun: "⚠️ 今日抽奖次数已用完",
+    comeBackTomorrow: "明天再来试试运气吧！🌟",
+    yourCodes: "您获得的优惠码：",
+    useThisCode: "🎁 结账时使用此代码",
+    playAgain: "🎮 再次抽奖（剩余次数：{count}）",
+    screenshotNotice: "📸 请截屏或在下方下载您的优惠券！",
+    downloadCoupon: "📸 下载 / 保存优惠券",
+    couponSaved: "✅ 优惠券已保存！",
+    couponVoucherTitle: "官方奖励优惠券",
+    couponValidNotice: "结账时出示此代码即可兑换",
+    couponTip: "💡 提示：长按图片即可保存至相册。",
+  },
+  ja: {
+    title: "ラッキールーレット！",
+    subtitle: "ルーレットを回して限定クーポンを当てよう",
+    spinBtn: "回して当てる",
+    spinning: "回転中...",
+    rewardWon: "おめでとうございます！当選しました！🎉",
+    noReward: "残念！次回に期待しましょう！",
+    formTitle: "🎊 賞品を受け取るために情報を入力してください",
+    formMandatoryNotice: "⚠️ クーポンを有効化するにはフォームの送信が必要です。",
+    firstName: "名",
+    lastName: "姓",
+    phone: "電話番号",
+    email: "メールアドレス",
+    firstNamePH: "名",
+    lastNamePH: "姓",
+    phonePH: "090-XXXX-XXXX",
+    emailPH: "you@email.com",
+    cta: "🎁 賞品を受け取る",
+    sending: "⏳ 送信中...",
+    success: "🎉 おめでとうございます！情報を受け付けました。\n公式クーポンは以下から確認できます。",
+    privacyConsent: "プライバシーポリシーに同意します。",
+    marketingConsent: "お得な情報やプロモーションの受信に同意します。",
+    errorConsent: "プライバシーポリシーに同意してください。",
+    errorRequired: "必須項目をすべて入力してください。",
+    errorEmail: "有効なメールアドレスを入力してください。",
+    codeBadge: "クーポンコード",
+    alreadySpun: "⚠️ 今日の上限に達しました",
+    comeBackTomorrow: "明日また挑戦してください！🌟",
+    yourCodes: "獲得したクーポンコード：",
+    useThisCode: "🎁 お会計時にこのコードを使用",
+    playAgain: "🎮 もう一度回す（残り：{count}）",
+    screenshotNotice: "📸 スクリーンショットを撮るか保存してください！",
+    downloadCoupon: "📸 クーポンをダウンロード / 保存",
+    couponSaved: "✅ クーポンを保存しました！",
+    couponVoucherTitle: "公式リワードクーポン",
+    couponValidNotice: "会計時にこのコードを提示してください",
+    couponTip: "💡 ヒント: 画像を長押しして保存できます。",
+  },
+  ko: {
+    title: "행운의 룰렛!",
+    subtitle: "룰렛을 돌리고 특별 할인 혜택을 받으세요",
+    spinBtn: "룰렛 돌리기",
+    spinning: "돌아가는 중...",
+    rewardWon: "축하합니다! 당첨되었습니다! 🎉",
+    noReward: "다음 기회에 다시 도전해보세요!",
+    formTitle: "🎊 혜택을 받으려면 정보를 입력하세요",
+    formMandatoryNotice: "⚠️ 쿠폰을 활성화하려면 양식을 제출해야 합니다.",
+    firstName: "이름",
+    lastName: "성",
+    phone: "전화번호",
+    email: "이메일",
+    firstNamePH: "이름",
+    lastNamePH: "성",
+    phonePH: "010-XXXX-XXXX",
+    emailPH: "you@email.com",
+    cta: "🎁 혜택 수령하기",
+    sending: "⏳ 전송 중...",
+    success: "🎉 축하합니다! 정보가 접수되었습니다.\n아래에서 공식 쿠폰을 확인하세요.",
+    privacyConsent: "개인정보 처리방침에 동의합니다.",
+    marketingConsent: "마케팅 정보 및 혜택 수신에 동의합니다.",
+    errorConsent: "개인정보 처리방침에 동의해주세요.",
+    errorRequired: "모든 필수 항목을 입력해주세요.",
+    errorEmail: "올바른 이메일 주소를 입력해주세요.",
+    codeBadge: "쿠폰 코드",
+    alreadySpun: "⚠️ 오늘의 참여 횟수를 모두 사용했습니다",
+    comeBackTomorrow: "내일 다시 도전해보세요! 🌟",
+    yourCodes: "당첨된 쿠폰 코드:",
+    useThisCode: "🎁 결제 시 이 코드를 사용하세요",
+    playAgain: "🎮 다시 돌리기 (남은 횟수: {count})",
+    screenshotNotice: "📸 캡처하거나 아래에서 쿠폰을 다운로드하세요!",
+    downloadCoupon: "📸 쿠폰 다운로드 / 저장",
+    couponSaved: "✅ 쿠폰 저장 완료!",
+    couponVoucherTitle: "공식 리워드 쿠폰",
+    couponValidNotice: "결제 시 이 코드를 제시하세요",
+    couponTip: "💡 팁: 이미지를 길게 눌러 저장할 수 있습니다.",
+  },
+  hi: {
+    title: "स्पिन करें और जीतें!",
+    subtitle: "विशेष छूट पाने के लिए भाग्य का पहिया घुमाएं",
+    spinBtn: "स्पिन करें",
+    spinning: "घूम रहा है...",
+    rewardWon: "बधाई हो! आप जीत गए! 🎉",
+    noReward: "अगली बार बेहतर भाग्य!",
+    formTitle: "🎊 इनाम पाने के लिए अपना विवरण भरें",
+    formMandatoryNotice: "⚠️ कूपन सक्रिय करने के लिए यह फ़ॉर्म भरना अनिवार्य है।",
+    firstName: "पहला नाम",
+    lastName: "अंतिम नाम",
+    phone: "फ़ोन",
+    email: "ईमेल",
+    firstNamePH: "आपका नाम",
+    lastNamePH: "आपका उपनाम",
+    phonePH: "+91 XXXXX XXXXX",
+    emailPH: "you@email.com",
+    cta: "🎁 मेरा इनाम पाएं",
+    sending: "⏳ भेजा जा रहा है...",
+    success: "🎉 बधाई हो! आपका विवरण प्राप्त हो गया है।\nआपका कूपन नीचे तैयार है।",
+    privacyConsent: "मैं गोपनीयता नीति के अनुसार डेटा प्रसंस्करण से सहमत हूँ।",
+    marketingConsent: "मैं ऑफ़र और प्रचार प्राप्त करने के लिए सहमत हूँ।",
+    errorConsent: "कृपया गोपनीयता नीति स्वीकार करें।",
+    errorRequired: "कृपया सभी आवश्यक फ़ील्ड भरें।",
+    errorEmail: "कृपया एक मान्य ईमेल दर्ज करें।",
+    codeBadge: "कूपन कोड",
+    alreadySpun: "⚠️ आज की दैनिक सीमा समाप्त",
+    comeBackTomorrow: "और मौकों के लिए कल वापस आएं! 🌟",
+    yourCodes: "आपके जीते हुए कोड:",
+    useThisCode: "🎁 चेकआउट पर इस कोड का उपयोग करें",
+    playAgain: "🎮 फिर से घुमाएं (शेष: {count})",
+    screenshotNotice: "📸 स्क्रीनशॉट लें या कूपन डाउनलोड करें!",
+    downloadCoupon: "📸 कूपन डाउनलोड / सहेजें",
+    couponSaved: "✅ कूपन सहेजा गया!",
+    couponVoucherTitle: "आधिकारिक इनाम कूपन",
+    couponValidNotice: "चेकआउट के समय यह कोड दिखाएं",
+    couponTip: "💡 टिप: सहेजने के लिए छवि को दबाकर रखें।",
+  },
+  pt: {
+    title: "Gire & Ganhe!",
+    subtitle: "Gire a roleta da sorte para desbloquear descontos exclusivos",
+    spinBtn: "GIRAR PARA GANHAR",
+    spinning: "Girando...",
+    rewardWon: "Parabéns! Você ganhou! 🎉",
+    noReward: "Mais sorte na próxima vez!",
+    formTitle: "🎊 Preencha seus dados para resgatar o prêmio",
+    formMandatoryNotice: "⚠️ Você deve preencher este formulário para ativar seu cupom.",
+    firstName: "Nome",
+    lastName: "Sobrenome",
+    phone: "Telefone",
+    email: "E-mail",
+    firstNamePH: "Seu nome",
+    lastNamePH: "Seu sobrenome",
+    phonePH: "+55 (XX) XXXXX-XXXX",
+    emailPH: "seu@email.com",
+    cta: "🎁 Resgatar meu prêmio",
+    sending: "⏳ Enviando...",
+    success: "🎉 Parabéns! Seus dados foram recebidos.\nSeu cupom oficial está pronto abaixo.",
+    privacyConsent: "Concordo com o processamento dos meus dados segundo a Política de Privacidade.",
+    marketingConsent: "Aceito receber novidades e ofertas exclusivas.",
+    errorConsent: "Por favor aceite a política de privacidade.",
+    errorRequired: "Por favor preencha todos os campos obrigatórios.",
+    errorEmail: "Por favor insira um e-mail válido.",
+    codeBadge: "CÓDIGO DO CUPOM",
+    alreadySpun: "⚠️ Limite diário atingido",
+    comeBackTomorrow: "Volte amanhã para mais chances! 🌟",
+    yourCodes: "Seus cupons ganhos:",
+    useThisCode: "🎁 Use este código no checkout",
+    playAgain: "🎮 Girar novamente (Restante: {count})",
+    screenshotNotice: "📸 Tire um print ou baixe seu cupom abaixo!",
+    downloadCoupon: "📸 Baixar / Salvar Cupom",
+    couponSaved: "✅ Cupom salvo!",
+    couponVoucherTitle: "CUPOM OFICIAL DE RECOMPENSA",
+    couponValidNotice: "Apresente este código no checkout",
+    couponTip: "💡 Dica: Pressione e segure a imagem para salvar.",
+  },
+  ru: {
+    title: "Крутите и выигрывайте!",
+    subtitle: "Крутите колесо фортуны и получайте эксклюзивные скидки",
+    spinBtn: "КРУТИТЬ КОЛЕСО",
+    spinning: "Колесо крутится...",
+    rewardWon: "Поздравляем! Вы выиграли! 🎉",
+    noReward: "Повезет в следующий раз!",
+    formTitle: "🎊 Заполните форму для получения приза",
+    formMandatoryNotice: "⚠️ Для активации купона необходимо заполнить и отправить форму.",
+    firstName: "Имя",
+    lastName: "Фамилия",
+    phone: "Телефон",
+    email: "Эл. почта",
+    firstNamePH: "Ваше имя",
+    lastNamePH: "Ваша фамилия",
+    phonePH: "+7 (XXX) XXX-XX-XX",
+    emailPH: "you@email.com",
+    cta: "🎁 Получить приз",
+    sending: "⏳ Отправка...",
+    success: "🎉 Поздравляем! Данные успешно получены.\nВаш официальный купон готов ниже.",
+    privacyConsent: "Я согласен на обработку персональных данных согласно Политике конфиденциальности.",
+    marketingConsent: "Я согласен получать рекламные предложения и новости.",
+    errorConsent: "Пожалуйста, подтвердите согласие с политикой конфиденциальности.",
+    errorRequired: "Пожалуйста, заполните все обязательные поля.",
+    errorEmail: "Пожалуйста, введите корректный адрес эл. почты.",
+    codeBadge: "ПРОМОКОД",
+    alreadySpun: "⚠️ Дневной лимит исчерпан",
+    comeBackTomorrow: "Приходите завтра за новыми шансами! 🌟",
+    yourCodes: "Ваши выигранные промокоды:",
+    useThisCode: "🎁 Используйте промокод при оплате",
+    playAgain: "🎮 Крутить снова (Осталось: {count})",
+    screenshotNotice: "📸 Сделайте скриншот или скачайте купон ниже!",
+    downloadCoupon: "📸 Скачать / Сохранить купон",
+    couponSaved: "✅ Купон сохранен!",
+    couponVoucherTitle: "ОФИЦИАЛЬНЫЙ КУПОН",
+    couponValidNotice: "Предъявите этот промокод при оформлении заказа",
+    couponTip: "💡 Совет: Удерживайте изображение, чтобы сохранить в галерею.",
+  },
+  uk: {
+    title: "Крутіть та вигравайте!",
+    subtitle: "Крутіть колесо фортуни та отримуйте ексклюзивні знижки",
+    spinBtn: "КРУТИТИ КОЛЕСО",
+    spinning: "Колесо крутиться...",
+    rewardWon: "Вітаємо! Ви виграли! 🎉",
+    noReward: "Пощастить наступного разу!",
+    formTitle: "🎊 Заповніть дані для отримання призу",
+    formMandatoryNotice: "⚠️ Для активації купона необхідно заповнити та надіслати форму.",
+    firstName: "Ім'я",
+    lastName: "Прізвище",
+    phone: "Телефон",
+    email: "Ел. пошта",
+    firstNamePH: "Ваше ім'я",
+    lastNamePH: "Ваше прізвище",
+    phonePH: "+380 XX XXX XX XX",
+    emailPH: "you@email.com",
+    cta: "🎁 Отримати приз",
+    sending: "⏳ Надсилання...",
+    success: "🎉 Вітаємо! Ваші дані успішно прийнято.\nВаш офіційний купон готовий нижче.",
+    privacyConsent: "Я погоджуюся на обробку персональних даних згідно з Політикою конфіденційності.",
+    marketingConsent: "Я погоджуюся на отримання маркетингових повідомлень.",
+    errorConsent: "Будь ласка, підтвердіть згоду з політикою конфіденційності.",
+    errorRequired: "Будь ласка, заповніть усі обов'язкові поля.",
+    errorEmail: "Будь ласка, введіть коректну адресу ел. пошти.",
+    codeBadge: "ПРОМОКОД",
+    alreadySpun: "⚠️ Денний ліміт вичерпано",
+    comeBackTomorrow: "Повертайтеся завтра за новими спробами! 🌟",
+    yourCodes: "Ваші виграні промокоди:",
+    useThisCode: "🎁 Використовуйте цей код при оформленні",
+    playAgain: "🎮 Крутити знову (Залишилось: {count})",
+    screenshotNotice: "📸 Зробіть скріншот або завантажте купон нижче!",
+    downloadCoupon: "📸 Завантажити / Зберегти купон",
+    couponSaved: "✅ Купон збережено!",
+    couponVoucherTitle: "ОФІЦІЙНИЙ КУПОН",
+    couponValidNotice: "Покажіть цей код при оформленні замовлення",
+    couponTip: "💡 Підказка: Затисніть зображення, щоб зберегти його.",
+  },
+  el: {
+    title: "Γυρίστε & Κερδίστε!",
+    subtitle: "Γυρίστε τον τροχό της τύχης για να ξεκλειδώσετε εκπτώσεις",
+    spinBtn: "ΓΥΡΙΣΤΕ ΤΟΝ ΤΡΟΧΟ",
+    spinning: "Ο τροχός γυρίζει...",
+    rewardWon: "Συγχαρητήρια! Κερδίσατε! 🎉",
+    noReward: "Καλή τύχη την επόμενη φορά!",
+    formTitle: "🎊 Συμπληρώστε τα στοιχεία σας για να πάρετε το δώρο σας",
+    formMandatoryNotice: "⚠️ Πρέπει να συμπληρώσετε τη φόρμα για να ενεργοποιηθεί το κουπόνι.",
+    firstName: "Όνομα",
+    lastName: "Επώνυμο",
+    phone: "Τηλέφωνο",
+    email: "Email",
+    firstNamePH: "Το όνομά σας",
+    lastNamePH: "Το επώνυμό σας",
+    phonePH: "+30 69X XXX XXXX",
+    emailPH: "you@email.com",
+    cta: "🎁 Λήψη Δώρου",
+    sending: "⏳ Αποστολή...",
+    success: "🎉 Συγχαρητήρια! Τα στοιχεία σας ελήφθησαν.\nΤο επίσημο κουπόνι σας είναι έτοιμο παρακάτω.",
+    privacyConsent: "Συμφωνώ με την επεξεργασία δεδομένων σύμφωνα με την Πολιτική Απορρήτου.",
+    marketingConsent: "Συναινώ στη λήψη προωθητικών μηνυμάτων και προσφορών.",
+    errorConsent: "Παρακαλώ αποδεχτείτε την πολιτική απορρήτου.",
+    errorRequired: "Παρακαλώ συμπληρώστε όλα τα απαιτούμενα πεδία.",
+    errorEmail: "Παρακαλώ εισάγετε ένα έγκυρο email.",
+    codeBadge: "ΚΩΔΙΚΟΣ ΚΟΥΠΟΝΙΟΥ",
+    alreadySpun: "⚠️ Εξαντλήθηκε το ημερήσιο όριο",
+    comeBackTomorrow: "Επιστρέψτε αύριο για περισσότερες ευκαιρίες! 🌟",
+    yourCodes: "Οι κωδικοί που κερδίσατε:",
+    useThisCode: "🎁 Χρησιμοποιήστε αυτόν τον κωδικό",
+    playAgain: "🎮 Γυρίστε ξανά (Απομένουν: {count})",
+    screenshotNotice: "📸 Κάντε screenshot ή κατεβάστε το κουπόνι παρακάτω!",
+    downloadCoupon: "📸 Λήψη / Αποθήκευση Κουπονιού",
+    couponSaved: "✅ Το κουπόνι αποθηκεύτηκε!",
+    couponVoucherTitle: "ΕΠΙΣΗΜΟ ΚΟΥΠΟΝΙ",
+    couponValidNotice: "Επιδείξτε αυτόν τον κωδικό στο ταμείο",
+    couponTip: "💡 Συμβουλή: Πατήστε παρατεταμένα την εικόνα για αποθήκευση.",
+  },
+  it: {
+    title: "Gira e Vinci!",
+    subtitle: "Gira la ruota della fortuna per sbloccare sconti esclusivi",
+    spinBtn: "GIRA PER VINCERE",
+    spinning: "La ruota sta girando...",
+    rewardWon: "Congratulazioni! Hai vinto! 🎉",
+    noReward: "Più fortuna la prossima volta!",
+    formTitle: "🎊 Compila i tuoi dati per richiedere il premio",
+    formMandatoryNotice: "⚠️ È necessario compilare il modulo per attivare il coupon.",
+    firstName: "Nome",
+    lastName: "Cognome",
+    phone: "Telefono",
+    email: "Email",
+    firstNamePH: "Il tuo nome",
+    lastNamePH: "Il tuo cognome",
+    phonePH: "+39 XXX XXXXXXX",
+    emailPH: "nome@esempio.it",
+    cta: "🎁 Richiedi il mio premio",
+    sending: "⏳ Invio in corso...",
+    success: "🎉 Congratulazioni! I tuoi dati sono stati registrati.\nIl tuo coupon ufficiale è pronto qui sotto.",
+    privacyConsent: "Acconsento al trattamento dei miei dati personali secondo la Privacy Policy.",
+    marketingConsent: "Acconsento a ricevere comunicazioni promozionali e offerte.",
+    errorConsent: "Per favore accetta l'informativa sulla privacy.",
+    errorRequired: "Per favore compila tutti i campi obbligatori.",
+    errorEmail: "Per favore inserisci un indirizzo email valido.",
+    codeBadge: "CODICE COUPON",
+    alreadySpun: "⚠️ Limite giornaliero raggiunto",
+    comeBackTomorrow: "Torna domani per altre opportunità! 🌟",
+    yourCodes: "I tuoi codici vinti:",
+    useThisCode: "🎁 Usa questo codice al checkout",
+    playAgain: "🎮 Gira ancora (Rimasti: {count})",
+    screenshotNotice: "📸 Fai uno screenshot o scarica il tuo coupon qui sotto!",
+    downloadCoupon: "📸 Scarica / Salva Coupon",
+    couponSaved: "✅ Coupon salvato!",
+    couponVoucherTitle: "COUPON UFFICIALE",
+    couponValidNotice: "Mostra questo codice alla cassa",
+    couponTip: "💡 Suggerimento: Tieni premuta l'immagine per salvarla.",
+  },
+  ar: {
+    title: "أدر العجلة واربح!",
+    subtitle: "أدر عجلة الحظ لاكتشاف خصومات ومفاجآت حصرية",
+    spinBtn: "أدر لتربح",
+    spinning: "العجلة تدور...",
+    rewardWon: "مبروك! لقد فزت! 🎉",
+    noReward: "حظاً أوفر في المرة القادمة!",
+    formTitle: "🎊 املأ بياناتك لاستلام جائزتك",
+    formMandatoryNotice: "⚠️ يجب عليك ملء هذا النموذج لتفعيل قسيمتك واستلام الجائزة.",
+    firstName: "الاسم الأول",
+    lastName: "اسم العائلة",
+    phone: "رقم الهاتف",
+    email: "البريد الإلكتروني",
+    firstNamePH: "اسمك الأول",
+    lastNamePH: "اسم العائلة",
+    phonePH: "+966 5X XXX XXXX",
+    emailPH: "you@email.com",
+    cta: "🎁 استلام جائزتي",
+    sending: "⏳ جاري الإرسال...",
+    success: "🎉 مبروك! تم استلام بياناتك بنجاح.\nقسيمتك الرسمية جاهزة أدناه.",
+    privacyConsent: "أوافق على معالجة بياناتي الشخصية وفقاً لسياسة الخصوصية.",
+    marketingConsent: "أوافق على استلام العروض والرسائل الترويجية.",
+    errorConsent: "يرجى الموافقة على سياسة الخصوصية للمتابعة.",
+    errorRequired: "يرجى ملء جميع الحقول المطلوبة.",
+    errorEmail: "يرجى إدخال بريد إلكتروني صحيح.",
+    codeBadge: "رمز القسيمة",
+    alreadySpun: "⚠️ لقد استنفدت محاولاتك اليومية",
+    comeBackTomorrow: "عد غداً للحصول على فرص جديدة! 🌟",
+    yourCodes: "رموز القسائم التي فزت بها:",
+    useThisCode: "🎁 استخدم هذا الرمز عند الدفع",
+    playAgain: "🎮 أدر مجدداً (المتبقي: {count})",
+    screenshotNotice: "📸 التقط لقطة شاشة أو قم بتحميل قسيمتك أدناه!",
+    downloadCoupon: "📸 تحميل / حفظ القسيمة",
+    couponSaved: "✅ تم حفظ القسيمة!",
+    couponVoucherTitle: "قسيمة الجائزة الرسمية",
+    couponValidNotice: "أظهر هذا الرمز عند الدفع لاستلام مكافأتك",
+    couponTip: "💡 تلميح: اضغط مطولاً على الصورة لحفظها في معرض الصور.",
+  },
+};
 
-    tabDashboard.onclick = () => {
-      tabDashboard.classList.add("active");
-      tabWidget.classList.remove("active");
-      viewWidget.style.display = "none";
-      viewDashboard.style.display = "block";
-      widgetControls.style.display = "none";
+    const widget = document.getElementById("test-widget");
+    const selLang = document.getElementById("sel-lang");
+    const selFont = document.getElementById("sel-font");
+    const selTheme = document.getElementById("sel-theme");
+    const selLimit = document.getElementById("sel-limit");
+    const btnReset = document.getElementById("btn-reset");
+    const logConsole = document.getElementById("log-console");
+    const btnClearLog = document.getElementById("btn-clear-log");
+
+    // Header Persistent Language Selector & Font Selector
+    const dashHeaderLangSel = document.getElementById("dash-header-lang-sel");
+    const dashFontSel = document.getElementById("dash-font-sel");
+
+    // Tab Switching between Widget and Dashboard
+    const tabWidget = document.getElementById("tab-btn-widget");
+    const tabDashboard = document.getElementById("tab-btn-dashboard");
+    const viewWidget = document.getElementById("view-widget");
+    const viewDashboard = document.getElementById("view-dashboard");
+    const widgetControls = document.getElementById("widget-controls");
+
+    tabWidget.onclick = () => {
+      tabWidget.classList.add("active");
+      tabDashboard.classList.remove("active");
+      viewWidget.style.display = "flex";
+      viewDashboard.style.display = "none";
+      widgetControls.style.display = "flex";
     };
-
-    // Dashboard Internal Tabs
-    document.querySelectorAll(".dash-tab-btn").forEach((btn) => {
-      btn.onclick = () => {
-        document.querySelectorAll(".dash-tab-btn").forEach((b) => b.classList.remove("active"));
-        document.querySelectorAll(".dash-content-pane").forEach((p) => p.classList.remove("active"));
-        btn.classList.add("active");
-        const paneId = btn.getAttribute("data-pane");
-        const target = document.getElementById(paneId);
-        if (target) target.classList.add("active");
-      };
-    });
-
-    // ─── UNLIMITED PRIZES POOL ───
     let currentPrizes = [
       { id: "p1", label: "10% OFF", code: "SPIN10", color: "#6366F1", textColor: "#ffffff", probability: 25, isWinner: true },
       { id: "p2", label: "FREE SHIPPING", code: "FREESHIP", color: "#EC4899", textColor: "#ffffff", probability: 20, isWinner: true },
@@ -2077,192 +2653,143 @@
       { id: "p6", label: "5% OFF", code: "WELCOME5", color: "#8B5CF6", textColor: "#ffffff", probability: 15, isWinner: true },
     ];
 
-    const prizesTbody = document.getElementById("prizes-tbody");
-    const totalOddsBadge = document.getElementById("prizes-total-odds-badge");
-    const btnAddSlice = document.getElementById("btn-add-slice");
+    let selectedTheme = "gold";
+    let customTextsState = {};
 
-    function renderPrizesTable() {
-      const sumOdds = currentPrizes.reduce((s, p) => s + (Number(p.probability) || 0), 0);
-      totalOddsBadge.textContent = "Total: " + sumOdds + "%";
-      totalOddsBadge.style.background = sumOdds === 100 ? "#10b981" : "#ef4444";
+    try {
+      const saved = localStorage.getItem("wof_settings");
+      if (saved) {
+        const config = JSON.parse(saved);
+        if (config.colorTheme) selectedTheme = config.colorTheme;
+        if (config.fontFamily) document.getElementById("sel-dash-font").value = config.fontFamily;
+        if (config.dailyLimit) document.getElementById("inp-daily-limit").value = config.dailyLimit;
+        if (config.lang) document.getElementById("dash-header-lang-sel").value = config.lang;
+        if (config.prizes && Array.isArray(config.prizes)) currentPrizes = config.prizes;
+      }
+      const rawTexts = localStorage.getItem("wheel_of_fortune_custom_texts");
+      if (rawTexts) customTextsState = JSON.parse(rawTexts);
+    } catch (e) {}
 
-      prizesTbody.innerHTML = currentPrizes.map((p, idx) => `
+    // Tab Navigation
+    document.querySelectorAll(".dash-tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".dash-tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".dash-pane").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        const paneId = btn.getAttribute("data-pane");
+        const pane = document.getElementById(paneId);
+        if (pane) pane.classList.add("active");
+      });
+    });
+
+    // Theme Selection
+    function selectTheme(theme) {
+      selectedTheme = theme;
+      document.querySelectorAll(".theme-option").forEach(opt => {
+        if (opt.getAttribute("data-theme") === theme) {
+          opt.style.borderColor = "#fbbf24";
+          opt.classList.add("active");
+        } else {
+          opt.style.borderColor = "var(--card-border)";
+          opt.classList.remove("active");
+        }
+      });
+    }
+
+    // Prize Table Rendering
+    function renderPrizeTable() {
+      const tbody = document.getElementById("tbody-prizes");
+      if (!tbody) return;
+      tbody.innerHTML = currentPrizes.map((p, idx) => `
         <tr>
-          <td><input type="color" value="${p.color || '#6366f1'}" data-idx="${idx}" class="slice-bg-color" style="width:34px; height:32px; padding:0; border:none; border-radius:4px; cursor:pointer;" title="Slice Color" /></td>
-          <td><input type="color" value="${p.textColor || '#ffffff'}" data-idx="${idx}" class="slice-txt-color" style="width:34px; height:32px; padding:0; border:none; border-radius:4px; cursor:pointer;" title="Text Color" /></td>
-          <td><input type="text" value="${p.label.replace(/"/g, '&quot;')}" data-idx="${idx}" class="slice-label ctrl-input" style="width:140px; padding:4px 8px;" /></td>
-          <td><input type="text" value="${(p.code || '').replace(/"/g, '&quot;')}" data-idx="${idx}" class="slice-code ctrl-input" style="width:110px; padding:4px 8px;" placeholder="Optional code" /></td>
-          <td><input type="number" value="${p.probability}" data-idx="${idx}" class="slice-prob ctrl-input" style="width:60px; padding:4px;" /> %</td>
-          <td>
-            <label style="display:flex; align-items:center; gap:4px; font-size:12px; cursor:pointer;">
-              <input type="checkbox" data-idx="${idx}" class="slice-win" ${p.isWinner !== false ? 'checked' : ''} />
-              ${p.isWinner !== false ? '✅ Win' : '❌ No'}
-            </label>
-          </td>
-          <td>
-            <button type="button" data-idx="${idx}" class="slice-del" style="background:${currentPrizes.length <= 2 ? 'transparent' : '#fee2e2'}; color:${currentPrizes.length <= 2 ? '#64748b' : '#ef4444'}; border:none; padding:4px 8px; border-radius:6px; font-weight:700; cursor:${currentPrizes.length <= 2 ? 'not-allowed' : 'pointer'};" ${currentPrizes.length <= 2 ? 'disabled' : ''}>✕</button>
-          </td>
+          <td><input type="color" value="${p.color}" onchange="updatePrize(${idx}, 'color', this.value)" style="width:36px; height:32px; border:none; background:transparent; cursor:pointer;" /></td>
+          <td><input type="color" value="${p.textColor || '#FFFFFF'}" onchange="updatePrize(${idx}, 'textColor', this.value)" style="width:36px; height:32px; border:none; background:transparent; cursor:pointer;" /></td>
+          <td><input type="text" value="${p.label}" onchange="updatePrize(${idx}, 'label', this.value)" style="width:140px;" /></td>
+          <td><input type="text" value="${p.code}" onchange="updatePrize(${idx}, 'code', this.value)" placeholder="e.g. SAVE20" style="width:120px;" /></td>
+          <td><input type="number" value="${p.probability}" min="0" max="100" onchange="updatePrize(${idx}, 'probability', Number(this.value))" style="width:70px;" /></td>
+          <td><input type="checkbox" ${p.isWinner ? 'checked' : ''} onchange="updatePrize(${idx}, 'isWinner', this.checked)" style="width:18px; height:18px; cursor:pointer;" /></td>
+          <td><button type="button" class="btn-delete" onclick="deletePrize(${idx})">🗑️ Delete</button></td>
         </tr>
       `).join("");
-
-      // Bind input events
-      prizesTbody.querySelectorAll(".slice-bg-color").forEach((inp) => {
-        inp.onchange = (e) => {
-          const idx = Number(e.target.getAttribute("data-idx"));
-          currentPrizes[idx].color = e.target.value;
-          syncPrizesToWidget();
-        };
-      });
-
-      prizesTbody.querySelectorAll(".slice-txt-color").forEach((inp) => {
-        inp.onchange = (e) => {
-          const idx = Number(e.target.getAttribute("data-idx"));
-          currentPrizes[idx].textColor = e.target.value;
-          syncPrizesToWidget();
-        };
-      });
-
-      prizesTbody.querySelectorAll(".slice-label").forEach((inp) => {
-        inp.oninput = (e) => {
-          const idx = Number(e.target.getAttribute("data-idx"));
-          currentPrizes[idx].label = e.target.value;
-          syncPrizesToWidget();
-        };
-      });
-
-      prizesTbody.querySelectorAll(".slice-code").forEach((inp) => {
-        inp.oninput = (e) => {
-          const idx = Number(e.target.getAttribute("data-idx"));
-          currentPrizes[idx].code = e.target.value;
-          syncPrizesToWidget();
-        };
-      });
-
-      prizesTbody.querySelectorAll(".slice-prob").forEach((inp) => {
-        inp.oninput = (e) => {
-          const idx = Number(e.target.getAttribute("data-idx"));
-          currentPrizes[idx].probability = Number(e.target.value) || 0;
-          const sum = currentPrizes.reduce((s, p) => s + (Number(p.probability) || 0), 0);
-          totalOddsBadge.textContent = "Total: " + sum + "%";
-          totalOddsBadge.style.background = sum === 100 ? "#10b981" : "#ef4444";
-          syncPrizesToWidget();
-        };
-      });
-
-      prizesTbody.querySelectorAll(".slice-win").forEach((inp) => {
-        inp.onchange = (e) => {
-          const idx = Number(e.target.getAttribute("data-idx"));
-          currentPrizes[idx].isWinner = e.target.checked;
-          renderPrizesTable();
-          syncPrizesToWidget();
-        };
-      });
-
-      prizesTbody.querySelectorAll(".slice-del").forEach((btn) => {
-        btn.onclick = (e) => {
-          if (currentPrizes.length <= 2) return;
-          const idx = Number(btn.getAttribute("data-idx"));
-          currentPrizes.splice(idx, 1);
-          renderPrizesTable();
-          syncPrizesToWidget();
-        };
-      });
     }
 
-    btnAddSlice.onclick = () => {
-      const palette = ["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#8b5cf6", "#3b82f6", "#ef4444", "#14b8a6", "#e11d48", "#059669", "#7c3aed", "#d97706", "#2563eb", "#db2777"];
-      const nextColor = palette[currentPrizes.length % palette.length];
-      const newPrize = {
-        id: "p_" + Date.now(),
-        label: "Reward " + (currentPrizes.length + 1),
-        code: "WIN" + (currentPrizes.length + 1),
-        color: nextColor,
-        textColor: "#ffffff",
+    function updatePrize(idx, field, value) {
+      if (currentPrizes[idx]) {
+        currentPrizes[idx][field] = value;
+      }
+    }
+
+    function deletePrize(idx) {
+      if (currentPrizes.length <= 2) {
+        alert("⚠️ You must have at least 2 prize slices on the wheel!");
+        return;
+      }
+      currentPrizes.splice(idx, 1);
+      renderPrizeTable();
+    }
+
+    document.getElementById("btn-add-slice").addEventListener("click", () => {
+      const colors = ["#6366F1", "#EC4899", "#F59E0B", "#10B981", "#8B5CF6", "#3B82F6", "#EF4444"];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      currentPrizes.push({
+        id: "prize_" + Date.now(),
+        color: randomColor,
+        textColor: "#FFFFFF",
+        label: "NEW PRIZE",
+        code: "BONUS",
         probability: 10,
-        isWinner: true,
-      };
-      currentPrizes.push(newPrize);
-      renderPrizesTable();
-      syncPrizesToWidget();
-      log("➕ Added new prize segment: " + newPrize.label);
-    };
+        isWinner: true
+      });
+      renderPrizeTable();
+    });
 
-    function syncPrizesToWidget() {
-      widget.setAttribute("reward-pool", JSON.stringify(currentPrizes));
+    // CRM Leads Table
+    const sampleLeads = [
+      { name: "Sarah Jenkins", email: "sarah.j@gmail.com", phone: "+1 555-0192", prize: "10% OFF", code: "SPIN10", lang: "en", date: "Today 14:20", status: "Converted", notes: "Redeemed at checkout" },
+      { name: "Mehmet Yılmaz", email: "mehmet.y@outlook.com", phone: "+90 532-1100", prize: "FREE SHIPPING", code: "FREESHIP", lang: "tr", date: "Today 12:45", status: "New", notes: "Follow up tomorrow" },
+      { name: "Hans Müller", email: "hans.m@web.de", phone: "+49 170-4491", prize: "20% OFF", code: "LUCKY20", lang: "de", date: "Yesterday", status: "Contacted", notes: "Sent welcome email" },
+      { name: "Elena Rossi", email: "elena.r@libero.it", phone: "+39 340-9811", prize: "MYSTERY GIFT", code: "GIFT50", lang: "it", date: "Yesterday", status: "Converted", notes: "Completed purchase" }
+    ];
+
+    function renderLeadsTable() {
+      const tbody = document.getElementById("tbody-leads");
+      if (!tbody) return;
+      tbody.innerHTML = sampleLeads.map(l => `
+        <tr>
+          <td><strong>${l.name}</strong></td>
+          <td>${l.email}</td>
+          <td>${l.phone}</td>
+          <td>${l.prize}</td>
+          <td><span class="badge-win">${l.code}</span></td>
+          <td>${l.lang.toUpperCase()}</td>
+          <td>${l.date}</td>
+          <td>
+            <select style="padding:4px 8px; font-size:11px;">
+              <option ${l.status==='New'?'selected':''}>New</option>
+              <option ${l.status==='Contacted'?'selected':''}>Contacted</option>
+              <option ${l.status==='Converted'?'selected':''}>Converted</option>
+            </select>
+          </td>
+          <td><input type="text" value="${l.notes}" style="width:160px; font-size:11px;" /></td>
+        </tr>
+      `).join("");
     }
 
-    renderPrizesTable();
-
-    function log(msg) {
-      const time = new Date().toLocaleTimeString();
-      logConsole.textContent = `[${time}] ${msg}\n` + logConsole.textContent;
-    }
-
-    function updateWidget() {
-      widget.setAttribute("lang", selLang.value);
-      widget.setAttribute("font-family", selFont.value);
-      widget.setAttribute("color-theme", selTheme.value);
-      widget.setAttribute("daily-limit", selLimit.value);
-      syncPrizesToWidget();
-      log(`Updated settings: Lang=${selLang.value.toUpperCase()}, Font=${selFont.value}, Theme=${selTheme.value}, Limit=${selLimit.value}`);
-    }
-
-    selLang.addEventListener("change", (e) => {
-      dashHeaderLangSel.value = e.target.value;
-      updateDashboardLanguage(e.target.value);
-      updateWidget();
-    });
-    selFont.addEventListener("change", (e) => {
-      dashFontSel.value = e.target.value;
-      updateWidget();
-    });
-    dashFontSel.addEventListener("change", (e) => {
-      selFont.value = e.target.value;
-      updateWidget();
-    });
-    selTheme.addEventListener("change", updateWidget);
-    selLimit.addEventListener("change", updateWidget);
-
-    btnReset.addEventListener("click", () => {
-      localStorage.removeItem("wof_usage");
-      log("🔄 LocalStorage 'wof_usage' cleared. Reloading page...");
-      location.reload();
+    // CSV Export
+    document.getElementById("btn-export-csv").addEventListener("click", () => {
+      let csv = "Name,Email,Phone,Prize,Code,Language,Date,Status,Notes\n";
+      sampleLeads.forEach(l => {
+        csv += `"${l.name}","${l.email}","${l.phone}","${l.prize}","${l.code}","${l.lang}","${l.date}","${l.status}","${l.notes}"\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "wheel_of_fortune_leads.csv";
+      a.click();
     });
 
-    btnClearLog.addEventListener("click", () => {
-      logConsole.textContent = "";
-    });
-
-    window.addEventListener("onSpinComplete", (e) => {
-      log(`🎡 [onSpinComplete] Result: ${JSON.stringify(e.detail)}`);
-    });
-
-    window.addEventListener("onFormSubmit", (e) => {
-      log(`📝 [onFormSubmit] Lead: ${e.detail.firstName} ${e.detail.lastName} (${e.detail.email}) - Coupon: ${e.detail.code}`);
-      const leadsTbody = document.getElementById("leads-tbody");
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><strong>${e.detail.firstName} ${e.detail.lastName || ""}</strong></td>
-        <td>${e.detail.email}</td>
-        <td>${e.detail.phone || "—"}</td>
-        <td><span class="badge-win">${e.detail.code || "WINNER"}</span></td>
-        <td>REWARD WON</td>
-        <td><input type="text" class="lead-note-input" placeholder="Add note..." style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:4px 8px; border-radius:6px; font-size:12px; width:200px;" /></td>
-        <td><span style="color:#34d399; font-weight:700;">New Lead (Live)</span></td>
-      `;
-      leadsTbody.prepend(tr);
-    });
-
-    // ─── 16 Languages & Custom Texts Studio ───
-    let customTextsState = {};
-    try {
-      const raw = localStorage.getItem("wheel_of_fortune_custom_texts");
-      if (raw) customTextsState = JSON.parse(raw);
-    } catch {}
-
-    const i18nContainer = document.getElementById("i18n-categories-container");
-    const btnResetLang = document.getElementById("btn-reset-lang-texts");
-
+    // 16 Languages & Custom Texts
     function getLocalizedCategories(lang) {
       const dict = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
       return [
@@ -2294,15 +2821,15 @@
             { key: "emailPH", label: "Email Placeholder" },
             { key: "cta", label: "Claim Reward Button (CTA)" },
             { key: "sending", label: "Sending Status Text" },
-            { key: "success", label: "Success Notification Text", isLong: true },
+            { key: "success", label: "Success Notification Text" },
           ],
         },
         {
           category: dict.cat3Title,
           icon: "⚖️",
           fields: [
-            { key: "privacyConsent", label: "Privacy Policy Consent Text", isLong: true },
-            { key: "marketingConsent", label: "Marketing Communication Consent Text", isLong: true },
+            { key: "privacyConsent", label: "Privacy Policy Consent Text" },
+            { key: "marketingConsent", label: "Marketing Communication Consent Text" },
             { key: "errorConsent", label: "Privacy Not Accepted Alert" },
             { key: "errorRequired", label: "Required Fields Empty Alert" },
             { key: "errorEmail", label: "Invalid Email Address Alert" },
@@ -2330,22 +2857,24 @@
     }
 
     function renderI18nFields(lang) {
+      const container = document.getElementById("i18n-fields-container");
+      if (!container) return;
       const cats = getLocalizedCategories(lang);
       const dict = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
       const langDict = I18N_DICTIONARY[lang] || I18N_DICTIONARY.en;
 
-      i18nContainer.innerHTML = cats.map((cat) => `
-        <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:18px;">
-          <h3 style="margin:0 0 14px 0; font-size:15px; color:#fbbf24; display:flex; align-items:center; gap:8px;">
+      container.innerHTML = cats.map(cat => `
+        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--card-border); border-radius:12px; padding:18px;">
+          <h4 style="margin:0 0 14px 0; font-size:14px; color:#fbbf24; display:flex; align-items:center; gap:8px;">
             <span>${cat.icon}</span> ${cat.category}
-          </h3>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
-            ${cat.fields.map((f) => {
+          </h4>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
+            ${cat.fields.map(f => {
               const currentVal = (customTextsState[lang] && customTextsState[lang][f.key]) || "";
               const defaultVal = langDict[f.key] || "";
               return `
                 <div>
-                  <label style="font-size:12px; font-weight:600; color:#cbd5e1; display:block; margin-bottom:4px;">${f.label}</label>
+                  <label style="font-size:11px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">${f.label}</label>
                   <input
                     type="text"
                     data-lang="${lang}"
@@ -2353,7 +2882,7 @@
                     class="i18n-field-input"
                     value="${currentVal.replace(/"/g, '&quot;')}"
                     placeholder="${dict.defaultPH}${defaultVal.replace(/"/g, '&quot;')}"
-                    style="width:100%; box-sizing:border-box; padding:8px 10px; background:#0f172a; border:1px solid ${currentVal ? '#10b981' : 'rgba(255,255,255,0.15)'}; border-radius:6px; color:#f8fafc; font-size:12px;"
+                    style="width:100%; padding:7px 10px; border-color:${currentVal ? '#10b981' : 'var(--card-border)'};"
                   />
                 </div>
               `;
@@ -2362,8 +2891,7 @@
         </div>
       `).join("");
 
-      // Bind input changes
-      i18nContainer.querySelectorAll(".i18n-field-input").forEach((inp) => {
+      container.querySelectorAll(".i18n-field-input").forEach(inp => {
         inp.addEventListener("input", (e) => {
           const l = e.target.getAttribute("data-lang");
           const k = e.target.getAttribute("data-key");
@@ -2374,18 +2902,18 @@
             e.target.style.borderColor = "#10b981";
           } else {
             delete customTextsState[l][k];
-            e.target.style.borderColor = "rgba(255,255,255,0.15)";
+            e.target.style.borderColor = "var(--card-border)";
           }
         });
       });
     }
 
-    // Dynamic Dashboard UI Translation Engine
+    // Dynamic UI Translation
     function updateDashboardLanguage(lang) {
       const t = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
 
       // Header
-      document.getElementById("dash-title-txt").textContent = "🎡 " + t.dashTitle;
+      document.getElementById("dash-title-txt").textContent = "Wheel of Fortune Dashboard";
       document.getElementById("dash-sub-txt").textContent = t.dashSubtitle;
       document.getElementById("btn-save-dash").textContent = "💾 " + t.saveAll;
 
@@ -2396,102 +2924,72 @@
       document.getElementById("tab-nav-theme").textContent = t.tabTheme;
       document.getElementById("tab-nav-texts").textContent = t.tabTexts;
 
-      // Tab 1: Stats
+      // Stats
       document.getElementById("lbl-stat-spins").textContent = t.statSpins;
       document.getElementById("lbl-stat-coupons").textContent = t.statCoupons;
       document.getElementById("lbl-stat-leads").textContent = t.statLeads;
       document.getElementById("lbl-stat-rate").textContent = t.statRate;
-      document.getElementById("lbl-campaign-title").textContent = "🚀 " + t.chartTitle;
 
-      // Tab 2: Prizes
-      document.getElementById("lbl-prizes-title").textContent = "🎡 " + t.prizesTitle;
-      document.getElementById("lbl-prizes-sub").textContent = t.prizesSubtitle;
-      document.getElementById("th-bg-color").textContent = "BG " + t.colColor;
-      document.getElementById("th-txt-color").textContent = "Text Color";
-      document.getElementById("th-label").textContent = t.colLabel;
-      document.getElementById("th-code").textContent = t.colCode;
-      document.getElementById("th-prob").textContent = t.colProb;
-      document.getElementById("th-status").textContent = t.colStatus;
-
-      // Tab 3: CRM Leads
-      document.getElementById("lbl-leads-title").textContent = "👥 " + t.leadsTitle;
-      document.getElementById("lbl-leads-sub").textContent = t.leadsSubtitle;
-      document.getElementById("btn-export-csv").textContent = t.exportCSV;
-      document.getElementById("th-name").textContent = t.colName;
-      document.getElementById("th-email").textContent = t.colEmail;
-      document.getElementById("th-phone").textContent = t.colPhone;
-      document.getElementById("th-coupon").textContent = t.colCouponWon;
-      document.getElementById("th-prize").textContent = t.colPrizeWon;
-      document.getElementById("th-notes").textContent = t.colNotes;
-      document.getElementById("th-lead-status").textContent = t.colStatus;
-
-      // Tab 4: Theme
+      // Labels
+      document.getElementById("lbl-prize-table-title").textContent = "🎡 " + t.prizesTitle;
+      document.getElementById("lbl-prize-table-desc").textContent = t.prizesSubtitle;
+      document.getElementById("lbl-crm-title").textContent = "👥 " + t.leadsTitle;
+      document.getElementById("lbl-crm-desc").textContent = t.leadsSubtitle;
       document.getElementById("lbl-theme-title").textContent = "🎨 " + t.themeTitle;
-      document.getElementById("lbl-theme-sub").textContent = t.themeSubtitle;
-      document.getElementById("lbl-theme-preset").textContent = t.themeLabel;
-      document.getElementById("lbl-theme-limit").textContent = t.limitLabel;
-      document.getElementById("lbl-theme-desc").textContent = t.limitDesc;
-
-      // Tab 5: Texts
-      document.getElementById("lbl-texts-title").textContent = "🌍 " + t.textsTitle;
-      document.getElementById("lbl-texts-sub").textContent = t.textsSubtitle;
+      document.getElementById("lbl-i18n-title").textContent = "🌍 " + t.textsTitle;
+      document.getElementById("lbl-i18n-desc").textContent = t.textsSubtitle;
       document.getElementById("btn-reset-lang-texts").textContent = t.resetLangBtn;
 
-      // Re-render Tab 5 Custom text categories
       renderI18nFields(lang);
     }
 
-    dashHeaderLangSel.addEventListener("change", (e) => {
-      const selected = e.target.value;
-      selLang.value = selected;
-      updateDashboardLanguage(selected);
-      updateWidget();
+    document.getElementById("dash-header-lang-sel").addEventListener("change", (e) => {
+      updateDashboardLanguage(e.target.value);
     });
 
-    btnResetLang.addEventListener("click", () => {
-      const lang = dashHeaderLangSel.value;
-      const t = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
-      if (confirm(t.resetLangBtn + "?")) {
+    document.getElementById("btn-reset-lang-texts").addEventListener("click", () => {
+      const lang = document.getElementById("dash-header-lang-sel").value;
+      if (confirm("Reset custom texts for " + lang.toUpperCase() + " to defaults?")) {
         delete customTextsState[lang];
         localStorage.setItem("wheel_of_fortune_custom_texts", JSON.stringify(customTextsState));
         renderI18nFields(lang);
-        widget.setAttribute("custom-texts", JSON.stringify(customTextsState));
-        log(`🔄 Reset ${lang.toUpperCase()} custom texts to defaults.`);
       }
     });
 
-    // Save All Dashboard Changes Button
-    const btnSaveDash = document.getElementById("btn-save-dash");
-    if (btnSaveDash) {
-      btnSaveDash.addEventListener("click", () => {
-        const lang = dashHeaderLangSel.value;
-        const font = dashFontSel.value;
-        const theme = document.getElementById("dash-theme-sel").value;
-        const limit = document.getElementById("dash-limit-inp").value;
-        const t = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
+    // Save All Changes
+    document.getElementById("btn-save-dash").addEventListener("click", () => {
+      const lang = document.getElementById("dash-header-lang-sel").value;
+      const font = document.getElementById("sel-dash-font").value;
+      const limit = parseInt(document.getElementById("inp-daily-limit").value, 10) || 1;
 
-        localStorage.setItem("wheel_of_fortune_custom_texts", JSON.stringify(customTextsState));
-        widget.setAttribute("custom-texts", JSON.stringify(customTextsState));
-        widget.setAttribute("lang", lang);
-        widget.setAttribute("font-family", font);
-        widget.setAttribute("color-theme", theme);
-        widget.setAttribute("daily-limit", limit);
-        syncPrizesToWidget();
+      const settings = {
+        lang: lang,
+        fontFamily: font,
+        colorTheme: selectedTheme,
+        dailyLimit: limit,
+        prizes: currentPrizes
+      };
 
-        log("💾 " + t.saveSuccess);
-        alert("✅ " + t.saveSuccess);
-      });
-    }
+      localStorage.setItem("wof_settings", JSON.stringify(settings));
+      localStorage.setItem("wheel_of_fortune_custom_texts", JSON.stringify(customTextsState));
 
-    // Initialize in English (Default)
-    updateDashboardLanguage("en");
-    updateWidget();
-    if (Object.keys(customTextsState).length > 0) {
-      widget.setAttribute("custom-texts", JSON.stringify(customTextsState));
-    }
+      // PostMessage to parent window
+      window.parent.postMessage({
+        type: "wof-update-settings",
+        settings: settings
+      }, "*");
+
+      // Show Save Toast
+      const banner = document.getElementById("save-banner");
+      banner.style.display = "block";
+      setTimeout(() => { banner.style.display = "none"; }, 3000);
+    });
+
+    // Init
+    selectTheme(selectedTheme);
+    renderPrizeTable();
+    renderLeadsTable();
+    updateDashboardLanguage(document.getElementById("dash-header-lang-sel").value);
   </script>
-
-  <!-- Standalone Custom Element bundle -->
-  <script type="module" src="/wheel-widget.js"></script>
 </body>
 </html>
