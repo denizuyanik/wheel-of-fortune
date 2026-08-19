@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+const fs = require("fs");
+const path = require("path");
+
+// 1. Update settings-panel.html with instant live broadcast on every change
+const settingsPanelHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -347,3 +351,123 @@
   </script>
 </body>
 </html>
+`;
+
+fs.writeFileSync(path.join(__dirname, "../public/settings-panel.html"), settingsPanelHtml);
+console.log("Updated public/settings-panel.html with instant live broadcast!");
+
+// 2. Update wheel-widget.js with robust 4-layer sync
+const widgetJsPath = path.join(__dirname, "../public/wheel-widget.js");
+let widgetCode = fs.readFileSync(widgetJsPath, "utf8");
+
+const robustMessageListener = `  setupMessageListener() {
+    if (this._hasMsgListener) return;
+    this._hasMsgListener = true;
+
+    const applyNewSettings = (s) => {
+      if (!s) return;
+      let changed = false;
+      if (s.colorTheme && s.colorTheme !== this.theme) {
+        this.theme = s.colorTheme;
+        this.setAttribute("color-theme", s.colorTheme);
+        changed = true;
+      }
+      if (s.lang && s.lang !== this.widgetLang) {
+        this.widgetLang = s.lang;
+        this.setAttribute("lang", s.lang);
+        changed = true;
+      }
+      if (s.fontFamily && s.fontFamily !== this.fontFamily) {
+        this.fontFamily = s.fontFamily;
+        this.setAttribute("font-family", s.fontFamily);
+        changed = true;
+      }
+      if (s.dailyLimit && s.dailyLimit !== this.dailyLimit) {
+        this.dailyLimit = Number(s.dailyLimit) || 1;
+        this.setAttribute("daily-limit", s.dailyLimit);
+        changed = true;
+      }
+      if (s.rewardPool && Array.isArray(s.rewardPool) && s.rewardPool.length >= 2) {
+        this.prizes = s.rewardPool;
+        changed = true;
+      }
+
+      if (changed) {
+        this.render();
+        this.initCanvas();
+        this.updateTexts();
+        this.drawWheel();
+        this.setupEventListeners();
+      }
+    };
+
+    // 1. BroadcastChannel (0ms direct cross-frame)
+    try {
+      const channel = new BroadcastChannel("wof_settings_channel");
+      channel.onmessage = (event) => {
+        if (event.data && event.data.type === "wof-update-settings" && event.data.settings) {
+          applyNewSettings(event.data.settings);
+        } else if (event.data && event.data.type === "wof-reset-limit") {
+          this.checkDailyLimit();
+        }
+      };
+    } catch(e) {}
+
+    // 2. Storage event
+    window.addEventListener("storage", (event) => {
+      if (event.key === "wof_settings" && event.newValue) {
+        try {
+          applyNewSettings(JSON.parse(event.newValue));
+        } catch(e) {}
+      } else if (event.key === "wof_reset_timestamp") {
+        this.checkDailyLimit();
+      }
+    });
+
+    // 3. PostMessage listener
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.type === "wof-update-settings" && event.data.settings) {
+        applyNewSettings(event.data.settings);
+      } else if (event.data && event.data.type === "wof-reset-limit") {
+        this.checkDailyLimit();
+      }
+    });
+
+    // 4. Active Polling interval (Every 400ms checks for changes in Wix Editor)
+    let lastTs = localStorage.getItem("wof_settings_timestamp");
+    setInterval(() => {
+      try {
+        const currentTs = localStorage.getItem("wof_settings_timestamp");
+        if (currentTs && currentTs !== lastTs) {
+          lastTs = currentTs;
+          const s = JSON.parse(localStorage.getItem("wof_settings"));
+          applyNewSettings(s);
+        }
+      } catch(e) {}
+    }, 400);
+  }`;
+
+widgetCode = widgetCode.replace(/setupMessageListener\(\)\s*\{[\s\S]*?\n  \}/, robustMessageListener);
+fs.writeFileSync(widgetJsPath, widgetCode);
+console.log("Updated public/wheel-widget.js with 4-layer instant sync!");
+
+// Sync to all target locations
+const targets = [
+  path.join(__dirname, "../public/widget-standalone.html"),
+  path.join(__dirname, "../wix-default-custom-element.js"),
+  path.join(__dirname, "../src/public/wix-default-custom-element.js"),
+  path.join(__dirname, "../src/public/custom-elements/wix-default-custom-element.js"),
+  path.join(__dirname, "../src/public/wheel-widget.js"),
+];
+
+targets.forEach((target) => {
+  if (target.endsWith(".html")) {
+    let html = fs.readFileSync(target, "utf8");
+    html = html.replace(/\/\/ ─── 16-Language Dictionary ─[\s\S]*?<\/script>/, widgetCode.substring(widgetCode.indexOf("// ─── 16-Language Dictionary ─")) + "\n  </script>");
+    fs.writeFileSync(target, html);
+    console.log("Synced HTML:", target);
+  } else {
+    fs.writeFileSync(target, widgetCode);
+    console.log("Synced JS:", target);
+  }
+});
