@@ -1009,131 +1009,17 @@ export class WheelOfFortuneElement extends HTMLElement {
           border: 1px solid #fbbf24;
         }
 
-        .wof-container {
-          position: relative;
-          max-width: 680px;
-          margin: 0 auto;
-          background: var(--wof-bg);
-          border-radius: 24px;
-          padding: 32px 24px;
-          color: var(--wof-text-primary);
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-          overflow: hidden;
-          text-align: center;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+        
+        .wof-container.wind-gust-active {
+          animation: windShockwave 0.35s ease-out;
+        }
+        @keyframes windShockwave {
+          0% { transform: scale(1); filter: brightness(1); }
+          40% { transform: scale(1.02); filter: brightness(1.2) drop-shadow(0 0 30px rgba(251, 191, 36, 0.7)); }
+          100% { transform: scale(1); filter: brightness(1); }
         }
 
-        .header-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: rgba(245, 158, 11, 0.15);
-          border: 1px solid rgba(245, 158, 11, 0.4);
-          padding: 6px 14px;
-          border-radius: 9999px;
-          font-size: 13px;
-          font-weight: 700;
-          color: #fbbf24;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          margin-bottom: 12px;
-        }
-
-        h2.title {
-          font-size: 32px;
-          font-weight: 900;
-          margin: 0 0 8px 0;
-          letter-spacing: -0.5px;
-          background: linear-gradient(135deg, #ffffff 40%, var(--wof-accent2) 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-
-        p.subtitle {
-          font-size: 15px;
-          color: var(--wof-text-secondary);
-          margin: 0 0 24px 0;
-          line-height: 1.5;
-        }
-
-        /* ─── Wheel Stage ─── */
-        .wheel-stage {
-          position: relative;
-          width: 360px;
-          height: 360px;
-          max-width: 100%;
-          margin: 0 auto 24px auto;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        canvas.wheel-canvas {
-          width: 360px;
-          height: 360px;
-          display: block;
-          filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.65));
-        }
-
-        /* ─── Ticker Pointer (Indicator Arrow) ─── */
-        .pointer-arrow {
-          position: absolute;
-          top: -6px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 36px;
-          height: 44px;
-          z-index: 10;
-          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
-          transform-origin: 50% 15%;
-          transition: transform 0.08s ease-out;
-        }
-        .pointer-arrow.ticking {
-          transform: translateX(-50%) rotate(-12deg);
-        }
-
-        .pointer-arrow svg {
-          width: 100%;
-          height: 100%;
-          fill: var(--wof-pointer-color);
-        }
-
-        /* ─── Center Spin Hub ─── */
-        .center-hub-btn {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 82px;
-          height: 82px;
-          border-radius: 50%;
-          background: ${th.hubBg};
-          border: 4px solid #ffffff;
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.8);
-          color: #1e1b4b;
-          font-size: 15px;
-          font-weight: 900;
-          letter-spacing: 0.5px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 8;
-          transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s;
-          user-select: none;
-          text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
-        }
-        .center-hub-btn:hover:not(:disabled) {
-          transform: translate(-50%, -50%) scale(1.08);
-          box-shadow: 0 12px 28px rgba(245, 158, 11, 0.5), inset 0 2px 6px #fff;
-        }
-        .center-hub-btn:active:not(:disabled) {
-          transform: translate(-50%, -50%) scale(0.95);
-        }
-        .center-hub-btn:disabled {
-          opacity: 0.85;
-          cursor: not-allowed;
-        }
+        
 
         /* ─── Big Action Spin Button ─── */
         .spin-action-btn {
