@@ -2157,45 +2157,37 @@ class WheelOfFortuneElement extends HTMLElement {
   }
 
   
-    setupMessageListener() {
+      setupMessageListener() {
     if (this._hasMsgListener) return;
     this._hasMsgListener = true;
 
     const applyNewSettings = (s) => {
       if (!s) return;
-      let changed = false;
-      if (s.colorTheme && s.colorTheme !== this.theme) {
+      if (s.colorTheme) {
         this.theme = s.colorTheme;
         this.setAttribute("color-theme", s.colorTheme);
-        changed = true;
       }
-      if (s.lang && s.lang !== this.widgetLang) {
+      if (s.lang) {
         this.widgetLang = s.lang;
         this.setAttribute("lang", s.lang);
-        changed = true;
       }
-      if (s.fontFamily && s.fontFamily !== this.fontFamily) {
+      if (s.fontFamily) {
         this.fontFamily = s.fontFamily;
         this.setAttribute("font-family", s.fontFamily);
-        changed = true;
       }
-      if (s.dailyLimit && s.dailyLimit !== this.dailyLimit) {
+      if (s.dailyLimit) {
         this.dailyLimit = Number(s.dailyLimit) || 1;
         this.setAttribute("daily-limit", s.dailyLimit);
-        changed = true;
       }
       if (s.rewardPool && Array.isArray(s.rewardPool) && s.rewardPool.length >= 2) {
         this.prizes = s.rewardPool;
-        changed = true;
       }
 
-      if (changed) {
-        this.render();
-        this.initCanvas();
-        this.updateTexts();
-        this.drawWheel();
-        this.setupEventListeners();
-      }
+      this.render();
+      this.initCanvas();
+      this.updateTexts();
+      this.drawWheel();
+      this.setupEventListeners();
     };
 
     // 1. BroadcastChannel (0ms direct cross-frame)
@@ -2221,17 +2213,21 @@ class WheelOfFortuneElement extends HTMLElement {
       }
     });
 
-    // 3. PostMessage listener
-    window.addEventListener("message", (event) => {
+    // 3. Global postMessage listener
+    const onMsg = (event) => {
       if (event.data && event.data.type === "wof-update-settings" && event.data.settings) {
         applyNewSettings(event.data.settings);
       } else if (event.data && event.data.type === "wof-reset-limit") {
         this.checkDailyLimit();
       }
-    });
+    };
+    window.addEventListener("message", onMsg);
+    try { if (window.top && window.top !== window) window.top.addEventListener("message", onMsg); } catch(e) {}
+    try { if (window.parent && window.parent !== window) window.parent.addEventListener("message", onMsg); } catch(e) {}
 
-    // 4. Active Polling interval (Every 400ms checks for changes in Wix Editor)
-    let lastTs = localStorage.getItem("wof_settings_timestamp");
+    // 4. Active Polling fallback
+    let lastTs = "";
+    try { lastTs = localStorage.getItem("wof_settings_timestamp"); } catch(e) {}
     setInterval(() => {
       try {
         const currentTs = localStorage.getItem("wof_settings_timestamp");
@@ -2241,7 +2237,7 @@ class WheelOfFortuneElement extends HTMLElement {
           applyNewSettings(s);
         }
       } catch(e) {}
-    }, 400);
+    }, 300);
   }
 
   setupEventListeners() {

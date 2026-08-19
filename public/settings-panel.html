@@ -265,28 +265,44 @@
       };
     }
 
-    function applyAndBroadcast() {
+        function applyAndBroadcast() {
       const settings = getSettingsObject();
       const ts = Date.now().toString();
 
-      // 1. localStorage with timestamp for interval triggers
-      localStorage.setItem("wof_settings", JSON.stringify(settings));
-      localStorage.setItem("wof_settings_timestamp", ts);
+      try {
+        localStorage.setItem("wof_settings", JSON.stringify(settings));
+        localStorage.setItem("wof_settings_timestamp", ts);
+      } catch(e) {}
 
-      // 2. BroadcastChannel
+      const msg = { type: "wof-update-settings", settings: settings, timestamp: ts };
+
+      // 1. BroadcastChannel
       if (bChannel) {
+        try { bChannel.postMessage(msg); } catch(e) {}
+      }
+
+      // 2. Comprehensive Deep Frame Broadcast across all Wix iframes
+      try { window.postMessage(msg, "*"); } catch(e) {}
+      try { window.parent.postMessage(msg, "*"); } catch(e) {}
+      try { window.top.postMessage(msg, "*"); } catch(e) {}
+      try { if (window.opener) window.opener.postMessage(msg, "*"); } catch(e) {}
+
+      function deepPost(w) {
+        if (!w) return;
         try {
-          bChannel.postMessage({ type: "wof-update-settings", settings: settings, timestamp: ts });
+          w.postMessage(msg, "*");
+        } catch(e) {}
+        try {
+          for (let i = 0; i < w.frames.length; i++) {
+            try {
+              deepPost(w.frames[i]);
+            } catch(e) {}
+          }
         } catch(e) {}
       }
 
-      // 3. Post to parent and top window
-      try {
-        window.parent.postMessage({ type: "wof-update-settings", settings: settings }, "*");
-      } catch(e) {}
-      try {
-        window.top.postMessage({ type: "wof-update-settings", settings: settings }, "*");
-      } catch(e) {}
+      try { deepPost(window.top); } catch(e) {}
+      try { deepPost(window.parent); } catch(e) {}
     }
 
     function selectTheme(theme) {
