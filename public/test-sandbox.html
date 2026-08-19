@@ -28,7 +28,7 @@
       flex-direction: column;
     }
 
-    /* ─── Top Executive Header ─── */
+    /* Top Executive Header */
     .dash-header {
       background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(16px);
@@ -63,7 +63,7 @@
       color: var(--text-muted);
     }
 
-    /* ─── Language Selector & Controls ─── */
+    /* Language Selector & Controls */
     .lang-bar {
       display: flex;
       align-items: center;
@@ -110,7 +110,7 @@
       box-shadow: 0 6px 20px rgba(16,185,129,0.5);
     }
 
-    /* ─── Navigation Tabs ─── */
+    /* Navigation Tabs */
     .dash-nav {
       padding: 12px 28px 0;
       background: rgba(15, 23, 42, 0.6);
@@ -145,7 +145,7 @@
       border-bottom-color: #fbbf24;
     }
 
-    /* ─── Dashboard Container ─── */
+    /* Dashboard Container */
     .dash-container {
       max-width: 1300px;
       width: 100%;
@@ -156,7 +156,7 @@
       display: none;
     }
     .dash-pane.active {
-      display: block;
+      display: block !important;
     }
 
     .card {
@@ -186,7 +186,7 @@
       margin-top: 2px;
     }
 
-    /* ─── Stats Grid ─── */
+    /* Stats Grid */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -212,7 +212,7 @@
       font-weight: 900;
     }
 
-    /* ─── Tables ─── */
+    /* Tables */
     .table-responsive {
       overflow-x: auto;
     }
@@ -293,7 +293,7 @@
       border-radius: 4px;
     }
 
-    /* ─── Toast Banner ─── */
+    /* Toast Banner */
     .save-banner {
       display: none;
       position: fixed;
@@ -329,7 +329,7 @@
     <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
       <div class="lang-bar">
         <label id="dash-lang-label">🌐 Language:</label>
-        <select class="lang-select" id="dash-header-lang-sel">
+        <select class="lang-select" id="dash-header-lang-sel" onchange="onLanguageChange(this.value)">
           <option value="en" selected>English 🇺🇸 (Default)</option>
           <option value="tr">Türkçe 🇹🇷</option>
           <option value="de">Deutsch 🇩🇪</option>
@@ -349,7 +349,7 @@
         </select>
       </div>
 
-      <button type="button" class="btn-save-main" id="btn-save-dash">
+      <button type="button" class="btn-save-main" id="btn-save-dash" onclick="saveAllSettings()">
         💾 Save All Changes
       </button>
     </div>
@@ -357,11 +357,11 @@
 
   <!-- Navigation Tabs -->
   <nav class="dash-nav" id="dash-nav-tabs">
-    <button type="button" class="dash-tab-btn active" data-pane="dash-overview" id="tab-nav-overview">📊 Overview</button>
-    <button type="button" class="dash-tab-btn" data-pane="dash-prizes" id="tab-nav-prizes">🎁 Prize Slices</button>
-    <button type="button" class="dash-tab-btn" data-pane="dash-leads" id="tab-nav-leads">👥 CRM Leads & Notes</button>
-    <button type="button" class="dash-tab-btn" data-pane="dash-theme" id="tab-nav-theme">🎨 Design & Theme</button>
-    <button type="button" class="dash-tab-btn" data-pane="dash-i18n" id="tab-nav-texts">🌍 16 Languages & Texts</button>
+    <button type="button" class="dash-tab-btn active" id="tab-btn-overview" onclick="switchDashboardTab('dash-overview')">📊 Overview</button>
+    <button type="button" class="dash-tab-btn" id="tab-btn-prizes" onclick="switchDashboardTab('dash-prizes')">🎁 Prize Slices</button>
+    <button type="button" class="dash-tab-btn" id="tab-btn-leads" onclick="switchDashboardTab('dash-leads')">👥 CRM Leads & Notes</button>
+    <button type="button" class="dash-tab-btn" id="tab-btn-theme" onclick="switchDashboardTab('dash-theme')">🎨 Design & Theme</button>
+    <button type="button" class="dash-tab-btn" id="tab-btn-i18n" onclick="switchDashboardTab('dash-i18n')">🌍 16 Languages & Texts</button>
   </nav>
 
   <!-- Main Content Container -->
@@ -437,7 +437,7 @@
             <div class="card-title" id="lbl-prize-table-title">Wheel Prize Slices (Unlimited)</div>
             <div class="card-desc" id="lbl-prize-table-desc">Add or remove as many slices as you want. Customize slice colors, text colors, labels, coupon codes, and win odds.</div>
           </div>
-          <button type="button" class="btn-action" id="btn-add-slice" style="background:#3b82f6;">➕ Add New Slice</button>
+          <button type="button" class="btn-action" id="btn-add-slice" onclick="addNewSlice()" style="background:#3b82f6;">➕ Add New Slice</button>
         </div>
 
         <div class="table-responsive">
@@ -469,7 +469,7 @@
             <div class="card-title" id="lbl-crm-title">Captured CRM Leads & Winner Contacts</div>
             <div class="card-desc" id="lbl-crm-desc">Real-time visitor lead database with prize history, follow-up status, and custom notes.</div>
           </div>
-          <button type="button" class="btn-action" id="btn-export-csv" style="background:#10b981;">📥 Export to CSV</button>
+          <button type="button" class="btn-action" id="btn-export-csv" onclick="exportLeadsCSV()" style="background:#10b981;">📥 Export to CSV</button>
         </div>
 
         <div class="table-responsive">
@@ -534,7 +534,7 @@
             <div class="card-title" id="lbl-i18n-title">16 Languages & 36 Custom Text Fields</div>
             <div class="card-desc" id="lbl-i18n-desc">Select any language and fully customize all 36 text labels across the wheel, form, and voucher.</div>
           </div>
-          <button type="button" class="btn-action" id="btn-reset-lang-texts" style="background:#ef4444;">🔄 Reset Language to Defaults</button>
+          <button type="button" class="btn-action" id="btn-reset-lang-texts" onclick="resetLanguageTexts()" style="background:#ef4444;">🔄 Reset Language to Defaults</button>
         </div>
 
         <div id="i18n-fields-container" style="display:flex; flex-direction:column; gap:16px;">
@@ -550,2100 +550,9 @@
   </div>
 
   <script>
-    const DASHBOARD_I18N = {
-  en: {
-    dashTitle: "Wheel of Fortune Dashboard",
-    dashSubtitle: "Manage wheel prizes, win odds, CRM leads, theme, and 16-language texts",
-    saveAll: "Save All Changes",
-    saving: "Saving...",
-    saveSuccess: "All settings and custom translations saved successfully!",
-    activeLang: "Active Dashboard Language",
-    tabOverview: "📊 Overview",
-    tabPrizes: "🎁 Prize Slices",
-    tabLeads: "👥 CRM Leads & Notes",
-    tabTheme: "🎨 Theme & Rules",
-    tabTexts: "🌍 16 Languages & Texts",
-    statSpins: "Total Spins",
-    statLeads: "Leads Collected",
-    statRate: "Conversion Rate",
-    statCoupons: "Coupons Won",
-    chartTitle: "Spin & Conversion Performance",
-    prizesTitle: "Wheel Segments & Probability Settings",
-    prizesSubtitle: "Configure slice colors, winning discount codes, and win odds (sum must be 100%)",
-    colColor: "Color",
-    colLabel: "Slice Title",
-    colCode: "Coupon Code",
-    colProb: "Odds (%)",
-    colStatus: "Status",
-    winnerBadge: "✅ Winner",
-    loserBadge: "❌ No Prize",
-    leadsTitle: "CRM Leads & Winner Management",
-    leadsSubtitle: "Real-time captured leads from wheel spins with editable follow-up notes",
-    exportCSV: "📥 Export CSV",
-    colName: "Full Name",
-    colEmail: "Email",
-    colPhone: "Phone",
-    colCouponWon: "Coupon Won",
-    colPrizeWon: "Prize Won",
-    colNotes: "Follow-up Notes",
-    notePH: "Add customer note...",
-    themeTitle: "Visual Theme & Anti-Cheat Rules",
-    themeSubtitle: "Select visual color palette, LED effects, and daily spin limits",
-    themeLabel: "Visual Theme Palette",
-    limitLabel: "Daily Spin Limit per Visitor",
-    limitDesc: "Anti-cheat prevents multiple attempts per visitor per calendar day.",
-    textsTitle: "16 Languages & Text Customization",
-    textsSubtitle: "Override any of the 36 text strings for each language independently",
-    resetLangBtn: "🔄 Reset This Language to Default",
-    resetFieldBtn: "↩️ Reset to Default",
-    defaultPH: "Default: ",
-    cat1Title: "Wheel & Main Headings",
-    cat2Title: "Lead Form & Field Labels",
-    cat3Title: "User Consents & Error Alerts",
-    cat4Title: "Coupon, Digital Voucher & Download",
-  },
-  tr: {
-    dashTitle: "Çarkıfelek Yönetim Paneli",
-    dashSubtitle: "Ödül dilimleri, kazanma oranları, CRM lead'leri, tema ve 16 dil yönetimi",
-    saveAll: "Tüm Değişiklikleri Kaydet",
-    saving: "Kaydediliyor...",
-    saveSuccess: "Tüm ayarlar ve özel metinler başarıyla kaydedildi!",
-    activeLang: "Aktif Panel Dili",
-    tabOverview: "📊 Genel Bakış",
-    tabPrizes: "🎁 6 Ödül Dilimi",
-    tabLeads: "👥 CRM Lead & Notlar",
-    tabTheme: "🎨 Tema & Kurallar",
-    tabTexts: "🌍 16 Dil & Metinler",
-    statSpins: "Toplam Çevirme",
-    statLeads: "Toplanan Lead",
-    statRate: "Dönüşüm Oranı",
-    statCoupons: "Kazanılan Kupon",
-    chartTitle: "Çevirme & Dönüşüm Performansı",
-    prizesTitle: "Çark Dilimleri & Olasılık Ayarları",
-    prizesSubtitle: "Dilim renklerini, kupon kodlarını ve kazanma şansını belirleyin (toplam 100% olmalı)",
-    colColor: "Renk",
-    colLabel: "Dilim Başlığı",
-    colCode: "Kupon Kodu",
-    colProb: "Olasılık (%)",
-    colStatus: "Durum",
-    winnerBadge: "✅ Kazanan",
-    loserBadge: "❌ Pas / Boş",
-    leadsTitle: "CRM Lead & Kazanan Yönetimi",
-    leadsSubtitle: "Çarkı çeviren ziyaretçilerin iletişim bilgileri ve düzenlenebilir müşteri notları",
-    exportCSV: "📥 CSV Olarak İndir",
-    colName: "Ad Soyad",
-    colEmail: "E-Posta",
-    colPhone: "Telefon",
-    colCouponWon: "Kazanılan Kupon",
-    colPrizeWon: "Kazanılan Ödül",
-    colNotes: "Müşteri Notları",
-    notePH: "Not ekleyin...",
-    themeTitle: "Görsel Tema & Hile Koruma Kuralları",
-    themeSubtitle: "Çarkın renk paletini, LED ışık efektlerini ve günlük çevirme limitini seçin",
-    themeLabel: "Renk Teması Seçimi",
-    limitLabel: "Ziyaretçi Başına Günlük Hak",
-    limitDesc: "Hile koruma sistemi aynı ziyaretçinin takvim günü içinde tekrar çevirmesini sınırlar.",
-    textsTitle: "16 Dil & Tüm Metinleri Özelleştirme",
-    textsSubtitle: "Uygulama üzerindeki 36 metin alanını seçilen her dil için ayrı ayrı düzenleyebilirsiniz",
-    resetLangBtn: "🔄 Bu Dili Varsayılana Sıfırla",
-    resetFieldBtn: "↩️ Varsayılana Dön",
-    defaultPH: "Varsayılan: ",
-    cat1Title: "Ana Çark & Başlık Metinleri",
-    cat2Title: "Lead Formu & Alan İsimleri",
-    cat3Title: "Kullanıcı Onayları & Hata Uyarıları",
-    cat4Title: "Kupon, Dijital Kart & İndirme Alanları",
-  },
-  de: {
-    dashTitle: "Glücksrad Dashboard",
-    dashSubtitle: "Verwalten Sie Preise, Gewinnchancen, CRM-Leads, Theme und 16 Sprachen",
-    saveAll: "Alle Änderungen speichern",
-    saving: "Wird gespeichert...",
-    saveSuccess: "Alle Einstellungen und Übersetzungen erfolgreich gespeichert!",
-    activeLang: "Aktive Dashboard-Sprache",
-    tabOverview: "📊 Übersicht",
-    tabPrizes: "🎁 Preissegmente",
-    tabLeads: "👥 CRM Leads & Notizen",
-    tabTheme: "🎨 Design & Regeln",
-    tabTexts: "🌍 16 Sprachen & Texte",
-    statSpins: "Gesamte Drehungen",
-    statLeads: "Gesammelte Leads",
-    statRate: "Konversionsrate",
-    statCoupons: "Gewonnene Gutscheine",
-    chartTitle: "Drehungs- & Leistungsstatistik",
-    prizesTitle: "Radausschnitte & Wahrscheinlichkeitseinstellungen",
-    prizesSubtitle: "Farben, Gutscheincodes und Gewinnchancen konfigurieren (Summe = 100%)",
-    colColor: "Farbe",
-    colLabel: "Segmenttitel",
-    colCode: "Gutscheincode",
-    colProb: "Chance (%)",
-    colStatus: "Status",
-    winnerBadge: "✅ Gewinner",
-    loserBadge: "❌ Kein Gewinn",
-    leadsTitle: "CRM Lead & Gewinnerverwaltung",
-    leadsSubtitle: "In Echtzeit erfasste Leads mit bearbeitbaren Follow-up-Notizen",
-    exportCSV: "📥 Als CSV exportieren",
-    colName: "Vollständiger Name",
-    colEmail: "E-Mail",
-    colPhone: "Telefon",
-    colCouponWon: "Gutschein",
-    colPrizeWon: "Gewonnener Preis",
-    colNotes: "Kundennotizen",
-    notePH: "Notiz hinzufügen...",
-    themeTitle: "Visuelles Thema & Anti-Cheat-Regeln",
-    themeSubtitle: "Farbpalette, LED-Effekte und tägliche Drehungslimits festlegen",
-    themeLabel: "Farbthema",
-    limitLabel: "Tägliches Drehungslimit",
-    limitDesc: "Anti-Cheat verhindert mehrfache Versuche pro Besucher am selben Tag.",
-    textsTitle: "16 Sprachen & Textanpassung",
-    textsSubtitle: "Passen Sie alle 36 Textzeichenfolgen für jede Sprache an",
-    resetLangBtn: "🔄 Sprache auf Standard zurücksetzen",
-    resetFieldBtn: "↩️ Auf Standard zurücksetzen",
-    defaultPH: "Standard: ",
-    cat1Title: "Rad & Hauptüberschriften",
-    cat2Title: "Lead-Formular & Feldbezeichnungen",
-    cat3Title: "Zustimmungen & Fehlerwarnungen",
-    cat4Title: "Gutschein, Digitalkarte & Download",
-  },
-  fr: {
-    dashTitle: "Tableau de Bord Roue de la Fortune",
-    dashSubtitle: "Gérez les prix, les probabilités, les leads CRM, le thème et 16 langues",
-    saveAll: "Enregistrer toutes les modifications",
-    saving: "Enregistrement...",
-    saveSuccess: "Tous les paramètres ont été enregistrés avec succès !",
-    activeLang: "Langue du tableau de bord",
-    tabOverview: "📊 Aperçu",
-    tabPrizes: "🎁 Segments de Prix",
-    tabLeads: "👥 Leads CRM & Notes",
-    tabTheme: "🎨 Thème & Règles",
-    tabTexts: "🌍 16 Langues & Textes",
-    statSpins: "Total des Tours",
-    statLeads: "Leads Collectés",
-    statRate: "Taux de Conversion",
-    statCoupons: "Coupons Gagnés",
-    chartTitle: "Performance des Tours & Conversions",
-    prizesTitle: "Configuration des Segments & Probabilités",
-    prizesSubtitle: "Définissez les couleurs, codes promo et chances de gain (total = 100%)",
-    colColor: "Couleur",
-    colLabel: "Titre du Segment",
-    colCode: "Code Coupon",
-    colProb: "Chances (%)",
-    colStatus: "Statut",
-    winnerBadge: "✅ Gagnant",
-    loserBadge: "❌ Pas de lot",
-    leadsTitle: "Gestion des Leads CRM & Gagnants",
-    leadsSubtitle: "Leads capturés en temps réel avec notes de suivi modifiables",
-    exportCSV: "📥 Exporter en CSV",
-    colName: "Nom Complet",
-    colEmail: "E-mail",
-    colPhone: "Téléphone",
-    colCouponWon: "Coupon Gagné",
-    colPrizeWon: "Prix Gagné",
-    colNotes: "Notes Client",
-    notePH: "Ajouter une note...",
-    themeTitle: "Thème Visuel & Règles Anti-Triche",
-    themeSubtitle: "Choisissez la palette visuelle, les effets LED et les limites de tours",
-    themeLabel: "Palette de Thème",
-    limitLabel: "Limite de Tours Quotidiens",
-    limitDesc: "Le système anti-triche empêche les tentatives multiples par visiteur par jour.",
-    textsTitle: "16 Langues & Personnalisation des Textes",
-    textsSubtitle: "Personnalisez chacune des 36 chaînes de texte pour chaque langue",
-    resetLangBtn: "🔄 Réinitialiser la langue par défaut",
-    resetFieldBtn: "↩️ Réinitialiser par défaut",
-    defaultPH: "Par défaut : ",
-    cat1Title: "Roue & Titres Principaux",
-    cat2Title: "Formulaire de Lead & Étiquettes",
-    cat3Title: "Consentements & Alertes d'Erreur",
-    cat4Title: "Coupon, Carte Numérique & Téléchargement",
-  },
-  es: {
-    dashTitle: "Panel de Control Ruleta de la Fortuna",
-    dashSubtitle: "Gestiona premios, probabilidades, clientes potenciales CRM, tema y 16 idiomas",
-    saveAll: "Guardar Todos los Cambios",
-    saving: "Guardando...",
-    saveSuccess: "¡Todos los ajustes y traducciones se han guardado con éxito!",
-    activeLang: "Idioma del Panel",
-    tabOverview: "📊 Resumen",
-    tabPrizes: "🎁 Segmentos de Premios",
-    tabLeads: "👥 Leads CRM & Notas",
-    tabTheme: "🎨 Tema y Reglas",
-    tabTexts: "🌍 16 Idiomas y Textos",
-    statSpins: "Giros Totales",
-    statLeads: "Leads Recolectados",
-    statRate: "Tasa de Conversión",
-    statCoupons: "Cupones Ganados",
-    chartTitle: "Rendimiento de Giros y Conversión",
-    prizesTitle: "Configuración de Segmentos y Probabilidades",
-    prizesSubtitle: "Configura colores, códigos de descuento y probabilidades (total = 100%)",
-    colColor: "Color",
-    colLabel: "Título del Segmento",
-    colCode: "Código de Cupón",
-    colProb: "Probabilidad (%)",
-    colStatus: "Estado",
-    winnerBadge: "✅ Ganador",
-    loserBadge: "❌ Sin Premio",
-    leadsTitle: "Gestión de Leads CRM y Ganadores",
-    leadsSubtitle: "Leads capturados en tiempo real con notas de seguimiento editables",
-    exportCSV: "📥 Exportar a CSV",
-    colName: "Nombre Completo",
-    colEmail: "Correo Electrónico",
-    colPhone: "Teléfono",
-    colCouponWon: "Cupón Ganado",
-    colPrizeWon: "Premio Ganado",
-    colNotes: "Notas del Cliente",
-    notePH: "Añadir nota...",
-    themeTitle: "Tema Visual y Reglas Antitrampas",
-    themeSubtitle: "Selecciona la paleta de colores, efectos LED y límites de giros diarios",
-    themeLabel: "Paleta de Tema",
-    limitLabel: "Límite Diario de Giros",
-    limitDesc: "El sistema antitrampas evita múltiples intentos por visitante al día.",
-    textsTitle: "16 Idiomas y Personalización de Textos",
-    textsSubtitle: "Personaliza cualquiera de los 36 textos para cada idioma de forma independiente",
-    resetLangBtn: "🔄 Restablecer idioma a predeterminado",
-    resetFieldBtn: "↩️ Restablecer a predeterminado",
-    defaultPH: "Predeterminado: ",
-    cat1Title: "Ruleta y Títulos Principales",
-    cat2Title: "Formulario de Leads y Etiquetas",
-    cat3Title: "Consentimientos y Alertas de Error",
-    cat4Title: "Cupón, Tarjeta Digital y Descarga",
-  },
-  it: {
-    dashTitle: "Pannello di Controllo Ruota della Fortuna",
-    dashSubtitle: "Gestisci premi, probabilità, contatti CRM, tema e 16 lingue",
-    saveAll: "Salva Tutte le Modifiche",
-    saving: "Salvataggio...",
-    saveSuccess: "Tutte le impostazioni salvate con successo!",
-    activeLang: "Lingua del Pannello",
-    tabOverview: "📊 Panoramica",
-    tabPrizes: "🎁 Spicchi Premio",
-    tabLeads: "👥 Contatti CRM & Note",
-    tabTheme: "🎨 Tema & Regole",
-    tabTexts: "🌍 16 Lingue & Testi",
-    statSpins: "Giri Totali",
-    statLeads: "Contatti Raccolti",
-    statRate: "Tasso di Conversione",
-    statCoupons: "Coupon Vinti",
-    chartTitle: "Prestazioni di Giri e Conversione",
-    prizesTitle: "Configurazione Spicchi & Probabilità",
-    prizesSubtitle: "Imposta colori, codici sconto e probabilità di vincita (totale = 100%)",
-    colColor: "Colore",
-    colLabel: "Titolo Spicchio",
-    colCode: "Codice Coupon",
-    colProb: "Probabilità (%)",
-    colStatus: "Stato",
-    winnerBadge: "✅ Vincitore",
-    loserBadge: "❌ Nessun Premio",
-    leadsTitle: "Gestione Contatti CRM e Vincitori",
-    leadsSubtitle: "Contatti acquisiti in tempo reale con note di follow-up modificabili",
-    exportCSV: "📥 Esporta in CSV",
-    colName: "Nome Completo",
-    colEmail: "E-mail",
-    colPhone: "Telefono",
-    colCouponWon: "Coupon Vinto",
-    colPrizeWon: "Premio Vinto",
-    colNotes: "Note Cliente",
-    notePH: "Aggiungi nota...",
-    themeTitle: "Tema Visivo & Regole Anti-Frode",
-    themeSubtitle: "Seleziona la palette dei colori, gli effetti LED e il limite giornaliero di giri",
-    themeLabel: "Palette del Tema",
-    limitLabel: "Limite Giornaliero di Giri",
-    limitDesc: "Il sistema anti-frode limita i tentativi per visitatore al giorno.",
-    textsTitle: "16 Lingue & Personalizzazione Testi",
-    textsSubtitle: "Personalizza le 36 stringhe di testo per ciascuna lingua in modo indipendente",
-    resetLangBtn: "🔄 Ripristina lingua predefinita",
-    resetFieldBtn: "↩️ Ripristina predefinito",
-    defaultPH: "Predefinito: ",
-    cat1Title: "Ruota & Titoli Principali",
-    cat2Title: "Modulo di Contatto & Etichette",
-    cat3Title: "Consensi & Avvisi di Errore",
-    cat4Title: "Coupon, Voucher Digitale & Download",
-  },
-  pt: {
-    dashTitle: "Painel da Roda da Fortuna",
-    dashSubtitle: "Gerencie prêmios, probabilidades, leads CRM, tema e 16 idiomas",
-    saveAll: "Salvar Todas as Alterações",
-    saving: "Salvando...",
-    saveSuccess: "Todas as configurações e textos salvos com sucesso!",
-    activeLang: "Idioma do Painel",
-    tabOverview: "📊 Visão Geral",
-    tabPrizes: "🎁 Segmentos de Prêmios",
-    tabLeads: "👥 Leads CRM & Notas",
-    tabTheme: "🎨 Tema e Regras",
-    tabTexts: "🌍 16 Idiomas e Textos",
-    statSpins: "Giros Totais",
-    statLeads: "Leads Coletados",
-    statRate: "Taxa de Conversão",
-    statCoupons: "Cupons Ganhos",
-    chartTitle: "Desempenho de Giros e Conversão",
-    prizesTitle: "Configuração de Segmentos e Probabilidades",
-    prizesSubtitle: "Configure cores, códigos de desconto e chances de vitória (soma = 100%)",
-    colColor: "Cor",
-    colLabel: "Título do Segmento",
-    colCode: "Código do Cupom",
-    colProb: "Probabilidade (%)",
-    colStatus: "Status",
-    winnerBadge: "✅ Vencedor",
-    loserBadge: "❌ Sem Prêmio",
-    leadsTitle: "Gerenciamento de Leads CRM e Vencedores",
-    leadsSubtitle: "Leads capturados em tempo real com notas de acompanhamento editáveis",
-    exportCSV: "📥 Exportar para CSV",
-    colName: "Nome Completo",
-    colEmail: "E-mail",
-    colPhone: "Telefone",
-    colCouponWon: "Cupom Ganho",
-    colPrizeWon: "Prêmio Ganho",
-    colNotes: "Notas do Cliente",
-    notePH: "Adicionar nota...",
-    themeTitle: "Tema Visual e Regras Antitrapaça",
-    themeSubtitle: "Escolha a paleta de cores, efeitos de LED e limite diário de giros",
-    themeLabel: "Paleta de Tema",
-    limitLabel: "Limite Diário de Giros",
-    limitDesc: "O sistema antitrapaça limita as tentativas por visitante por dia.",
-    textsTitle: "16 Idiomas e Personalização de Textos",
-    textsSubtitle: "Personalize qualquer um dos 36 textos para cada idioma de forma independente",
-    resetLangBtn: "🔄 Redefinir idioma para o padrão",
-    resetFieldBtn: "↩️ Redefinir para o padrão",
-    defaultPH: "Padrão: ",
-    cat1Title: "Roda e Títulos Principais",
-    cat2Title: "Formulário de Leads e Rótulos",
-    cat3Title: "Consentimentos e Alertas de Erro",
-    cat4Title: "Cupom, Cartão Digital e Download",
-  },
-  ru: {
-    dashTitle: "Панель управления Колесом Фортуны",
-    dashSubtitle: "Управление призами, шансами на выигрыш, лидами CRM, темой и 16 языками",
-    saveAll: "Сохранить все изменения",
-    saving: "Сохранение...",
-    saveSuccess: "Все настройки и тексты успешно сохранены!",
-    activeLang: "Язык панели",
-    tabOverview: "📊 Обзор",
-    tabPrizes: "🎁 Секторы призов",
-    tabLeads: "👥 Лиды CRM и заметки",
-    tabTheme: "🎨 Тема и правила",
-    tabTexts: "🌍 16 языков и тексты",
-    statSpins: "Всего вращений",
-    statLeads: "Собрано лидов",
-    statRate: "Конверсия",
-    statCoupons: "Выиграно купонов",
-    chartTitle: "Статистика вращений и конверсии",
-    prizesTitle: "Настройки секторов и вероятностей",
-    prizesSubtitle: "Настройте цвета, промокоды и шансы выигрыша (сумма = 100%)",
-    colColor: "Цвет",
-    colLabel: "Название сектора",
-    colCode: "Промокод",
-    colProb: "Шанс (%)",
-    colStatus: "Статус",
-    winnerBadge: "✅ Выигрыш",
-    loserBadge: "❌ Без приза",
-    leadsTitle: "Управление лидами CRM и победителями",
-    leadsSubtitle: "Контакты участников в реальном времени с заметками",
-    exportCSV: "📥 Экспорт в CSV",
-    colName: "ФИО",
-    colEmail: "Email",
-    colPhone: "Телефон",
-    colCouponWon: "Купон",
-    colPrizeWon: "Приз",
-    colNotes: "Заметки клиента",
-    notePH: "Добавить заметку...",
-    themeTitle: "Визуальная тема и защита от накрутки",
-    themeSubtitle: "Цветовая палитра, светодиодные эффекты и суточные лимиты",
-    themeLabel: "Цветовая палитра",
-    limitLabel: "Лимит вращений в день",
-    limitDesc: "Защита предотвращает повторные попытки с одного устройства в течение дня.",
-    textsTitle: "16 языков и настройка текстов",
-    textsSubtitle: "Редактируйте все 36 текстовых полей индивидуально для каждого языка",
-    resetLangBtn: "🔄 Сбросить язык к исходному",
-    resetFieldBtn: "↩️ Сбросить",
-    defaultPH: "По умолчанию: ",
-    cat1Title: "Колесо и главные заголовки",
-    cat2Title: "Форма сбора контактов",
-    cat3Title: "Согласия и предупреждения",
-    cat4Title: "Купон, цифровая карта и скачивание",
-  },
-  uk: {
-    dashTitle: "Панель керування Колесом Фортуни",
-    dashSubtitle: "Керування призами, шансами, лідами CRM, темою та 16 мовами",
-    saveAll: "Зберегти всі зміни",
-    saving: "Збереження...",
-    saveSuccess: "Усі налаштування та тексти успішно збережено!",
-    activeLang: "Мова панелі",
-    tabOverview: "📊 Огляд",
-    tabPrizes: "🎁 Сектори призів",
-    tabLeads: "👥 Ліди CRM і нотатки",
-    tabTheme: "🎨 Тема та правила",
-    tabTexts: "🌍 16 мов і тексти",
-    statSpins: "Всього обертань",
-    statLeads: "Зібрано лідів",
-    statRate: "Конверсія",
-    statCoupons: "Виграно купонів",
-    chartTitle: "Статистика обертань та конверсії",
-    prizesTitle: "Налаштування секторів і ймовірностей",
-    prizesSubtitle: "Налаштуйте кольори, промокоди та шанси на виграш (сума = 100%)",
-    colColor: "Колір",
-    colLabel: "Назва сектора",
-    colCode: "Промокод",
-    colProb: "Шанс (%)",
-    colStatus: "Статус",
-    winnerBadge: "✅ Виграш",
-    loserBadge: "❌ Без призу",
-    leadsTitle: "Керування лідами CRM та переможцями",
-    leadsSubtitle: "Контакти учасників у реальному часі з можливістю додавання нотаток",
-    exportCSV: "📥 Експорт у CSV",
-    colName: "ПІБ",
-    colEmail: "Email",
-    colPhone: "Телефон",
-    colCouponWon: "Купон",
-    colPrizeWon: "Приз",
-    colNotes: "Нотатки клієнта",
-    notePH: "Додати нотатку...",
-    themeTitle: "Візуальна тема та правила захисту",
-    themeSubtitle: "Колірна палітра, LED ефекти та денний ліміт обертань",
-    themeLabel: "Колірна палітра",
-    limitLabel: "Денний ліміт обертань",
-    limitDesc: "Захист запобігає повторним спробам з одного пристрою протягом дня.",
-    textsTitle: "16 мов та налаштування текстів",
-    textsSubtitle: "Редагуйте всі 36 текстових полів окремо для кожної мови",
-    resetLangBtn: "🔄 Скинути мову до типової",
-    resetFieldBtn: "↩️ Скинути",
-    defaultPH: "За замовчуванням: ",
-    cat1Title: "Колесо та головні заголовки",
-    cat2Title: "Форма збору контактів",
-    cat3Title: "Згоди та повідомлення про помилки",
-    cat4Title: "Купон, цифрова картка та завантаження",
-  },
-  el: {
-    dashTitle: "Πίνακας Ελέγχου Τροχού της Τύχης",
-    dashSubtitle: "Διαχείριση επάθλων, πιθανοτήτων, CRM leads, θέματος και 16 γλωσσών",
-    saveAll: "Αποθήκευση Όλων των Αλλαγών",
-    saving: "Αποθήκευση...",
-    saveSuccess: "Όλες οι ρυθμίσεις αποθηκεύτηκαν με επιτυχία!",
-    activeLang: "Γλώσσα Πίνακα Ελέγχου",
-    tabOverview: "📊 Επισκόπηση",
-    tabPrizes: "🎁 Τομείς Επάθλων",
-    tabLeads: "👥 CRM Leads & Σημειώσεις",
-    tabTheme: "🎨 Θέμα & Κανόνες",
-    tabTexts: "🌍 16 Γλώσσες & Κείμενα",
-    statSpins: "Συνολικές Περιστροφές",
-    statLeads: "Συλλεχθέντα Leads",
-    statRate: "Ποσοστό Μετατροπής",
-    statCoupons: "Κερδισμένα Κουπόνια",
-    chartTitle: "Στατιστικά Περιστροφών και Μετατροπής",
-    prizesTitle: "Ρυθμίσεις Τομέων & Πιθανοτήτων",
-    prizesSubtitle: "Διαμορφώστε χρώματα, κωδικούς κουπονιών και πιθανότητες νίκης",
-    colColor: "Χρώμα",
-    colLabel: "Τίτλος Τομέα",
-    colCode: "Κωδικός Κουπονιού",
-    colProb: "Πιθανότητα (%)",
-    colStatus: "Κατάσταση",
-    winnerBadge: "✅ Νικητής",
-    loserBadge: "❌ Χωρίς Έπαθλο",
-    leadsTitle: "Διαχείριση CRM Leads και Νικητών",
-    leadsSubtitle: "Συλλεχθέντα leads σε πραγματικό χρόνο με δυνατότητα σημειώσεων",
-    exportCSV: "📥 Εξαγωγή σε CSV",
-    colName: "Ονοματεπώνυμο",
-    colEmail: "Email",
-    colPhone: "Τηλέφωνο",
-    colCouponWon: "Κουπόνι",
-    colPrizeWon: "Έπαθλο",
-    colNotes: "Σημειώσεις Πελάτη",
-    notePH: "Προσθήκη σημείωσης...",
-    themeTitle: "Οπτικό Θέμα & Κανόνες Προστασίας",
-    themeSubtitle: "Επιλέξτε παλέτα χρωμάτων, εφέ LED και ημερήσιο όριο περιστροφών",
-    themeLabel: "Παλέτα Θέματος",
-    limitLabel: "Ημερήσιο Όριο Περιστροφών",
-    limitDesc: "Το σύστημα προστατεύει από πολλαπλές περιστροφές ανά επισκέπτη ανά ημέρα.",
-    textsTitle: "16 Γλώσσες & Προσαρμογή Κειμένων",
-    textsSubtitle: "Προσαρμόστε καθένα από τα 36 κείμενα ανεξάρτητα για κάθε γλώσσα",
-    resetLangBtn: "🔄 Επαναφορά γλώσσας στην προεπιλογή",
-    resetFieldBtn: "↩️ Επαναφορά",
-    defaultPH: "Προεπιλογή: ",
-    cat1Title: "Τροχός & Κύριοι Τίτλοι",
-    cat2Title: "Φόρμα Επικοινωνίας & Ετικέτες",
-    cat3Title: "Συγκαταθέσεις & Ειδοποιήσεις",
-    cat4Title: "Κουπόνι, Ψηφιακή Κάρτα & Λήψη",
-  },
-  he: {
-    dashTitle: "לוח בקרה של גלגל המזל",
-    dashSubtitle: "ניהול פרסים, סיכויי זכייה, לידים של CRM, ערכת נושא ו-16 שפות",
-    saveAll: "שמור את כל השינויים",
-    saving: "שומר...",
-    saveSuccess: "כל ההגדרות והתרגומים נשמרו בהצלחה!",
-    activeLang: "שפת לוח הבקרה",
-    tabOverview: "📊 סקירה כללית",
-    tabPrizes: "🎁 פלחי פרסים",
-    tabLeads: "👥 לידים והערות CRM",
-    tabTheme: "🎨 ערכת נושא וכללים",
-    tabTexts: "🌍 16 שפות וטקסטים",
-    statSpins: "סך כל הסיבובים",
-    statLeads: "לידים שנאספו",
-    statRate: "אחוז המרה",
-    statCoupons: "קופונים שחולקו",
-    chartTitle: "ביצועי סיבובים והמרות",
-    prizesTitle: "הגדרות פלחים וסיכויי זכייה",
-    prizesSubtitle: "קבע צבעים, קודי קופון וסיכויי זכייה (הסכום חייב להיות 100%)",
-    colColor: "צבע",
-    colLabel: "כותרת הפלח",
-    colCode: "קוד קופון",
-    colProb: "סיכוי (%)",
-    colStatus: "סטטוס",
-    winnerBadge: "✅ זכייה",
-    loserBadge: "❌ ללא פרס",
-    leadsTitle: "ניהול לידים וזוכים ב-CRM",
-    leadsSubtitle: "לידים בזמן אמת עם הערות מעקב הניתנות לעריכה",
-    exportCSV: "📥 ייצוא ל-CSV",
-    colName: "שם מלא",
-    colEmail: "דוא״ל",
-    colPhone: "טלפון",
-    colCouponWon: "קופון שנזכה",
-    colPrizeWon: "פרס שנזכה",
-    colNotes: "הערות לקוח",
-    notePH: "הוסף הערה...",
-    themeTitle: "ערכת נושא ויזואלית ומניעת הונאות",
-    themeSubtitle: "בחר פלטת צבעים, אפקטי LED ומגבלת סיבובים יומית",
-    themeLabel: "פלטת צבעים",
-    limitLabel: "מגבלת סיבובים יומית למבקר",
-    limitDesc: "מערכת ההגנה מונעת סיבובים חוזרים באותו יום קלנדרי.",
-    textsTitle: "16 שפות והתאמת טקסטים אישית",
-    textsSubtitle: "התאם אישית את כל 36 מחרוזות הטקסט עבור כל שפה בנפרד",
-    resetLangBtn: "🔄 אפס שפה זו לברירת מחדל",
-    resetFieldBtn: "↩️ אפס לברירת מחדל",
-    defaultPH: "ברירת מחדל: ",
-    cat1Title: "גלגל וכותרות ראשיות",
-    cat2Title: "טופס לידים ותוויות",
-    cat3Title: "הסכמות והתראות שגיאה",
-    cat4Title: "קופון, שובר דיגיטלי והורדה",
-  },
-  ar: {
-    dashTitle: "لوحة تحكم عجلة الحظ",
-    dashSubtitle: "إدارة الجوائز، نسب الفوز، عملاء CRM، المظهر و16 لغة",
-    saveAll: "حفظ جميع التغييرات",
-    saving: "جاري الحفظ...",
-    saveSuccess: "تم حفظ جميع الإعدادات والنصوص بنجاح!",
-    activeLang: "لغة لوحة التحكم",
-    tabOverview: "📊 نظرة عامة",
-    tabPrizes: "🎁 شرائح الجوائز",
-    tabLeads: "👥 عملاء CRM والملاحظات",
-    tabTheme: "🎨 المظهر والقواعد",
-    tabTexts: "🌍 16 لغة والنصوص",
-    statSpins: "إجمالي التدويرات",
-    statLeads: "العملاء المجمعين",
-    statRate: "معدل التحويل",
-    statCoupons: "القسائم المكتسبة",
-    chartTitle: "إحصائيات التدوير ومعدلات التحويل",
-    prizesTitle: "إعدادات شرائح العجلة ونسب الفوز",
-    prizesSubtitle: "تحديد الألوان ورموز الخصم واحتمالات الفوز (المجموع = 100%)",
-    colColor: "اللون",
-    colLabel: "عنوان الشريحة",
-    colCode: "رمز القسيمة",
-    colProb: "الاحتمال (%)",
-    colStatus: "الحالة",
-    winnerBadge: "✅ فائز",
-    loserBadge: "❌ بدون جائزة",
-    leadsTitle: "إدارة عملاء CRM والفائزين",
-    leadsSubtitle: "بيانات المشاركين في الوقت الفعلي مع إمكانية إضافة ملاحظات",
-    exportCSV: "📥 تصدير كملف CSV",
-    colName: "الاسم الكامل",
-    colEmail: "البريد الإلكتروني",
-    colPhone: "رقم الهاتف",
-    colCouponWon: "القسيمة المكتسبة",
-    colPrizeWon: "الجائزة المكتسبة",
-    colNotes: "ملاحظات العميل",
-    notePH: "إضافة ملاحظة...",
-    themeTitle: "المظهر البصري وقواعد منع التلاعب",
-    themeSubtitle: "اختيار ألوان العجلة وتأثيرات الإضاءة والحد اليومي للتدوير",
-    themeLabel: "لوحة الألوان",
-    limitLabel: "الحد اليومي للتدوير لكل زائر",
-    limitDesc: "نظام الأمان يمنع التدوير المتكرر للزائر في نفس اليوم.",
-    textsTitle: "16 لغة وتخصيص النصوص",
-    textsSubtitle: "تعديل جميع النصوص الـ 36 بشكل مستقل لكل لغة",
-    resetLangBtn: "🔄 إعادة ضبط اللغة للوضع الافتراضي",
-    resetFieldBtn: "↩️ إعادة ضبط",
-    defaultPH: "الافتراضي: ",
-    cat1Title: "العجلة والعناوين الرئيسية",
-    cat2Title: "نموذج البيانات وتسميات الحقول",
-    cat3Title: "الموافقات وتنبيهات الأخطاء",
-    cat4Title: "القسيمة والبطاقة الرقمية والتحميل",
-  },
-  zh: {
-    dashTitle: "幸运大转盘 控制面板",
-    dashSubtitle: "管理奖项、中奖几率、CRM潜在客户、主题与16种语言",
-    saveAll: "保存所有更改",
-    saving: "正在保存...",
-    saveSuccess: "所有设置和翻译已成功保存！",
-    activeLang: "面板语言",
-    tabOverview: "📊 概览",
-    tabPrizes: "🎁 奖品扇区",
-    tabLeads: "👥 CRM 客户与备注",
-    tabTheme: "🎨 主题与规则",
-    tabTexts: "🌍 16种语言与自定义文本",
-    statSpins: "总旋转次数",
-    statLeads: "收集的客户线索",
-    statRate: "转化率",
-    statCoupons: "赢得的优惠券",
-    chartTitle: "旋转与转化表现",
-    prizesTitle: "转盘扇区与概率设置",
-    prizesSubtitle: "配置扇区颜色、优惠券代码和中奖几率（总和需为100%）",
-    colColor: "颜色",
-    colLabel: "奖项名称",
-    colCode: "优惠券码",
-    colProb: "概率 (%)",
-    colStatus: "状态",
-    winnerBadge: "✅ 中奖",
-    loserBadge: "❌ 未中奖",
-    leadsTitle: "CRM 客户线索与中奖者管理",
-    leadsSubtitle: "实时捕获的客户信息与可编辑的跟进备注",
-    exportCSV: "📥 导出为 CSV",
-    colName: "姓名",
-    colEmail: "电子邮箱",
-    colPhone: "电话",
-    colCouponWon: "赢得的券码",
-    colPrizeWon: "奖项",
-    colNotes: "客户备注",
-    notePH: "添加客户备注...",
-    themeTitle: "视觉主题与防作弊规则",
-    themeSubtitle: "选择转盘配色方案、LED灯效与每日旋转限制",
-    themeLabel: "配色主题",
-    limitLabel: "每位访客每日旋转上限",
-    limitDesc: "防作弊机制限制每位访客在同一自然日内的旋转次数。",
-    textsTitle: "16种语言与所有文本自定义",
-    textsSubtitle: "针对每种语言独立自定义全部36项文本内容",
-    resetLangBtn: "🔄 重置当前语言为默认值",
-    resetFieldBtn: "↩️ 恢复默认",
-    defaultPH: "默认值：",
-    cat1Title: "转盘与主要标题",
-    cat2Title: "线索表单与字段标签",
-    cat3Title: "用户许可与错误提示",
-    cat4Title: "优惠券、数字卡券与下载",
-  },
-  ja: {
-    dashTitle: "ルーレット ダッシュボード",
-    dashSubtitle: "賞品、当選確率、CRM見込み客、テーマ、16言語のテキストを一括管理",
-    saveAll: "すべての変更を保存",
-    saving: "保存中...",
-    saveSuccess: "すべての設定とカスタムテキストが正常に保存されました！",
-    activeLang: "ダッシュボードの表示言語",
-    tabOverview: "📊 概要",
-    tabPrizes: "🎁 賞品セグメント",
-    tabLeads: "👥 CRM 見込み客 & メモ",
-    tabTheme: "🎨 テーマ & ルール",
-    tabTexts: "🌍 16言語 & テキスト設定",
-    statSpins: "総スピン数",
-    statLeads: "獲得リード数",
-    statRate: "コンバージョン率",
-    statCoupons: "発行クーポン数",
-    chartTitle: "スピン & コンバージョン実績",
-    prizesTitle: "セグメント & 当選確率設定",
-    prizesSubtitle: "色、クーポンコード、当選確率を設定（合計100%）",
-    colColor: "カラー",
-    colLabel: "賞品名",
-    colCode: "クーポンコード",
-    colProb: "確率 (%)",
-    colStatus: "状態",
-    winnerBadge: "✅ 当選",
-    loserBadge: "❌ ハズレ",
-    leadsTitle: "CRM リード & 当選者管理",
-    leadsSubtitle: "リアルタイムで取得したリード情報と編集可能なメモ",
-    exportCSV: "📥 CSV出力",
-    colName: "氏名",
-    colEmail: "メールアドレス",
-    colPhone: "電話番号",
-    colCouponWon: "獲得クーポン",
-    colPrizeWon: "獲得賞品",
-    colNotes: "顧客メモ",
-    notePH: "メモを追加...",
-    themeTitle: "デザインテーマ & 不正防止ルール",
-    themeSubtitle: "カラーパレット、LED効果、1日のスピン制限を設定",
-    themeLabel: "テーマ選択",
-    limitLabel: "1日のスピン上限（ユーザー毎）",
-    limitDesc: "不正防止システムにより同一ユーザーの1日の試行回数を制限します。",
-    textsTitle: "16言語 & 全テキストカスタマイズ",
-    textsSubtitle: "36種類のテキスト項目を各言語ごとに個別に編集可能",
-    resetLangBtn: "🔄 この言語を初期値に戻す",
-    resetFieldBtn: "↩️ 初期値に戻す",
-    defaultPH: "デフォルト: ",
-    cat1Title: "ルーレット & メイン見出し",
-    cat2Title: "リードフォーム & 項目ラベル",
-    cat3Title: "同意事項 & エラー通知",
-    cat4Title: "クーポン、デジタル券 & 保存",
-  },
-  ko: {
-    dashTitle: "행운의 룰렛 대시보드",
-    dashSubtitle: "경품, 당첨 확률, CRM 리드, 테마 및 16개 언어 텍스트 관리",
-    saveAll: "모든 변경사항 저장",
-    saving: "저장 중...",
-    saveSuccess: "모든 설정 및 맞춤 텍스트가 성공적으로 저장되었습니다!",
-    activeLang: "대시보드 표시 언어",
-    tabOverview: "📊 개요",
-    tabPrizes: "🎁 경품 섹터",
-    tabLeads: "👥 CRM 리드 & 메모",
-    tabTheme: "🎨 테마 & 규칙",
-    tabTexts: "🌍 16개 언어 & 텍스트",
-    statSpins: "총 룰렛 회전수",
-    statLeads: "수집된 리드",
-    statRate: "전환율",
-    statCoupons: "당첨된 쿠폰 수",
-    chartTitle: "회전수 및 전환 성과",
-    prizesTitle: "룰렛 섹터 및 당첨 확률 설정",
-    prizesSubtitle: "섹터 색상, 쿠폰 코드 및 당첨 확률 설정 (합계 100%)",
-    colColor: "색상",
-    colLabel: "경품 이름",
-    colCode: "쿠폰 코드",
-    colProb: "확률 (%)",
-    colStatus: "상태",
-    winnerBadge: "✅ 당첨",
-    loserBadge: "❌ 꽝",
-    leadsTitle: "CRM 리드 및 당첨자 관리",
-    leadsSubtitle: "실시간 수집된 참가자 정보 및 편집 가능한 메모",
-    exportCSV: "📥 CSV 다운로드",
-    colName: "성명",
-    colEmail: "이메일",
-    colPhone: "전화번호",
-    colCouponWon: "당첨 쿠폰",
-    colPrizeWon: "당첨 경품",
-    colNotes: "고객 메모",
-    notePH: "메모 추가...",
-    themeTitle: "시각 테마 및 부정 참여 방지 규칙",
-    themeSubtitle: "컬러 팔레트, LED 조명 효과 및 일일 참여 횟수 제한",
-    themeLabel: "테마 선택",
-    limitLabel: "방문자당 1일 참여 제한",
-    limitDesc: "동일 방문자의 1일 중복 참여를 방지합니다.",
-    textsTitle: "16개 언어 및 모든 텍스트 맞춤 설정",
-    textsSubtitle: "36개 텍스트 항목을 언어별로 독립적으로 수정 가능",
-    resetLangBtn: "🔄 이 언어 기본값으로 초기화",
-    resetFieldBtn: "↩️ 기본값 복원",
-    defaultPH: "기본값: ",
-    cat1Title: "룰렛 및 주요 제목",
-    cat2Title: "리드 양식 및 필드 라벨",
-    cat3Title: "동의 항목 및 오류 알림",
-    cat4Title: "쿠폰, 디지털 바우처 및 다운로드",
-  },
-  hi: {
-    dashTitle: "व्हील ऑफ फॉर्च्यून डैशबोर्ड",
-    dashSubtitle: "इनाम, जीतने की संभावना, सीआरएम लीड्स, थीम और 16 भाषाओं का प्रबंधन",
-    saveAll: "सभी परिवर्तन सहेजें",
-    saving: "सहेजा जा रहा है...",
-    saveSuccess: "सभी सेटिंग्स और अनुवाद सफलतापूर्वक सहेजे गए!",
-    activeLang: "सक्रिय डैशबोर्ड भाषा",
-    tabOverview: "📊 अवलोकन",
-    tabPrizes: "🎁 पुरस्कार खंड",
-    tabLeads: "👥 सीआरएम लीड्स और नोट्स",
-    tabTheme: "🎨 थीम और नियम",
-    tabTexts: "🌍 16 भाषाएं और टेक्स्ट",
-    statSpins: "कुल स्पिन",
-    statLeads: "एकत्रित लीड्स",
-    statRate: "रूपांतरण दर",
-    statCoupons: "जीते गए कूपन",
-    chartTitle: "स्पिन और रूपांतरण प्रदर्शन",
-    prizesTitle: "व्हील सेगमेंट और संभावना सेटिंग्स",
-    prizesSubtitle: "रंग, कूपन कोड और जीतने की संभावना कॉन्फ़िगर करें (कुल = 100%)",
-    colColor: "रंग",
-    colLabel: "इनाम का नाम",
-    colCode: "कूपन कोड",
-    colProb: "संभावना (%)",
-    colStatus: "स्थिति",
-    winnerBadge: "✅ विजेता",
-    loserBadge: "❌ कोई पुरस्कार नहीं",
-    leadsTitle: "सीआरएम लीड और विजेता प्रबंधन",
-    leadsSubtitle: "संपादन योग्य नोट्स के साथ वास्तविक समय में एकत्रित लीड्स",
-    exportCSV: "📥 CSV निर्यात करें",
-    colName: "पूरा नाम",
-    colEmail: "ईमेल",
-    colPhone: "फ़ोन",
-    colCouponWon: "जीता गया कूपन",
-    colPrizeWon: "जीता गया पुरस्कार",
-    colNotes: "ग्राहक नोट्स",
-    notePH: "नोट जोड़ें...",
-    themeTitle: "विज़ुअल थीम और एंटी-चीट नियम",
-    themeSubtitle: "रंग थीम, एलईडी प्रभाव और दैनिक स्पिन सीमा निर्धारित करें",
-    themeLabel: "रंग थीम",
-    limitLabel: "दैनिक स्पिन सीमा",
-    limitDesc: "एंटी-चीट सिस्टम प्रति आगंतुक दैनिक प्रयासों को सीमित करता है।",
-    textsTitle: "16 भाषाएं और टेक्स्ट अनुकूलन",
-    textsSubtitle: "प्रत्येक भाषा के लिए सभी 36 टेक्स्ट स्ट्रिंग्स को अनुकूलित करें",
-    resetLangBtn: "🔄 भाषा को डिफ़ॉल्ट पर रीसेट करें",
-    resetFieldBtn: "↩️ डिफ़ॉल्ट पर रीसेट करें",
-    defaultPH: "डिफ़ॉल्ट: ",
-    cat1Title: "व्हील और मुख्य शीर्षक",
-    cat2Title: "लीड फॉर्म और फ़ील्ड लेबल",
-    cat3Title: "सहमति और त्रुटि चेतावनियां",
-    cat4Title: "कूपन, डिजिटल वाउचर और डाउनलोड",
-  },
-};
-    const I18N_DICTIONARY = {
-  en: {
-    title: "Spin & Win!",
-    subtitle: "Spin the wheel of fortune to unlock exclusive discounts",
-    spinBtn: "SPIN TO WIN",
-    spinning: "Spinning...",
-    rewardWon: "Congratulations! You Won! 🎉",
-    noReward: "Better luck next time!",
-    formTitle: "🎊 Fill in Your Details to Claim Your Prize",
-    formMandatoryNotice: "⚠️ You must complete and submit this form to claim and activate your prize.",
-    firstName: "First Name",
-    lastName: "Last Name",
-    phone: "Phone",
-    email: "Email",
-    firstNamePH: "Your first name",
-    lastNamePH: "Your last name",
-    phonePH: "+1 XXX XXX XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 Claim My Prize",
-    sending: "⏳ Sending...",
-    success: "🎉 Congratulations! Your details have been received.\nYour official coupon is ready below.",
-    privacyConsent: "I agree to the processing of my personal data according to the Privacy Policy.",
-    marketingConsent: "I consent to receiving marketing communications and exclusive offers.",
-    errorConsent: "Please accept the privacy policy to proceed.",
-    errorRequired: "Please fill in all required fields.",
-    errorEmail: "Please enter a valid email address.",
-    codeBadge: "COUPON CODE",
-    alreadySpun: "⚠️ Daily Spin Limit Reached",
-    comeBackTomorrow: "Come back tomorrow for more chances! 🌟",
-    yourCodes: "Your won codes:",
-    useThisCode: "🎁 Use this code at checkout",
-    playAgain: "🎮 Spin Again (Remaining: {count})",
-    screenshotNotice: "📸 Take a screenshot or download your coupon below so you don't lose it!",
-    downloadCoupon: "📸 Download / Save Coupon",
-    couponSaved: "✅ Coupon Saved!",
-    couponVoucherTitle: "OFFICIAL REWARD COUPON",
-    couponValidNotice: "Present this code at checkout to claim your reward",
-    couponTip: "💡 Tip: Long-press or right-click the image to save to your photos.",
-  },
-  tr: {
-    title: "Çevir & Kazan!",
-    subtitle: "Şanslı çarkı çevirerek sana özel sürpriz indirimi keşfet",
-    spinBtn: "ÇEVİR & KAZAN",
-    spinning: "Çark Dönüyor...",
-    rewardWon: "Tebrikler! Kazandınız! 🎉",
-    noReward: "Bu sefer olmadı, tekrar deneyin!",
-    formTitle: "🎊 Ödülünüzü Almak İçin Formu Doldurun",
-    formMandatoryNotice: "⚠️ Hediyenizi alabilmek ve kuponunuzu aktifleştirmek için formu doldurmanız zorunludur.",
-    firstName: "Ad",
-    lastName: "Soyad",
-    phone: "Telefon",
-    email: "E-Posta",
-    firstNamePH: "Adınız",
-    lastNamePH: "Soyadınız",
-    phonePH: "05XX XXX XXXX",
-    emailPH: "ornek@mail.com",
-    cta: "🎁 Ödülümü Al",
-    sending: "⏳ Gönderiliyor...",
-    success: "🎉 Tebrikler! Bilgileriniz başarıyla alındı.\nResmi indirim kuponunuz aşağıda hazır.",
-    privacyConsent: "Gizlilik Politikası kapsamında kişisel verilerimin işlenmesini onaylıyorum.",
-    marketingConsent: "Kampanya ve fırsatlardan haberdar olmak için tarafıma e-posta ve SMS gönderilmesine izin veriyorum.",
-    errorConsent: "Lütfen zorunlu gizlilik politikasını onaylayın.",
-    errorRequired: "Lütfen tüm zorunlu alanları doldurun.",
-    errorEmail: "Geçerli bir e-posta adresi girin.",
-    codeBadge: "KUPON KODU",
-    alreadySpun: "⚠️ Günlük Çevirme Hakkınız Bitti",
-    comeBackTomorrow: "Yarın yeni şanslarınızla tekrar deneyin! 🌟",
-    yourCodes: "Kazanılmış kuponlarınız:",
-    useThisCode: "🎁 Bu Kodu Ödemede Kullan",
-    playAgain: "🎮 Tekrar Çevir (Kalan Hak: {count})",
-    screenshotNotice: "📸 Kuponunuzu kaybetmemek için ekran görüntüsünü alın veya aşağıdan indirin!",
-    downloadCoupon: "📸 Kuponu İndir / Kaydet",
-    couponSaved: "✅ Kupon Kaydedildi!",
-    couponVoucherTitle: "RESMİ ÖDÜL KUPONU",
-    couponValidNotice: "Ödülünüzü almak için ödeme sırasında bu kodu gösterin",
-    couponTip: "💡 İpucu: Görsele basılı tutarak veya sağ tıklayarak galerinize kaydedebilirsiniz.",
-  },
-  de: {
-    title: "Drehen & Gewinnen!",
-    subtitle: "Drehen Sie das Glücksrad, um exklusive Rabatte freizuschalten",
-    spinBtn: "DREHEN & GEWINNEN",
-    spinning: "Glücksrad dreht sich...",
-    rewardWon: "Herzlichen Glückwunsch! Sie haben gewonnen! 🎉",
-    noReward: "Viel Glück beim nächsten Mal!",
-    formTitle: "🎊 Füllen Sie Ihre Daten aus, um Ihren Preis einzulösen",
-    formMandatoryNotice: "⚠️ Sie müssen dieses Formular ausfüllen, um Ihren Gutschein zu aktivieren.",
-    firstName: "Vorname",
-    lastName: "Nachname",
-    phone: "Telefon",
-    email: "E-Mail",
-    firstNamePH: "Ihr Vorname",
-    lastNamePH: "Ihr Nachname",
-    phonePH: "+49 XXX XXXXXXX",
-    emailPH: "name@beispiel.de",
-    cta: "🎁 Meinen Preis anfordern",
-    sending: "⏳ Wird gesendet...",
-    success: "🎉 Herzlichen Glückwunsch! Ihre Daten wurden empfangen.\nIhr offizieller Gutschein ist unten bereit.",
-    privacyConsent: "Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu.",
-    marketingConsent: "Ich willige ein, Angebote per E-Mail/SMS zu erhalten.",
-    errorConsent: "Bitte akzeptieren Sie die Datenschutzerklärung.",
-    errorRequired: "Bitte füllen Sie alle erforderlichen Felder aus.",
-    errorEmail: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-    codeBadge: "GUTSCHEINCODE",
-    alreadySpun: "⚠️ Tägliches Limit erreicht",
-    comeBackTomorrow: "Kommen Sie morgen wieder für neue Chancen! 🌟",
-    yourCodes: "Ihre gewonnenen Codes:",
-    useThisCode: "🎁 Code beim Bezahlen nutzen",
-    playAgain: "🎮 Erneut drehen (Verbleibend: {count})",
-    screenshotNotice: "📸 Machen Sie einen Screenshot oder laden Sie Ihren Gutschein herunter!",
-    downloadCoupon: "📸 Gutschein herunterladen / speichern",
-    couponSaved: "✅ Gutschein gespeichert!",
-    couponVoucherTitle: "OFFIZIELLER GUTSCHEIN",
-    couponValidNotice: "Diesen Code an der Kasse vorzeigen",
-    couponTip: "💡 Tipp: Bild lange gedrückt halten, um es zu speichern.",
-  },
-  fr: {
-    title: "Tournez & Gagnez !",
-    subtitle: "Tournez la roue de la fortune pour débloquer des réductions",
-    spinBtn: "TOURNER LA ROUE",
-    spinning: "La roue tourne...",
-    rewardWon: "Félicitations ! Vous avez gagné ! 🎉",
-    noReward: "Plus de chance la prochaine fois !",
-    formTitle: "🎊 Remplissez vos coordonnées pour réclamer votre prix",
-    formMandatoryNotice: "⚠️ Vous devez soumettre ce formulaire pour activer votre coupon.",
-    firstName: "Prénom",
-    lastName: "Nom",
-    phone: "Téléphone",
-    email: "E-mail",
-    firstNamePH: "Votre prénom",
-    lastNamePH: "Votre nom",
-    phonePH: "+33 X XX XX XX XX",
-    emailPH: "vous@exemple.fr",
-    cta: "🎁 Réclamer mon prix",
-    sending: "⏳ Envoi...",
-    success: "🎉 Félicitations ! Vos informations ont été enregistrées.\nVotre coupon officiel est prêt ci-dessous.",
-    privacyConsent: "J'accepte le traitement de mes données conformément à la politique de confidentialité.",
-    marketingConsent: "J'accepte de recevoir des offres par e-mail et SMS.",
-    errorConsent: "Veuillez accepter la politique de confidentialité.",
-    errorRequired: "Veuillez remplir tous les champs obligatoires.",
-    errorEmail: "Veuillez entrer une adresse e-mail valide.",
-    codeBadge: "CODE PROMO",
-    alreadySpun: "⚠️ Limite quotidienne atteinte",
-    comeBackTomorrow: "Revenez demain pour retenter votre chance ! 🌟",
-    yourCodes: "Vos codes gagnés :",
-    useThisCode: "🎁 Utiliser ce code",
-    playAgain: "🎮 Rejouer (Restant : {count})",
-    screenshotNotice: "📸 Prenez une capture d'écran ou téléchargez votre coupon ci-dessous !",
-    downloadCoupon: "📸 Télécharger / Sauvegarder le coupon",
-    couponSaved: "✅ Coupon sauvegardé !",
-    couponVoucherTitle: "COUPON OFFICIEL",
-    couponValidNotice: "Présentez ce code lors du paiement",
-    couponTip: "💡 Astuce : Maintenez l'image appuyée pour l'enregistrer.",
-  },
-  es: {
-    title: "¡Gira y Gana!",
-    subtitle: "Gira la ruleta de la suerte y desbloquea descuentos",
-    spinBtn: "GIRAR PARA GANAR",
-    spinning: "Girando...",
-    rewardWon: "¡Felicidades! ¡Has ganado! 🎉",
-    noReward: "¡Más suerte la próxima vez!",
-    formTitle: "🎊 Completa tus datos para reclamar tu premio",
-    formMandatoryNotice: "⚠️ Debes completar este formulario para activar tu cupón.",
-    firstName: "Nombre",
-    lastName: "Apellido",
-    phone: "Teléfono",
-    email: "Correo electrónico",
-    firstNamePH: "Tu nombre",
-    lastNamePH: "Tu apellido",
-    phonePH: "+34 XXX XXX XXX",
-    emailPH: "tu@ejemplo.es",
-    cta: "🎁 Reclamar mi premio",
-    sending: "⏳ Enviando...",
-    success: "🎉 ¡Felicidades! Tus datos han sido recibidos.\nTu cupón oficial está listo abajo.",
-    privacyConsent: "Acepto el tratamiento de mis datos según la Política de Privacidad.",
-    marketingConsent: "Doy mi consentimiento para recibir ofertas y promociones.",
-    errorConsent: "Por favor acepta la política de privacidad.",
-    errorRequired: "Por favor completa todos los campos requeridos.",
-    errorEmail: "Por favor ingresa un correo válido.",
-    codeBadge: "CÓDIGO DE CUPÓN",
-    alreadySpun: "⚠️ Límite diario alcanzado",
-    comeBackTomorrow: "¡Vuelve mañana para más oportunidades! 🌟",
-    yourCodes: "Tus códigos ganados:",
-    useThisCode: "🎁 Usa este código al pagar",
-    playAgain: "🎮 Girar de nuevo (Restante: {count})",
-    screenshotNotice: "📸 ¡Haz una captura o descarga tu cupón abajo!",
-    downloadCoupon: "📸 Descargar / Guardar Cupón",
-    couponSaved: "✅ ¡Cupón guardado!",
-    couponVoucherTitle: "CUPÓN OFICIAL DE PREMIO",
-    couponValidNotice: "Presenta este código al finalizar la compra",
-    couponTip: "💡 Consejo: Mantén presionada la imagen para guardarla.",
-  },
-  he: {
-    title: "סובב וזכה!",
-    subtitle: "סובב את גלגל המזל כדי לגלות הנחות בלעדיות",
-    spinBtn: "סובב לזכייה",
-    spinning: "מסתובב...",
-    rewardWon: "מזל טוב! זכית! 🎉",
-    noReward: "אולי בפעם הבאה!",
-    formTitle: "🎊 מלא את פרטיך לקבלת הפרס",
-    formMandatoryNotice: "⚠️ יש למלא טופס זה כדי להפעיל את הקופון שלך.",
-    firstName: "שם פרטי",
-    lastName: "שם משפחה",
-    phone: "טלפון",
-    email: "אימייל",
-    firstNamePH: "שמך הפרטי",
-    lastNamePH: "שם משפחתך",
-    phonePH: "05X-XXXXXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 קבל את הפרס שלי",
-    sending: "⏳ שולח...",
-    success: "🎉 מזל טוב! הפרטים התקבלו בהצלחה.\nהקופון הרשמי שלך מוכן למטה.",
-    privacyConsent: "אני מסכים/ה לעיבוד הפרטים בהתאם למדיניות הפרטיות.",
-    marketingConsent: "אני מאשר/ת קבלת הצעות שיווקיות.",
-    errorConsent: "יש לאשר את מדיניות הפרטיות.",
-    errorRequired: "נא למלא את כל שדות החובה.",
-    errorEmail: "נא להזין כתובת אימייל תקינה.",
-    codeBadge: "קוד קופון",
-    alreadySpun: "⚠️ הגעת למגבלה היומית",
-    comeBackTomorrow: "חזור מחר לסיבובים נוספים! 🌟",
-    yourCodes: "הקודים שזכית בהם:",
-    useThisCode: "🎁 השתמש בקוד זה",
-    playAgain: "🎮 סובב שוב (נותרו: {count})",
-    screenshotNotice: "📸 צלם מסך או הורד את הקופון שלך למטה!",
-    downloadCoupon: "📸 הורד / שמור קופון",
-    couponSaved: "✅ הקופון נשמר!",
-    couponVoucherTitle: "קופון רשמי",
-    couponValidNotice: "הצג קוד זה בעת התשלום",
-    couponTip: "💡 טיפ: לחץ לחיצה ארוכה לשמירת התמונה.",
-  },
-  zh: {
-    title: "幸运大转盘！",
-    subtitle: "转动幸运转盘，赢取专属折扣奖励",
-    spinBtn: "立即抽奖",
-    spinning: "转盘旋转中...",
-    rewardWon: "恭喜您！中奖了！🎉",
-    noReward: "再接再厉，下次好运！",
-    formTitle: "🎊 填写信息以领取您的奖品",
-    formMandatoryNotice: "⚠️ 您必须填写并提交此表单以激活您的优惠券。",
-    firstName: "名",
-    lastName: "姓",
-    phone: "电话",
-    email: "电子邮箱",
-    firstNamePH: "您的名字",
-    lastNamePH: "您的姓氏",
-    phonePH: "手机号码",
-    emailPH: "you@email.com",
-    cta: "🎁 立即领取奖品",
-    sending: "⏳ 正在提交...",
-    success: "🎉 恭喜！信息已成功提交。\n您的专属优惠券已在下方生成。",
-    privacyConsent: "我同意根据隐私政策处理我的个人数据。",
-    marketingConsent: "我同意接收营销推广信息与优惠通知。",
-    errorConsent: "请同意隐私政策以继续。",
-    errorRequired: "请填写所有必填字段。",
-    errorEmail: "请输入有效的电子邮箱地址。",
-    codeBadge: "优惠券代码",
-    alreadySpun: "⚠️ 今日抽奖次数已用完",
-    comeBackTomorrow: "明天再来试试运气吧！🌟",
-    yourCodes: "您获得的优惠码：",
-    useThisCode: "🎁 结账时使用此代码",
-    playAgain: "🎮 再次抽奖（剩余次数：{count}）",
-    screenshotNotice: "📸 请截屏或在下方下载您的优惠券！",
-    downloadCoupon: "📸 下载 / 保存优惠券",
-    couponSaved: "✅ 优惠券已保存！",
-    couponVoucherTitle: "官方奖励优惠券",
-    couponValidNotice: "结账时出示此代码即可兑换",
-    couponTip: "💡 提示：长按图片即可保存至相册。",
-  },
-  ja: {
-    title: "ラッキールーレット！",
-    subtitle: "ルーレットを回して限定クーポンを当てよう",
-    spinBtn: "回して当てる",
-    spinning: "回転中...",
-    rewardWon: "おめでとうございます！当選しました！🎉",
-    noReward: "残念！次回に期待しましょう！",
-    formTitle: "🎊 賞品を受け取るために情報を入力してください",
-    formMandatoryNotice: "⚠️ クーポンを有効化するにはフォームの送信が必要です。",
-    firstName: "名",
-    lastName: "姓",
-    phone: "電話番号",
-    email: "メールアドレス",
-    firstNamePH: "名",
-    lastNamePH: "姓",
-    phonePH: "090-XXXX-XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 賞品を受け取る",
-    sending: "⏳ 送信中...",
-    success: "🎉 おめでとうございます！情報を受け付けました。\n公式クーポンは以下から確認できます。",
-    privacyConsent: "プライバシーポリシーに同意します。",
-    marketingConsent: "お得な情報やプロモーションの受信に同意します。",
-    errorConsent: "プライバシーポリシーに同意してください。",
-    errorRequired: "必須項目をすべて入力してください。",
-    errorEmail: "有効なメールアドレスを入力してください。",
-    codeBadge: "クーポンコード",
-    alreadySpun: "⚠️ 今日の上限に達しました",
-    comeBackTomorrow: "明日また挑戦してください！🌟",
-    yourCodes: "獲得したクーポンコード：",
-    useThisCode: "🎁 お会計時にこのコードを使用",
-    playAgain: "🎮 もう一度回す（残り：{count}）",
-    screenshotNotice: "📸 スクリーンショットを撮るか保存してください！",
-    downloadCoupon: "📸 クーポンをダウンロード / 保存",
-    couponSaved: "✅ クーポンを保存しました！",
-    couponVoucherTitle: "公式リワードクーポン",
-    couponValidNotice: "会計時にこのコードを提示してください",
-    couponTip: "💡 ヒント: 画像を長押しして保存できます。",
-  },
-  ko: {
-    title: "행운의 룰렛!",
-    subtitle: "룰렛을 돌리고 특별 할인 혜택을 받으세요",
-    spinBtn: "룰렛 돌리기",
-    spinning: "돌아가는 중...",
-    rewardWon: "축하합니다! 당첨되었습니다! 🎉",
-    noReward: "다음 기회에 다시 도전해보세요!",
-    formTitle: "🎊 혜택을 받으려면 정보를 입력하세요",
-    formMandatoryNotice: "⚠️ 쿠폰을 활성화하려면 양식을 제출해야 합니다.",
-    firstName: "이름",
-    lastName: "성",
-    phone: "전화번호",
-    email: "이메일",
-    firstNamePH: "이름",
-    lastNamePH: "성",
-    phonePH: "010-XXXX-XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 혜택 수령하기",
-    sending: "⏳ 전송 중...",
-    success: "🎉 축하합니다! 정보가 접수되었습니다.\n아래에서 공식 쿠폰을 확인하세요.",
-    privacyConsent: "개인정보 처리방침에 동의합니다.",
-    marketingConsent: "마케팅 정보 및 혜택 수신에 동의합니다.",
-    errorConsent: "개인정보 처리방침에 동의해주세요.",
-    errorRequired: "모든 필수 항목을 입력해주세요.",
-    errorEmail: "올바른 이메일 주소를 입력해주세요.",
-    codeBadge: "쿠폰 코드",
-    alreadySpun: "⚠️ 오늘의 참여 횟수를 모두 사용했습니다",
-    comeBackTomorrow: "내일 다시 도전해보세요! 🌟",
-    yourCodes: "당첨된 쿠폰 코드:",
-    useThisCode: "🎁 결제 시 이 코드를 사용하세요",
-    playAgain: "🎮 다시 돌리기 (남은 횟수: {count})",
-    screenshotNotice: "📸 캡처하거나 아래에서 쿠폰을 다운로드하세요!",
-    downloadCoupon: "📸 쿠폰 다운로드 / 저장",
-    couponSaved: "✅ 쿠폰 저장 완료!",
-    couponVoucherTitle: "공식 리워드 쿠폰",
-    couponValidNotice: "결제 시 이 코드를 제시하세요",
-    couponTip: "💡 팁: 이미지를 길게 눌러 저장할 수 있습니다.",
-  },
-  hi: {
-    title: "स्पिन करें और जीतें!",
-    subtitle: "विशेष छूट पाने के लिए भाग्य का पहिया घुमाएं",
-    spinBtn: "स्पिन करें",
-    spinning: "घूम रहा है...",
-    rewardWon: "बधाई हो! आप जीत गए! 🎉",
-    noReward: "अगली बार बेहतर भाग्य!",
-    formTitle: "🎊 इनाम पाने के लिए अपना विवरण भरें",
-    formMandatoryNotice: "⚠️ कूपन सक्रिय करने के लिए यह फ़ॉर्म भरना अनिवार्य है।",
-    firstName: "पहला नाम",
-    lastName: "अंतिम नाम",
-    phone: "फ़ोन",
-    email: "ईमेल",
-    firstNamePH: "आपका नाम",
-    lastNamePH: "आपका उपनाम",
-    phonePH: "+91 XXXXX XXXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 मेरा इनाम पाएं",
-    sending: "⏳ भेजा जा रहा है...",
-    success: "🎉 बधाई हो! आपका विवरण प्राप्त हो गया है।\nआपका कूपन नीचे तैयार है।",
-    privacyConsent: "मैं गोपनीयता नीति के अनुसार डेटा प्रसंस्करण से सहमत हूँ।",
-    marketingConsent: "मैं ऑफ़र और प्रचार प्राप्त करने के लिए सहमत हूँ।",
-    errorConsent: "कृपया गोपनीयता नीति स्वीकार करें।",
-    errorRequired: "कृपया सभी आवश्यक फ़ील्ड भरें।",
-    errorEmail: "कृपया एक मान्य ईमेल दर्ज करें।",
-    codeBadge: "कूपन कोड",
-    alreadySpun: "⚠️ आज की दैनिक सीमा समाप्त",
-    comeBackTomorrow: "और मौकों के लिए कल वापस आएं! 🌟",
-    yourCodes: "आपके जीते हुए कोड:",
-    useThisCode: "🎁 चेकआउट पर इस कोड का उपयोग करें",
-    playAgain: "🎮 फिर से घुमाएं (शेष: {count})",
-    screenshotNotice: "📸 स्क्रीनशॉट लें या कूपन डाउनलोड करें!",
-    downloadCoupon: "📸 कूपन डाउनलोड / सहेजें",
-    couponSaved: "✅ कूपन सहेजा गया!",
-    couponVoucherTitle: "आधिकारिक इनाम कूपन",
-    couponValidNotice: "चेकआउट के समय यह कोड दिखाएं",
-    couponTip: "💡 टिप: सहेजने के लिए छवि को दबाकर रखें।",
-  },
-  pt: {
-    title: "Gire & Ganhe!",
-    subtitle: "Gire a roleta da sorte para desbloquear descontos exclusivos",
-    spinBtn: "GIRAR PARA GANHAR",
-    spinning: "Girando...",
-    rewardWon: "Parabéns! Você ganhou! 🎉",
-    noReward: "Mais sorte na próxima vez!",
-    formTitle: "🎊 Preencha seus dados para resgatar o prêmio",
-    formMandatoryNotice: "⚠️ Você deve preencher este formulário para ativar seu cupom.",
-    firstName: "Nome",
-    lastName: "Sobrenome",
-    phone: "Telefone",
-    email: "E-mail",
-    firstNamePH: "Seu nome",
-    lastNamePH: "Seu sobrenome",
-    phonePH: "+55 (XX) XXXXX-XXXX",
-    emailPH: "seu@email.com",
-    cta: "🎁 Resgatar meu prêmio",
-    sending: "⏳ Enviando...",
-    success: "🎉 Parabéns! Seus dados foram recebidos.\nSeu cupom oficial está pronto abaixo.",
-    privacyConsent: "Concordo com o processamento dos meus dados segundo a Política de Privacidade.",
-    marketingConsent: "Aceito receber novidades e ofertas exclusivas.",
-    errorConsent: "Por favor aceite a política de privacidade.",
-    errorRequired: "Por favor preencha todos os campos obrigatórios.",
-    errorEmail: "Por favor insira um e-mail válido.",
-    codeBadge: "CÓDIGO DO CUPOM",
-    alreadySpun: "⚠️ Limite diário atingido",
-    comeBackTomorrow: "Volte amanhã para mais chances! 🌟",
-    yourCodes: "Seus cupons ganhos:",
-    useThisCode: "🎁 Use este código no checkout",
-    playAgain: "🎮 Girar novamente (Restante: {count})",
-    screenshotNotice: "📸 Tire um print ou baixe seu cupom abaixo!",
-    downloadCoupon: "📸 Baixar / Salvar Cupom",
-    couponSaved: "✅ Cupom salvo!",
-    couponVoucherTitle: "CUPOM OFICIAL DE RECOMPENSA",
-    couponValidNotice: "Apresente este código no checkout",
-    couponTip: "💡 Dica: Pressione e segure a imagem para salvar.",
-  },
-  ru: {
-    title: "Крутите и выигрывайте!",
-    subtitle: "Крутите колесо фортуны и получайте эксклюзивные скидки",
-    spinBtn: "КРУТИТЬ КОЛЕСО",
-    spinning: "Колесо крутится...",
-    rewardWon: "Поздравляем! Вы выиграли! 🎉",
-    noReward: "Повезет в следующий раз!",
-    formTitle: "🎊 Заполните форму для получения приза",
-    formMandatoryNotice: "⚠️ Для активации купона необходимо заполнить и отправить форму.",
-    firstName: "Имя",
-    lastName: "Фамилия",
-    phone: "Телефон",
-    email: "Эл. почта",
-    firstNamePH: "Ваше имя",
-    lastNamePH: "Ваша фамилия",
-    phonePH: "+7 (XXX) XXX-XX-XX",
-    emailPH: "you@email.com",
-    cta: "🎁 Получить приз",
-    sending: "⏳ Отправка...",
-    success: "🎉 Поздравляем! Данные успешно получены.\nВаш официальный купон готов ниже.",
-    privacyConsent: "Я согласен на обработку персональных данных согласно Политике конфиденциальности.",
-    marketingConsent: "Я согласен получать рекламные предложения и новости.",
-    errorConsent: "Пожалуйста, подтвердите согласие с политикой конфиденциальности.",
-    errorRequired: "Пожалуйста, заполните все обязательные поля.",
-    errorEmail: "Пожалуйста, введите корректный адрес эл. почты.",
-    codeBadge: "ПРОМОКОД",
-    alreadySpun: "⚠️ Дневной лимит исчерпан",
-    comeBackTomorrow: "Приходите завтра за новыми шансами! 🌟",
-    yourCodes: "Ваши выигранные промокоды:",
-    useThisCode: "🎁 Используйте промокод при оплате",
-    playAgain: "🎮 Крутить снова (Осталось: {count})",
-    screenshotNotice: "📸 Сделайте скриншот или скачайте купон ниже!",
-    downloadCoupon: "📸 Скачать / Сохранить купон",
-    couponSaved: "✅ Купон сохранен!",
-    couponVoucherTitle: "ОФИЦИАЛЬНЫЙ КУПОН",
-    couponValidNotice: "Предъявите этот промокод при оформлении заказа",
-    couponTip: "💡 Совет: Удерживайте изображение, чтобы сохранить в галерею.",
-  },
-  uk: {
-    title: "Крутіть та вигравайте!",
-    subtitle: "Крутіть колесо фортуни та отримуйте ексклюзивні знижки",
-    spinBtn: "КРУТИТИ КОЛЕСО",
-    spinning: "Колесо крутиться...",
-    rewardWon: "Вітаємо! Ви виграли! 🎉",
-    noReward: "Пощастить наступного разу!",
-    formTitle: "🎊 Заповніть дані для отримання призу",
-    formMandatoryNotice: "⚠️ Для активації купона необхідно заповнити та надіслати форму.",
-    firstName: "Ім'я",
-    lastName: "Прізвище",
-    phone: "Телефон",
-    email: "Ел. пошта",
-    firstNamePH: "Ваше ім'я",
-    lastNamePH: "Ваше прізвище",
-    phonePH: "+380 XX XXX XX XX",
-    emailPH: "you@email.com",
-    cta: "🎁 Отримати приз",
-    sending: "⏳ Надсилання...",
-    success: "🎉 Вітаємо! Ваші дані успішно прийнято.\nВаш офіційний купон готовий нижче.",
-    privacyConsent: "Я погоджуюся на обробку персональних даних згідно з Політикою конфіденційності.",
-    marketingConsent: "Я погоджуюся на отримання маркетингових повідомлень.",
-    errorConsent: "Будь ласка, підтвердіть згоду з політикою конфіденційності.",
-    errorRequired: "Будь ласка, заповніть усі обов'язкові поля.",
-    errorEmail: "Будь ласка, введіть коректну адресу ел. пошти.",
-    codeBadge: "ПРОМОКОД",
-    alreadySpun: "⚠️ Денний ліміт вичерпано",
-    comeBackTomorrow: "Повертайтеся завтра за новими спробами! 🌟",
-    yourCodes: "Ваші виграні промокоди:",
-    useThisCode: "🎁 Використовуйте цей код при оформленні",
-    playAgain: "🎮 Крутити знову (Залишилось: {count})",
-    screenshotNotice: "📸 Зробіть скріншот або завантажте купон нижче!",
-    downloadCoupon: "📸 Завантажити / Зберегти купон",
-    couponSaved: "✅ Купон збережено!",
-    couponVoucherTitle: "ОФІЦІЙНИЙ КУПОН",
-    couponValidNotice: "Покажіть цей код при оформленні замовлення",
-    couponTip: "💡 Підказка: Затисніть зображення, щоб зберегти його.",
-  },
-  el: {
-    title: "Γυρίστε & Κερδίστε!",
-    subtitle: "Γυρίστε τον τροχό της τύχης για να ξεκλειδώσετε εκπτώσεις",
-    spinBtn: "ΓΥΡΙΣΤΕ ΤΟΝ ΤΡΟΧΟ",
-    spinning: "Ο τροχός γυρίζει...",
-    rewardWon: "Συγχαρητήρια! Κερδίσατε! 🎉",
-    noReward: "Καλή τύχη την επόμενη φορά!",
-    formTitle: "🎊 Συμπληρώστε τα στοιχεία σας για να πάρετε το δώρο σας",
-    formMandatoryNotice: "⚠️ Πρέπει να συμπληρώσετε τη φόρμα για να ενεργοποιηθεί το κουπόνι.",
-    firstName: "Όνομα",
-    lastName: "Επώνυμο",
-    phone: "Τηλέφωνο",
-    email: "Email",
-    firstNamePH: "Το όνομά σας",
-    lastNamePH: "Το επώνυμό σας",
-    phonePH: "+30 69X XXX XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 Λήψη Δώρου",
-    sending: "⏳ Αποστολή...",
-    success: "🎉 Συγχαρητήρια! Τα στοιχεία σας ελήφθησαν.\nΤο επίσημο κουπόνι σας είναι έτοιμο παρακάτω.",
-    privacyConsent: "Συμφωνώ με την επεξεργασία δεδομένων σύμφωνα με την Πολιτική Απορρήτου.",
-    marketingConsent: "Συναινώ στη λήψη προωθητικών μηνυμάτων και προσφορών.",
-    errorConsent: "Παρακαλώ αποδεχτείτε την πολιτική απορρήτου.",
-    errorRequired: "Παρακαλώ συμπληρώστε όλα τα απαιτούμενα πεδία.",
-    errorEmail: "Παρακαλώ εισάγετε ένα έγκυρο email.",
-    codeBadge: "ΚΩΔΙΚΟΣ ΚΟΥΠΟΝΙΟΥ",
-    alreadySpun: "⚠️ Εξαντλήθηκε το ημερήσιο όριο",
-    comeBackTomorrow: "Επιστρέψτε αύριο για περισσότερες ευκαιρίες! 🌟",
-    yourCodes: "Οι κωδικοί που κερδίσατε:",
-    useThisCode: "🎁 Χρησιμοποιήστε αυτόν τον κωδικό",
-    playAgain: "🎮 Γυρίστε ξανά (Απομένουν: {count})",
-    screenshotNotice: "📸 Κάντε screenshot ή κατεβάστε το κουπόνι παρακάτω!",
-    downloadCoupon: "📸 Λήψη / Αποθήκευση Κουπονιού",
-    couponSaved: "✅ Το κουπόνι αποθηκεύτηκε!",
-    couponVoucherTitle: "ΕΠΙΣΗΜΟ ΚΟΥΠΟΝΙ",
-    couponValidNotice: "Επιδείξτε αυτόν τον κωδικό στο ταμείο",
-    couponTip: "💡 Συμβουλή: Πατήστε παρατεταμένα την εικόνα για αποθήκευση.",
-  },
-  it: {
-    title: "Gira e Vinci!",
-    subtitle: "Gira la ruota della fortuna per sbloccare sconti esclusivi",
-    spinBtn: "GIRA PER VINCERE",
-    spinning: "La ruota sta girando...",
-    rewardWon: "Congratulazioni! Hai vinto! 🎉",
-    noReward: "Più fortuna la prossima volta!",
-    formTitle: "🎊 Compila i tuoi dati per richiedere il premio",
-    formMandatoryNotice: "⚠️ È necessario compilare il modulo per attivare il coupon.",
-    firstName: "Nome",
-    lastName: "Cognome",
-    phone: "Telefono",
-    email: "Email",
-    firstNamePH: "Il tuo nome",
-    lastNamePH: "Il tuo cognome",
-    phonePH: "+39 XXX XXXXXXX",
-    emailPH: "nome@esempio.it",
-    cta: "🎁 Richiedi il mio premio",
-    sending: "⏳ Invio in corso...",
-    success: "🎉 Congratulazioni! I tuoi dati sono stati registrati.\nIl tuo coupon ufficiale è pronto qui sotto.",
-    privacyConsent: "Acconsento al trattamento dei miei dati personali secondo la Privacy Policy.",
-    marketingConsent: "Acconsento a ricevere comunicazioni promozionali e offerte.",
-    errorConsent: "Per favore accetta l'informativa sulla privacy.",
-    errorRequired: "Per favore compila tutti i campi obbligatori.",
-    errorEmail: "Per favore inserisci un indirizzo email valido.",
-    codeBadge: "CODICE COUPON",
-    alreadySpun: "⚠️ Limite giornaliero raggiunto",
-    comeBackTomorrow: "Torna domani per altre opportunità! 🌟",
-    yourCodes: "I tuoi codici vinti:",
-    useThisCode: "🎁 Usa questo codice al checkout",
-    playAgain: "🎮 Gira ancora (Rimasti: {count})",
-    screenshotNotice: "📸 Fai uno screenshot o scarica il tuo coupon qui sotto!",
-    downloadCoupon: "📸 Scarica / Salva Coupon",
-    couponSaved: "✅ Coupon salvato!",
-    couponVoucherTitle: "COUPON UFFICIALE",
-    couponValidNotice: "Mostra questo codice alla cassa",
-    couponTip: "💡 Suggerimento: Tieni premuta l'immagine per salvarla.",
-  },
-  ar: {
-    title: "أدر العجلة واربح!",
-    subtitle: "أدر عجلة الحظ لاكتشاف خصومات ومفاجآت حصرية",
-    spinBtn: "أدر لتربح",
-    spinning: "العجلة تدور...",
-    rewardWon: "مبروك! لقد فزت! 🎉",
-    noReward: "حظاً أوفر في المرة القادمة!",
-    formTitle: "🎊 املأ بياناتك لاستلام جائزتك",
-    formMandatoryNotice: "⚠️ يجب عليك ملء هذا النموذج لتفعيل قسيمتك واستلام الجائزة.",
-    firstName: "الاسم الأول",
-    lastName: "اسم العائلة",
-    phone: "رقم الهاتف",
-    email: "البريد الإلكتروني",
-    firstNamePH: "اسمك الأول",
-    lastNamePH: "اسم العائلة",
-    phonePH: "+966 5X XXX XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 استلام جائزتي",
-    sending: "⏳ جاري الإرسال...",
-    success: "🎉 مبروك! تم استلام بياناتك بنجاح.\nقسيمتك الرسمية جاهزة أدناه.",
-    privacyConsent: "أوافق على معالجة بياناتي الشخصية وفقاً لسياسة الخصوصية.",
-    marketingConsent: "أوافق على استلام العروض والرسائل الترويجية.",
-    errorConsent: "يرجى الموافقة على سياسة الخصوصية للمتابعة.",
-    errorRequired: "يرجى ملء جميع الحقول المطلوبة.",
-    errorEmail: "يرجى إدخال بريد إلكتروني صحيح.",
-    codeBadge: "رمز القسيمة",
-    alreadySpun: "⚠️ لقد استنفدت محاولاتك اليومية",
-    comeBackTomorrow: "عد غداً للحصول على فرص جديدة! 🌟",
-    yourCodes: "رموز القسائم التي فزت بها:",
-    useThisCode: "🎁 استخدم هذا الرمز عند الدفع",
-    playAgain: "🎮 أدر مجدداً (المتبقي: {count})",
-    screenshotNotice: "📸 التقط لقطة شاشة أو قم بتحميل قسيمتك أدناه!",
-    downloadCoupon: "📸 تحميل / حفظ القسيمة",
-    couponSaved: "✅ تم حفظ القسيمة!",
-    couponVoucherTitle: "قسيمة الجائزة الرسمية",
-    couponValidNotice: "أظهر هذا الرمز عند الدفع لاستلام مكافأتك",
-    couponTip: "💡 تلميح: اضغط مطولاً على الصورة لحفظها في معرض الصور.",
-  },
-};
+    
+    
 
-    const widget = document.getElementById("test-widget");
-    const selLang = document.getElementById("sel-lang");
-    const selFont = document.getElementById("sel-font");
-    const selTheme = document.getElementById("sel-theme");
-    const selLimit = document.getElementById("sel-limit");
-    const btnReset = document.getElementById("btn-reset");
-    const logConsole = document.getElementById("log-console");
-    const btnClearLog = document.getElementById("btn-clear-log");
-
-    // Header Persistent Language Selector & Font Selector
-    const dashHeaderLangSel = document.getElementById("dash-header-lang-sel");
-    const dashFontSel = document.getElementById("dash-font-sel");
-
-    // Tab Switching between Widget and Dashboard
-    const tabWidget = document.getElementById("tab-btn-widget");
-    const tabDashboard = document.getElementById("tab-btn-dashboard");
-    const viewWidget = document.getElementById("view-widget");
-    const viewDashboard = document.getElementById("view-dashboard");
-    const widgetControls = document.getElementById("widget-controls");
-
-    tabWidget.onclick = () => {
-      tabWidget.classList.add("active");
-      tabDashboard.classList.remove("active");
-      viewWidget.style.display = "flex";
-      viewDashboard.style.display = "none";
-      widgetControls.style.display = "flex";
-    };
-    const I18N_DICTIONARY = {
-  en: {
-    title: "Spin & Win!",
-    subtitle: "Spin the wheel of fortune to unlock exclusive discounts",
-    spinBtn: "SPIN TO WIN",
-    spinning: "Spinning...",
-    rewardWon: "Congratulations! You Won! 🎉",
-    noReward: "Better luck next time!",
-    formTitle: "🎊 Fill in Your Details to Claim Your Prize",
-    formMandatoryNotice: "⚠️ You must complete and submit this form to claim and activate your prize.",
-    firstName: "First Name",
-    lastName: "Last Name",
-    phone: "Phone",
-    email: "Email",
-    firstNamePH: "Your first name",
-    lastNamePH: "Your last name",
-    phonePH: "+1 XXX XXX XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 Claim My Prize",
-    sending: "⏳ Sending...",
-    success: "🎉 Congratulations! Your details have been received.\nYour official coupon is ready below.",
-    privacyConsent: "I agree to the processing of my personal data according to the Privacy Policy.",
-    marketingConsent: "I consent to receiving marketing communications and exclusive offers.",
-    errorConsent: "Please accept the privacy policy to proceed.",
-    errorRequired: "Please fill in all required fields.",
-    errorEmail: "Please enter a valid email address.",
-    codeBadge: "COUPON CODE",
-    alreadySpun: "⚠️ Daily Spin Limit Reached",
-    comeBackTomorrow: "Come back tomorrow for more chances! 🌟",
-    yourCodes: "Your won codes:",
-    useThisCode: "🎁 Use this code at checkout",
-    playAgain: "🎮 Spin Again (Remaining: {count})",
-    screenshotNotice: "📸 Take a screenshot or download your coupon below so you don't lose it!",
-    downloadCoupon: "📸 Download / Save Coupon",
-    couponSaved: "✅ Coupon Saved!",
-    couponVoucherTitle: "OFFICIAL REWARD COUPON",
-    couponValidNotice: "Present this code at checkout to claim your reward",
-    couponTip: "💡 Tip: Long-press or right-click the image to save to your photos.",
-  },
-  tr: {
-    title: "Çevir & Kazan!",
-    subtitle: "Şanslı çarkı çevirerek sana özel sürpriz indirimi keşfet",
-    spinBtn: "ÇEVİR & KAZAN",
-    spinning: "Çark Dönüyor...",
-    rewardWon: "Tebrikler! Kazandınız! 🎉",
-    noReward: "Bu sefer olmadı, tekrar deneyin!",
-    formTitle: "🎊 Ödülünüzü Almak İçin Formu Doldurun",
-    formMandatoryNotice: "⚠️ Hediyenizi alabilmek ve kuponunuzu aktifleştirmek için formu doldurmanız zorunludur.",
-    firstName: "Ad",
-    lastName: "Soyad",
-    phone: "Telefon",
-    email: "E-Posta",
-    firstNamePH: "Adınız",
-    lastNamePH: "Soyadınız",
-    phonePH: "05XX XXX XXXX",
-    emailPH: "ornek@mail.com",
-    cta: "🎁 Ödülümü Al",
-    sending: "⏳ Gönderiliyor...",
-    success: "🎉 Tebrikler! Bilgileriniz başarıyla alındı.\nResmi indirim kuponunuz aşağıda hazır.",
-    privacyConsent: "Gizlilik Politikası kapsamında kişisel verilerimin işlenmesini onaylıyorum.",
-    marketingConsent: "Kampanya ve fırsatlardan haberdar olmak için tarafıma e-posta ve SMS gönderilmesine izin veriyorum.",
-    errorConsent: "Lütfen zorunlu gizlilik politikasını onaylayın.",
-    errorRequired: "Lütfen tüm zorunlu alanları doldurun.",
-    errorEmail: "Geçerli bir e-posta adresi girin.",
-    codeBadge: "KUPON KODU",
-    alreadySpun: "⚠️ Günlük Çevirme Hakkınız Bitti",
-    comeBackTomorrow: "Yarın yeni şanslarınızla tekrar deneyin! 🌟",
-    yourCodes: "Kazanılmış kuponlarınız:",
-    useThisCode: "🎁 Bu Kodu Ödemede Kullan",
-    playAgain: "🎮 Tekrar Çevir (Kalan Hak: {count})",
-    screenshotNotice: "📸 Kuponunuzu kaybetmemek için ekran görüntüsünü alın veya aşağıdan indirin!",
-    downloadCoupon: "📸 Kuponu İndir / Kaydet",
-    couponSaved: "✅ Kupon Kaydedildi!",
-    couponVoucherTitle: "RESMİ ÖDÜL KUPONU",
-    couponValidNotice: "Ödülünüzü almak için ödeme sırasında bu kodu gösterin",
-    couponTip: "💡 İpucu: Görsele basılı tutarak veya sağ tıklayarak galerinize kaydedebilirsiniz.",
-  },
-  de: {
-    title: "Drehen & Gewinnen!",
-    subtitle: "Drehen Sie das Glücksrad, um exklusive Rabatte freizuschalten",
-    spinBtn: "DREHEN & GEWINNEN",
-    spinning: "Glücksrad dreht sich...",
-    rewardWon: "Herzlichen Glückwunsch! Sie haben gewonnen! 🎉",
-    noReward: "Viel Glück beim nächsten Mal!",
-    formTitle: "🎊 Füllen Sie Ihre Daten aus, um Ihren Preis einzulösen",
-    formMandatoryNotice: "⚠️ Sie müssen dieses Formular ausfüllen, um Ihren Gutschein zu aktivieren.",
-    firstName: "Vorname",
-    lastName: "Nachname",
-    phone: "Telefon",
-    email: "E-Mail",
-    firstNamePH: "Ihr Vorname",
-    lastNamePH: "Ihr Nachname",
-    phonePH: "+49 XXX XXXXXXX",
-    emailPH: "name@beispiel.de",
-    cta: "🎁 Meinen Preis anfordern",
-    sending: "⏳ Wird gesendet...",
-    success: "🎉 Herzlichen Glückwunsch! Ihre Daten wurden empfangen.\nIhr offizieller Gutschein ist unten bereit.",
-    privacyConsent: "Ich stimme der Verarbeitung meiner Daten gemäß der Datenschutzerklärung zu.",
-    marketingConsent: "Ich willige ein, Angebote per E-Mail/SMS zu erhalten.",
-    errorConsent: "Bitte akzeptieren Sie die Datenschutzerklärung.",
-    errorRequired: "Bitte füllen Sie alle erforderlichen Felder aus.",
-    errorEmail: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-    codeBadge: "GUTSCHEINCODE",
-    alreadySpun: "⚠️ Tägliches Limit erreicht",
-    comeBackTomorrow: "Kommen Sie morgen wieder für neue Chancen! 🌟",
-    yourCodes: "Ihre gewonnenen Codes:",
-    useThisCode: "🎁 Code beim Bezahlen nutzen",
-    playAgain: "🎮 Erneut drehen (Verbleibend: {count})",
-    screenshotNotice: "📸 Machen Sie einen Screenshot oder laden Sie Ihren Gutschein herunter!",
-    downloadCoupon: "📸 Gutschein herunterladen / speichern",
-    couponSaved: "✅ Gutschein gespeichert!",
-    couponVoucherTitle: "OFFIZIELLER GUTSCHEIN",
-    couponValidNotice: "Diesen Code an der Kasse vorzeigen",
-    couponTip: "💡 Tipp: Bild lange gedrückt halten, um es zu speichern.",
-  },
-  fr: {
-    title: "Tournez & Gagnez !",
-    subtitle: "Tournez la roue de la fortune pour débloquer des réductions",
-    spinBtn: "TOURNER LA ROUE",
-    spinning: "La roue tourne...",
-    rewardWon: "Félicitations ! Vous avez gagné ! 🎉",
-    noReward: "Plus de chance la prochaine fois !",
-    formTitle: "🎊 Remplissez vos coordonnées pour réclamer votre prix",
-    formMandatoryNotice: "⚠️ Vous devez soumettre ce formulaire pour activer votre coupon.",
-    firstName: "Prénom",
-    lastName: "Nom",
-    phone: "Téléphone",
-    email: "E-mail",
-    firstNamePH: "Votre prénom",
-    lastNamePH: "Votre nom",
-    phonePH: "+33 X XX XX XX XX",
-    emailPH: "vous@exemple.fr",
-    cta: "🎁 Réclamer mon prix",
-    sending: "⏳ Envoi...",
-    success: "🎉 Félicitations ! Vos informations ont été enregistrées.\nVotre coupon officiel est prêt ci-dessous.",
-    privacyConsent: "J'accepte le traitement de mes données conformément à la politique de confidentialité.",
-    marketingConsent: "J'accepte de recevoir des offres par e-mail et SMS.",
-    errorConsent: "Veuillez accepter la politique de confidentialité.",
-    errorRequired: "Veuillez remplir tous les champs obligatoires.",
-    errorEmail: "Veuillez entrer une adresse e-mail valide.",
-    codeBadge: "CODE PROMO",
-    alreadySpun: "⚠️ Limite quotidienne atteinte",
-    comeBackTomorrow: "Revenez demain pour retenter votre chance ! 🌟",
-    yourCodes: "Vos codes gagnés :",
-    useThisCode: "🎁 Utiliser ce code",
-    playAgain: "🎮 Rejouer (Restant : {count})",
-    screenshotNotice: "📸 Prenez une capture d'écran ou téléchargez votre coupon ci-dessous !",
-    downloadCoupon: "📸 Télécharger / Sauvegarder le coupon",
-    couponSaved: "✅ Coupon sauvegardé !",
-    couponVoucherTitle: "COUPON OFFICIEL",
-    couponValidNotice: "Présentez ce code lors du paiement",
-    couponTip: "💡 Astuce : Maintenez l'image appuyée pour l'enregistrer.",
-  },
-  es: {
-    title: "¡Gira y Gana!",
-    subtitle: "Gira la ruleta de la suerte y desbloquea descuentos",
-    spinBtn: "GIRAR PARA GANAR",
-    spinning: "Girando...",
-    rewardWon: "¡Felicidades! ¡Has ganado! 🎉",
-    noReward: "¡Más suerte la próxima vez!",
-    formTitle: "🎊 Completa tus datos para reclamar tu premio",
-    formMandatoryNotice: "⚠️ Debes completar este formulario para activar tu cupón.",
-    firstName: "Nombre",
-    lastName: "Apellido",
-    phone: "Teléfono",
-    email: "Correo electrónico",
-    firstNamePH: "Tu nombre",
-    lastNamePH: "Tu apellido",
-    phonePH: "+34 XXX XXX XXX",
-    emailPH: "tu@ejemplo.es",
-    cta: "🎁 Reclamar mi premio",
-    sending: "⏳ Enviando...",
-    success: "🎉 ¡Felicidades! Tus datos han sido recibidos.\nTu cupón oficial está listo abajo.",
-    privacyConsent: "Acepto el tratamiento de mis datos según la Política de Privacidad.",
-    marketingConsent: "Doy mi consentimiento para recibir ofertas y promociones.",
-    errorConsent: "Por favor acepta la política de privacidad.",
-    errorRequired: "Por favor completa todos los campos requeridos.",
-    errorEmail: "Por favor ingresa un correo válido.",
-    codeBadge: "CÓDIGO DE CUPÓN",
-    alreadySpun: "⚠️ Límite diario alcanzado",
-    comeBackTomorrow: "¡Vuelve mañana para más oportunidades! 🌟",
-    yourCodes: "Tus códigos ganados:",
-    useThisCode: "🎁 Usa este código al pagar",
-    playAgain: "🎮 Girar de nuevo (Restante: {count})",
-    screenshotNotice: "📸 ¡Haz una captura o descarga tu cupón abajo!",
-    downloadCoupon: "📸 Descargar / Guardar Cupón",
-    couponSaved: "✅ ¡Cupón guardado!",
-    couponVoucherTitle: "CUPÓN OFICIAL DE PREMIO",
-    couponValidNotice: "Presenta este código al finalizar la compra",
-    couponTip: "💡 Consejo: Mantén presionada la imagen para guardarla.",
-  },
-  he: {
-    title: "סובב וזכה!",
-    subtitle: "סובב את גלגל המזל כדי לגלות הנחות בלעדיות",
-    spinBtn: "סובב לזכייה",
-    spinning: "מסתובב...",
-    rewardWon: "מזל טוב! זכית! 🎉",
-    noReward: "אולי בפעם הבאה!",
-    formTitle: "🎊 מלא את פרטיך לקבלת הפרס",
-    formMandatoryNotice: "⚠️ יש למלא טופס זה כדי להפעיל את הקופון שלך.",
-    firstName: "שם פרטי",
-    lastName: "שם משפחה",
-    phone: "טלפון",
-    email: "אימייל",
-    firstNamePH: "שמך הפרטי",
-    lastNamePH: "שם משפחתך",
-    phonePH: "05X-XXXXXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 קבל את הפרס שלי",
-    sending: "⏳ שולח...",
-    success: "🎉 מזל טוב! הפרטים התקבלו בהצלחה.\nהקופון הרשמי שלך מוכן למטה.",
-    privacyConsent: "אני מסכים/ה לעיבוד הפרטים בהתאם למדיניות הפרטיות.",
-    marketingConsent: "אני מאשר/ת קבלת הצעות שיווקיות.",
-    errorConsent: "יש לאשר את מדיניות הפרטיות.",
-    errorRequired: "נא למלא את כל שדות החובה.",
-    errorEmail: "נא להזין כתובת אימייל תקינה.",
-    codeBadge: "קוד קופון",
-    alreadySpun: "⚠️ הגעת למגבלה היומית",
-    comeBackTomorrow: "חזור מחר לסיבובים נוספים! 🌟",
-    yourCodes: "הקודים שזכית בהם:",
-    useThisCode: "🎁 השתמש בקוד זה",
-    playAgain: "🎮 סובב שוב (נותרו: {count})",
-    screenshotNotice: "📸 צלם מסך או הורד את הקופון שלך למטה!",
-    downloadCoupon: "📸 הורד / שמור קופון",
-    couponSaved: "✅ הקופון נשמר!",
-    couponVoucherTitle: "קופון רשמי",
-    couponValidNotice: "הצג קוד זה בעת התשלום",
-    couponTip: "💡 טיפ: לחץ לחיצה ארוכה לשמירת התמונה.",
-  },
-  zh: {
-    title: "幸运大转盘！",
-    subtitle: "转动幸运转盘，赢取专属折扣奖励",
-    spinBtn: "立即抽奖",
-    spinning: "转盘旋转中...",
-    rewardWon: "恭喜您！中奖了！🎉",
-    noReward: "再接再厉，下次好运！",
-    formTitle: "🎊 填写信息以领取您的奖品",
-    formMandatoryNotice: "⚠️ 您必须填写并提交此表单以激活您的优惠券。",
-    firstName: "名",
-    lastName: "姓",
-    phone: "电话",
-    email: "电子邮箱",
-    firstNamePH: "您的名字",
-    lastNamePH: "您的姓氏",
-    phonePH: "手机号码",
-    emailPH: "you@email.com",
-    cta: "🎁 立即领取奖品",
-    sending: "⏳ 正在提交...",
-    success: "🎉 恭喜！信息已成功提交。\n您的专属优惠券已在下方生成。",
-    privacyConsent: "我同意根据隐私政策处理我的个人数据。",
-    marketingConsent: "我同意接收营销推广信息与优惠通知。",
-    errorConsent: "请同意隐私政策以继续。",
-    errorRequired: "请填写所有必填字段。",
-    errorEmail: "请输入有效的电子邮箱地址。",
-    codeBadge: "优惠券代码",
-    alreadySpun: "⚠️ 今日抽奖次数已用完",
-    comeBackTomorrow: "明天再来试试运气吧！🌟",
-    yourCodes: "您获得的优惠码：",
-    useThisCode: "🎁 结账时使用此代码",
-    playAgain: "🎮 再次抽奖（剩余次数：{count}）",
-    screenshotNotice: "📸 请截屏或在下方下载您的优惠券！",
-    downloadCoupon: "📸 下载 / 保存优惠券",
-    couponSaved: "✅ 优惠券已保存！",
-    couponVoucherTitle: "官方奖励优惠券",
-    couponValidNotice: "结账时出示此代码即可兑换",
-    couponTip: "💡 提示：长按图片即可保存至相册。",
-  },
-  ja: {
-    title: "ラッキールーレット！",
-    subtitle: "ルーレットを回して限定クーポンを当てよう",
-    spinBtn: "回して当てる",
-    spinning: "回転中...",
-    rewardWon: "おめでとうございます！当選しました！🎉",
-    noReward: "残念！次回に期待しましょう！",
-    formTitle: "🎊 賞品を受け取るために情報を入力してください",
-    formMandatoryNotice: "⚠️ クーポンを有効化するにはフォームの送信が必要です。",
-    firstName: "名",
-    lastName: "姓",
-    phone: "電話番号",
-    email: "メールアドレス",
-    firstNamePH: "名",
-    lastNamePH: "姓",
-    phonePH: "090-XXXX-XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 賞品を受け取る",
-    sending: "⏳ 送信中...",
-    success: "🎉 おめでとうございます！情報を受け付けました。\n公式クーポンは以下から確認できます。",
-    privacyConsent: "プライバシーポリシーに同意します。",
-    marketingConsent: "お得な情報やプロモーションの受信に同意します。",
-    errorConsent: "プライバシーポリシーに同意してください。",
-    errorRequired: "必須項目をすべて入力してください。",
-    errorEmail: "有効なメールアドレスを入力してください。",
-    codeBadge: "クーポンコード",
-    alreadySpun: "⚠️ 今日の上限に達しました",
-    comeBackTomorrow: "明日また挑戦してください！🌟",
-    yourCodes: "獲得したクーポンコード：",
-    useThisCode: "🎁 お会計時にこのコードを使用",
-    playAgain: "🎮 もう一度回す（残り：{count}）",
-    screenshotNotice: "📸 スクリーンショットを撮るか保存してください！",
-    downloadCoupon: "📸 クーポンをダウンロード / 保存",
-    couponSaved: "✅ クーポンを保存しました！",
-    couponVoucherTitle: "公式リワードクーポン",
-    couponValidNotice: "会計時にこのコードを提示してください",
-    couponTip: "💡 ヒント: 画像を長押しして保存できます。",
-  },
-  ko: {
-    title: "행운의 룰렛!",
-    subtitle: "룰렛을 돌리고 특별 할인 혜택을 받으세요",
-    spinBtn: "룰렛 돌리기",
-    spinning: "돌아가는 중...",
-    rewardWon: "축하합니다! 당첨되었습니다! 🎉",
-    noReward: "다음 기회에 다시 도전해보세요!",
-    formTitle: "🎊 혜택을 받으려면 정보를 입력하세요",
-    formMandatoryNotice: "⚠️ 쿠폰을 활성화하려면 양식을 제출해야 합니다.",
-    firstName: "이름",
-    lastName: "성",
-    phone: "전화번호",
-    email: "이메일",
-    firstNamePH: "이름",
-    lastNamePH: "성",
-    phonePH: "010-XXXX-XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 혜택 수령하기",
-    sending: "⏳ 전송 중...",
-    success: "🎉 축하합니다! 정보가 접수되었습니다.\n아래에서 공식 쿠폰을 확인하세요.",
-    privacyConsent: "개인정보 처리방침에 동의합니다.",
-    marketingConsent: "마케팅 정보 및 혜택 수신에 동의합니다.",
-    errorConsent: "개인정보 처리방침에 동의해주세요.",
-    errorRequired: "모든 필수 항목을 입력해주세요.",
-    errorEmail: "올바른 이메일 주소를 입력해주세요.",
-    codeBadge: "쿠폰 코드",
-    alreadySpun: "⚠️ 오늘의 참여 횟수를 모두 사용했습니다",
-    comeBackTomorrow: "내일 다시 도전해보세요! 🌟",
-    yourCodes: "당첨된 쿠폰 코드:",
-    useThisCode: "🎁 결제 시 이 코드를 사용하세요",
-    playAgain: "🎮 다시 돌리기 (남은 횟수: {count})",
-    screenshotNotice: "📸 캡처하거나 아래에서 쿠폰을 다운로드하세요!",
-    downloadCoupon: "📸 쿠폰 다운로드 / 저장",
-    couponSaved: "✅ 쿠폰 저장 완료!",
-    couponVoucherTitle: "공식 리워드 쿠폰",
-    couponValidNotice: "결제 시 이 코드를 제시하세요",
-    couponTip: "💡 팁: 이미지를 길게 눌러 저장할 수 있습니다.",
-  },
-  hi: {
-    title: "स्पिन करें और जीतें!",
-    subtitle: "विशेष छूट पाने के लिए भाग्य का पहिया घुमाएं",
-    spinBtn: "स्पिन करें",
-    spinning: "घूम रहा है...",
-    rewardWon: "बधाई हो! आप जीत गए! 🎉",
-    noReward: "अगली बार बेहतर भाग्य!",
-    formTitle: "🎊 इनाम पाने के लिए अपना विवरण भरें",
-    formMandatoryNotice: "⚠️ कूपन सक्रिय करने के लिए यह फ़ॉर्म भरना अनिवार्य है।",
-    firstName: "पहला नाम",
-    lastName: "अंतिम नाम",
-    phone: "फ़ोन",
-    email: "ईमेल",
-    firstNamePH: "आपका नाम",
-    lastNamePH: "आपका उपनाम",
-    phonePH: "+91 XXXXX XXXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 मेरा इनाम पाएं",
-    sending: "⏳ भेजा जा रहा है...",
-    success: "🎉 बधाई हो! आपका विवरण प्राप्त हो गया है।\nआपका कूपन नीचे तैयार है।",
-    privacyConsent: "मैं गोपनीयता नीति के अनुसार डेटा प्रसंस्करण से सहमत हूँ।",
-    marketingConsent: "मैं ऑफ़र और प्रचार प्राप्त करने के लिए सहमत हूँ।",
-    errorConsent: "कृपया गोपनीयता नीति स्वीकार करें।",
-    errorRequired: "कृपया सभी आवश्यक फ़ील्ड भरें।",
-    errorEmail: "कृपया एक मान्य ईमेल दर्ज करें।",
-    codeBadge: "कूपन कोड",
-    alreadySpun: "⚠️ आज की दैनिक सीमा समाप्त",
-    comeBackTomorrow: "और मौकों के लिए कल वापस आएं! 🌟",
-    yourCodes: "आपके जीते हुए कोड:",
-    useThisCode: "🎁 चेकआउट पर इस कोड का उपयोग करें",
-    playAgain: "🎮 फिर से घुमाएं (शेष: {count})",
-    screenshotNotice: "📸 स्क्रीनशॉट लें या कूपन डाउनलोड करें!",
-    downloadCoupon: "📸 कूपन डाउनलोड / सहेजें",
-    couponSaved: "✅ कूपन सहेजा गया!",
-    couponVoucherTitle: "आधिकारिक इनाम कूपन",
-    couponValidNotice: "चेकआउट के समय यह कोड दिखाएं",
-    couponTip: "💡 टिप: सहेजने के लिए छवि को दबाकर रखें।",
-  },
-  pt: {
-    title: "Gire & Ganhe!",
-    subtitle: "Gire a roleta da sorte para desbloquear descontos exclusivos",
-    spinBtn: "GIRAR PARA GANHAR",
-    spinning: "Girando...",
-    rewardWon: "Parabéns! Você ganhou! 🎉",
-    noReward: "Mais sorte na próxima vez!",
-    formTitle: "🎊 Preencha seus dados para resgatar o prêmio",
-    formMandatoryNotice: "⚠️ Você deve preencher este formulário para ativar seu cupom.",
-    firstName: "Nome",
-    lastName: "Sobrenome",
-    phone: "Telefone",
-    email: "E-mail",
-    firstNamePH: "Seu nome",
-    lastNamePH: "Seu sobrenome",
-    phonePH: "+55 (XX) XXXXX-XXXX",
-    emailPH: "seu@email.com",
-    cta: "🎁 Resgatar meu prêmio",
-    sending: "⏳ Enviando...",
-    success: "🎉 Parabéns! Seus dados foram recebidos.\nSeu cupom oficial está pronto abaixo.",
-    privacyConsent: "Concordo com o processamento dos meus dados segundo a Política de Privacidade.",
-    marketingConsent: "Aceito receber novidades e ofertas exclusivas.",
-    errorConsent: "Por favor aceite a política de privacidade.",
-    errorRequired: "Por favor preencha todos os campos obrigatórios.",
-    errorEmail: "Por favor insira um e-mail válido.",
-    codeBadge: "CÓDIGO DO CUPOM",
-    alreadySpun: "⚠️ Limite diário atingido",
-    comeBackTomorrow: "Volte amanhã para mais chances! 🌟",
-    yourCodes: "Seus cupons ganhos:",
-    useThisCode: "🎁 Use este código no checkout",
-    playAgain: "🎮 Girar novamente (Restante: {count})",
-    screenshotNotice: "📸 Tire um print ou baixe seu cupom abaixo!",
-    downloadCoupon: "📸 Baixar / Salvar Cupom",
-    couponSaved: "✅ Cupom salvo!",
-    couponVoucherTitle: "CUPOM OFICIAL DE RECOMPENSA",
-    couponValidNotice: "Apresente este código no checkout",
-    couponTip: "💡 Dica: Pressione e segure a imagem para salvar.",
-  },
-  ru: {
-    title: "Крутите и выигрывайте!",
-    subtitle: "Крутите колесо фортуны и получайте эксклюзивные скидки",
-    spinBtn: "КРУТИТЬ КОЛЕСО",
-    spinning: "Колесо крутится...",
-    rewardWon: "Поздравляем! Вы выиграли! 🎉",
-    noReward: "Повезет в следующий раз!",
-    formTitle: "🎊 Заполните форму для получения приза",
-    formMandatoryNotice: "⚠️ Для активации купона необходимо заполнить и отправить форму.",
-    firstName: "Имя",
-    lastName: "Фамилия",
-    phone: "Телефон",
-    email: "Эл. почта",
-    firstNamePH: "Ваше имя",
-    lastNamePH: "Ваша фамилия",
-    phonePH: "+7 (XXX) XXX-XX-XX",
-    emailPH: "you@email.com",
-    cta: "🎁 Получить приз",
-    sending: "⏳ Отправка...",
-    success: "🎉 Поздравляем! Данные успешно получены.\nВаш официальный купон готов ниже.",
-    privacyConsent: "Я согласен на обработку персональных данных согласно Политике конфиденциальности.",
-    marketingConsent: "Я согласен получать рекламные предложения и новости.",
-    errorConsent: "Пожалуйста, подтвердите согласие с политикой конфиденциальности.",
-    errorRequired: "Пожалуйста, заполните все обязательные поля.",
-    errorEmail: "Пожалуйста, введите корректный адрес эл. почты.",
-    codeBadge: "ПРОМОКОД",
-    alreadySpun: "⚠️ Дневной лимит исчерпан",
-    comeBackTomorrow: "Приходите завтра за новыми шансами! 🌟",
-    yourCodes: "Ваши выигранные промокоды:",
-    useThisCode: "🎁 Используйте промокод при оплате",
-    playAgain: "🎮 Крутить снова (Осталось: {count})",
-    screenshotNotice: "📸 Сделайте скриншот или скачайте купон ниже!",
-    downloadCoupon: "📸 Скачать / Сохранить купон",
-    couponSaved: "✅ Купон сохранен!",
-    couponVoucherTitle: "ОФИЦИАЛЬНЫЙ КУПОН",
-    couponValidNotice: "Предъявите этот промокод при оформлении заказа",
-    couponTip: "💡 Совет: Удерживайте изображение, чтобы сохранить в галерею.",
-  },
-  uk: {
-    title: "Крутіть та вигравайте!",
-    subtitle: "Крутіть колесо фортуни та отримуйте ексклюзивні знижки",
-    spinBtn: "КРУТИТИ КОЛЕСО",
-    spinning: "Колесо крутиться...",
-    rewardWon: "Вітаємо! Ви виграли! 🎉",
-    noReward: "Пощастить наступного разу!",
-    formTitle: "🎊 Заповніть дані для отримання призу",
-    formMandatoryNotice: "⚠️ Для активації купона необхідно заповнити та надіслати форму.",
-    firstName: "Ім'я",
-    lastName: "Прізвище",
-    phone: "Телефон",
-    email: "Ел. пошта",
-    firstNamePH: "Ваше ім'я",
-    lastNamePH: "Ваше прізвище",
-    phonePH: "+380 XX XXX XX XX",
-    emailPH: "you@email.com",
-    cta: "🎁 Отримати приз",
-    sending: "⏳ Надсилання...",
-    success: "🎉 Вітаємо! Ваші дані успішно прийнято.\nВаш офіційний купон готовий нижче.",
-    privacyConsent: "Я погоджуюся на обробку персональних даних згідно з Політикою конфіденційності.",
-    marketingConsent: "Я погоджуюся на отримання маркетингових повідомлень.",
-    errorConsent: "Будь ласка, підтвердіть згоду з політикою конфіденційності.",
-    errorRequired: "Будь ласка, заповніть усі обов'язкові поля.",
-    errorEmail: "Будь ласка, введіть коректну адресу ел. пошти.",
-    codeBadge: "ПРОМОКОД",
-    alreadySpun: "⚠️ Денний ліміт вичерпано",
-    comeBackTomorrow: "Повертайтеся завтра за новими спробами! 🌟",
-    yourCodes: "Ваші виграні промокоди:",
-    useThisCode: "🎁 Використовуйте цей код при оформленні",
-    playAgain: "🎮 Крутити знову (Залишилось: {count})",
-    screenshotNotice: "📸 Зробіть скріншот або завантажте купон нижче!",
-    downloadCoupon: "📸 Завантажити / Зберегти купон",
-    couponSaved: "✅ Купон збережено!",
-    couponVoucherTitle: "ОФІЦІЙНИЙ КУПОН",
-    couponValidNotice: "Покажіть цей код при оформленні замовлення",
-    couponTip: "💡 Підказка: Затисніть зображення, щоб зберегти його.",
-  },
-  el: {
-    title: "Γυρίστε & Κερδίστε!",
-    subtitle: "Γυρίστε τον τροχό της τύχης για να ξεκλειδώσετε εκπτώσεις",
-    spinBtn: "ΓΥΡΙΣΤΕ ΤΟΝ ΤΡΟΧΟ",
-    spinning: "Ο τροχός γυρίζει...",
-    rewardWon: "Συγχαρητήρια! Κερδίσατε! 🎉",
-    noReward: "Καλή τύχη την επόμενη φορά!",
-    formTitle: "🎊 Συμπληρώστε τα στοιχεία σας για να πάρετε το δώρο σας",
-    formMandatoryNotice: "⚠️ Πρέπει να συμπληρώσετε τη φόρμα για να ενεργοποιηθεί το κουπόνι.",
-    firstName: "Όνομα",
-    lastName: "Επώνυμο",
-    phone: "Τηλέφωνο",
-    email: "Email",
-    firstNamePH: "Το όνομά σας",
-    lastNamePH: "Το επώνυμό σας",
-    phonePH: "+30 69X XXX XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 Λήψη Δώρου",
-    sending: "⏳ Αποστολή...",
-    success: "🎉 Συγχαρητήρια! Τα στοιχεία σας ελήφθησαν.\nΤο επίσημο κουπόνι σας είναι έτοιμο παρακάτω.",
-    privacyConsent: "Συμφωνώ με την επεξεργασία δεδομένων σύμφωνα με την Πολιτική Απορρήτου.",
-    marketingConsent: "Συναινώ στη λήψη προωθητικών μηνυμάτων και προσφορών.",
-    errorConsent: "Παρακαλώ αποδεχτείτε την πολιτική απορρήτου.",
-    errorRequired: "Παρακαλώ συμπληρώστε όλα τα απαιτούμενα πεδία.",
-    errorEmail: "Παρακαλώ εισάγετε ένα έγκυρο email.",
-    codeBadge: "ΚΩΔΙΚΟΣ ΚΟΥΠΟΝΙΟΥ",
-    alreadySpun: "⚠️ Εξαντλήθηκε το ημερήσιο όριο",
-    comeBackTomorrow: "Επιστρέψτε αύριο για περισσότερες ευκαιρίες! 🌟",
-    yourCodes: "Οι κωδικοί που κερδίσατε:",
-    useThisCode: "🎁 Χρησιμοποιήστε αυτόν τον κωδικό",
-    playAgain: "🎮 Γυρίστε ξανά (Απομένουν: {count})",
-    screenshotNotice: "📸 Κάντε screenshot ή κατεβάστε το κουπόνι παρακάτω!",
-    downloadCoupon: "📸 Λήψη / Αποθήκευση Κουπονιού",
-    couponSaved: "✅ Το κουπόνι αποθηκεύτηκε!",
-    couponVoucherTitle: "ΕΠΙΣΗΜΟ ΚΟΥΠΟΝΙ",
-    couponValidNotice: "Επιδείξτε αυτόν τον κωδικό στο ταμείο",
-    couponTip: "💡 Συμβουλή: Πατήστε παρατεταμένα την εικόνα για αποθήκευση.",
-  },
-  it: {
-    title: "Gira e Vinci!",
-    subtitle: "Gira la ruota della fortuna per sbloccare sconti esclusivi",
-    spinBtn: "GIRA PER VINCERE",
-    spinning: "La ruota sta girando...",
-    rewardWon: "Congratulazioni! Hai vinto! 🎉",
-    noReward: "Più fortuna la prossima volta!",
-    formTitle: "🎊 Compila i tuoi dati per richiedere il premio",
-    formMandatoryNotice: "⚠️ È necessario compilare il modulo per attivare il coupon.",
-    firstName: "Nome",
-    lastName: "Cognome",
-    phone: "Telefono",
-    email: "Email",
-    firstNamePH: "Il tuo nome",
-    lastNamePH: "Il tuo cognome",
-    phonePH: "+39 XXX XXXXXXX",
-    emailPH: "nome@esempio.it",
-    cta: "🎁 Richiedi il mio premio",
-    sending: "⏳ Invio in corso...",
-    success: "🎉 Congratulazioni! I tuoi dati sono stati registrati.\nIl tuo coupon ufficiale è pronto qui sotto.",
-    privacyConsent: "Acconsento al trattamento dei miei dati personali secondo la Privacy Policy.",
-    marketingConsent: "Acconsento a ricevere comunicazioni promozionali e offerte.",
-    errorConsent: "Per favore accetta l'informativa sulla privacy.",
-    errorRequired: "Per favore compila tutti i campi obbligatori.",
-    errorEmail: "Per favore inserisci un indirizzo email valido.",
-    codeBadge: "CODICE COUPON",
-    alreadySpun: "⚠️ Limite giornaliero raggiunto",
-    comeBackTomorrow: "Torna domani per altre opportunità! 🌟",
-    yourCodes: "I tuoi codici vinti:",
-    useThisCode: "🎁 Usa questo codice al checkout",
-    playAgain: "🎮 Gira ancora (Rimasti: {count})",
-    screenshotNotice: "📸 Fai uno screenshot o scarica il tuo coupon qui sotto!",
-    downloadCoupon: "📸 Scarica / Salva Coupon",
-    couponSaved: "✅ Coupon salvato!",
-    couponVoucherTitle: "COUPON UFFICIALE",
-    couponValidNotice: "Mostra questo codice alla cassa",
-    couponTip: "💡 Suggerimento: Tieni premuta l'immagine per salvarla.",
-  },
-  ar: {
-    title: "أدر العجلة واربح!",
-    subtitle: "أدر عجلة الحظ لاكتشاف خصومات ومفاجآت حصرية",
-    spinBtn: "أدر لتربح",
-    spinning: "العجلة تدور...",
-    rewardWon: "مبروك! لقد فزت! 🎉",
-    noReward: "حظاً أوفر في المرة القادمة!",
-    formTitle: "🎊 املأ بياناتك لاستلام جائزتك",
-    formMandatoryNotice: "⚠️ يجب عليك ملء هذا النموذج لتفعيل قسيمتك واستلام الجائزة.",
-    firstName: "الاسم الأول",
-    lastName: "اسم العائلة",
-    phone: "رقم الهاتف",
-    email: "البريد الإلكتروني",
-    firstNamePH: "اسمك الأول",
-    lastNamePH: "اسم العائلة",
-    phonePH: "+966 5X XXX XXXX",
-    emailPH: "you@email.com",
-    cta: "🎁 استلام جائزتي",
-    sending: "⏳ جاري الإرسال...",
-    success: "🎉 مبروك! تم استلام بياناتك بنجاح.\nقسيمتك الرسمية جاهزة أدناه.",
-    privacyConsent: "أوافق على معالجة بياناتي الشخصية وفقاً لسياسة الخصوصية.",
-    marketingConsent: "أوافق على استلام العروض والرسائل الترويجية.",
-    errorConsent: "يرجى الموافقة على سياسة الخصوصية للمتابعة.",
-    errorRequired: "يرجى ملء جميع الحقول المطلوبة.",
-    errorEmail: "يرجى إدخال بريد إلكتروني صحيح.",
-    codeBadge: "رمز القسيمة",
-    alreadySpun: "⚠️ لقد استنفدت محاولاتك اليومية",
-    comeBackTomorrow: "عد غداً للحصول على فرص جديدة! 🌟",
-    yourCodes: "رموز القسائم التي فزت بها:",
-    useThisCode: "🎁 استخدم هذا الرمز عند الدفع",
-    playAgain: "🎮 أدر مجدداً (المتبقي: {count})",
-    screenshotNotice: "📸 التقط لقطة شاشة أو قم بتحميل قسيمتك أدناه!",
-    downloadCoupon: "📸 تحميل / حفظ القسيمة",
-    couponSaved: "✅ تم حفظ القسيمة!",
-    couponVoucherTitle: "قسيمة الجائزة الرسمية",
-    couponValidNotice: "أظهر هذا الرمز عند الدفع لاستلام مكافأتك",
-    couponTip: "💡 تلميح: اضغط مطولاً على الصورة لحفظها في معرض الصور.",
-  },
-};
-
-    const widget = document.getElementById("test-widget");
-    const selLang = document.getElementById("sel-lang");
-    const selFont = document.getElementById("sel-font");
-    const selTheme = document.getElementById("sel-theme");
-    const selLimit = document.getElementById("sel-limit");
-    const btnReset = document.getElementById("btn-reset");
-    const logConsole = document.getElementById("log-console");
-    const btnClearLog = document.getElementById("btn-clear-log");
-
-    // Header Persistent Language Selector & Font Selector
-    const dashHeaderLangSel = document.getElementById("dash-header-lang-sel");
-    const dashFontSel = document.getElementById("dash-font-sel");
-
-    // Tab Switching between Widget and Dashboard
-    const tabWidget = document.getElementById("tab-btn-widget");
-    const tabDashboard = document.getElementById("tab-btn-dashboard");
-    const viewWidget = document.getElementById("view-widget");
-    const viewDashboard = document.getElementById("view-dashboard");
-    const widgetControls = document.getElementById("widget-controls");
-
-    tabWidget.onclick = () => {
-      tabWidget.classList.add("active");
-      tabDashboard.classList.remove("active");
-      viewWidget.style.display = "flex";
-      viewDashboard.style.display = "none";
-      widgetControls.style.display = "flex";
-    };
     let currentPrizes = [
       { id: "p1", label: "10% OFF", code: "SPIN10", color: "#6366F1", textColor: "#ffffff", probability: 25, isWinner: true },
       { id: "p2", label: "FREE SHIPPING", code: "FREESHIP", color: "#EC4899", textColor: "#ffffff", probability: 20, isWinner: true },
@@ -2656,34 +565,29 @@
     let selectedTheme = "gold";
     let customTextsState = {};
 
-    try {
-      const saved = localStorage.getItem("wof_settings");
-      if (saved) {
-        const config = JSON.parse(saved);
-        if (config.colorTheme) selectedTheme = config.colorTheme;
-        if (config.fontFamily) document.getElementById("sel-dash-font").value = config.fontFamily;
-        if (config.dailyLimit) document.getElementById("inp-daily-limit").value = config.dailyLimit;
-        if (config.lang) document.getElementById("dash-header-lang-sel").value = config.lang;
-        if (config.prizes && Array.isArray(config.prizes)) currentPrizes = config.prizes;
-      }
-      const rawTexts = localStorage.getItem("wheel_of_fortune_custom_texts");
-      if (rawTexts) customTextsState = JSON.parse(rawTexts);
-    } catch (e) {}
-
-    // Tab Navigation
-    document.querySelectorAll(".dash-tab-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".dash-tab-btn").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".dash-pane").forEach(p => p.classList.remove("active"));
-        btn.classList.add("active");
-        const paneId = btn.getAttribute("data-pane");
-        const pane = document.getElementById(paneId);
-        if (pane) pane.classList.add("active");
+    // ─── 100% Reliable Tab Switching ───
+    window.switchDashboardTab = function(paneId) {
+      document.querySelectorAll(".dash-pane").forEach(p => {
+        p.style.display = "none";
+        p.classList.remove("active");
       });
-    });
+      document.querySelectorAll(".dash-tab-btn").forEach(b => {
+        b.classList.remove("active");
+      });
+
+      const targetPane = document.getElementById(paneId);
+      if (targetPane) {
+        targetPane.style.display = "block";
+        targetPane.classList.add("active");
+      }
+
+      const btnId = "tab-btn-" + paneId.replace("dash-", "");
+      const btn = document.getElementById(btnId);
+      if (btn) btn.classList.add("active");
+    };
 
     // Theme Selection
-    function selectTheme(theme) {
+    window.selectTheme = function(theme) {
       selectedTheme = theme;
       document.querySelectorAll(".theme-option").forEach(opt => {
         if (opt.getAttribute("data-theme") === theme) {
@@ -2694,10 +598,10 @@
           opt.classList.remove("active");
         }
       });
-    }
+    };
 
     // Prize Table Rendering
-    function renderPrizeTable() {
+    window.renderPrizeTable = function() {
       const tbody = document.getElementById("tbody-prizes");
       if (!tbody) return;
       tbody.innerHTML = currentPrizes.map((p, idx) => `
@@ -2711,24 +615,24 @@
           <td><button type="button" class="btn-delete" onclick="deletePrize(${idx})">🗑️ Delete</button></td>
         </tr>
       `).join("");
-    }
+    };
 
-    function updatePrize(idx, field, value) {
+    window.updatePrize = function(idx, field, value) {
       if (currentPrizes[idx]) {
         currentPrizes[idx][field] = value;
       }
-    }
+    };
 
-    function deletePrize(idx) {
+    window.deletePrize = function(idx) {
       if (currentPrizes.length <= 2) {
         alert("⚠️ You must have at least 2 prize slices on the wheel!");
         return;
       }
       currentPrizes.splice(idx, 1);
       renderPrizeTable();
-    }
+    };
 
-    document.getElementById("btn-add-slice").addEventListener("click", () => {
+    window.addNewSlice = function() {
       const colors = ["#6366F1", "#EC4899", "#F59E0B", "#10B981", "#8B5CF6", "#3B82F6", "#EF4444"];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
       currentPrizes.push({
@@ -2741,7 +645,7 @@
         isWinner: true
       });
       renderPrizeTable();
-    });
+    };
 
     // CRM Leads Table
     const sampleLeads = [
@@ -2751,7 +655,7 @@
       { name: "Elena Rossi", email: "elena.r@libero.it", phone: "+39 340-9811", prize: "MYSTERY GIFT", code: "GIFT50", lang: "it", date: "Yesterday", status: "Converted", notes: "Completed purchase" }
     ];
 
-    function renderLeadsTable() {
+    window.renderLeadsTable = function() {
       const tbody = document.getElementById("tbody-leads");
       if (!tbody) return;
       tbody.innerHTML = sampleLeads.map(l => `
@@ -2773,10 +677,10 @@
           <td><input type="text" value="${l.notes}" style="width:160px; font-size:11px;" /></td>
         </tr>
       `).join("");
-    }
+    };
 
     // CSV Export
-    document.getElementById("btn-export-csv").addEventListener("click", () => {
+    window.exportLeadsCSV = function() {
       let csv = "Name,Email,Phone,Prize,Code,Language,Date,Status,Notes\n";
       sampleLeads.forEach(l => {
         csv += `"${l.name}","${l.email}","${l.phone}","${l.prize}","${l.code}","${l.lang}","${l.date}","${l.status}","${l.notes}"\n`;
@@ -2787,17 +691,21 @@
       a.href = url;
       a.download = "wheel_of_fortune_leads.csv";
       a.click();
-    });
+    };
 
     // 16 Languages & Custom Texts
     function getLocalizedCategories(lang) {
-      const dict = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
+      const dict = (typeof DASHBOARD_I18N !== "undefined" && DASHBOARD_I18N[lang]) || {};
+      const cat1 = dict.cat1Title || "Wheel & Spin Button";
+      const cat2 = dict.cat2Title || "Lead Capture Form";
+      const cat3 = dict.cat3Title || "Privacy & Consent";
+      const cat4 = dict.cat4Title || "Prizes & Vouchers";
       return [
         {
-          category: dict.cat1Title,
+          category: cat1,
           icon: "🎯",
           fields: [
-            { key: "title", label: `${dict.cat1Title} - Title` },
+            { key: "title", label: `${cat1} - Title` },
             { key: "subtitle", label: "Subtitle" },
             { key: "spinBtn", label: "Spin Button Label" },
             { key: "spinning", label: "Spinning Status Text" },
@@ -2806,7 +714,7 @@
           ],
         },
         {
-          category: dict.cat2Title,
+          category: cat2,
           icon: "📝",
           fields: [
             { key: "formTitle", label: "Form Title" },
@@ -2825,7 +733,7 @@
           ],
         },
         {
-          category: dict.cat3Title,
+          category: cat3,
           icon: "⚖️",
           fields: [
             { key: "privacyConsent", label: "Privacy Policy Consent Text" },
@@ -2836,7 +744,7 @@
           ],
         },
         {
-          category: dict.cat4Title,
+          category: cat4,
           icon: "🎟️",
           fields: [
             { key: "codeBadge", label: "Coupon Code Badge" },
@@ -2856,12 +764,12 @@
       ];
     }
 
-    function renderI18nFields(lang) {
+    window.renderI18nFields = function(lang) {
       const container = document.getElementById("i18n-fields-container");
       if (!container) return;
       const cats = getLocalizedCategories(lang);
-      const dict = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
-      const langDict = I18N_DICTIONARY[lang] || I18N_DICTIONARY.en;
+      const dict = (typeof DASHBOARD_I18N !== "undefined" && DASHBOARD_I18N[lang]) || {};
+      const langDict = (typeof I18N_DICTIONARY !== "undefined" && I18N_DICTIONARY[lang]) || {};
 
       container.innerHTML = cats.map(cat => `
         <div style="background:rgba(0,0,0,0.3); border:1px solid var(--card-border); border-radius:12px; padding:18px;">
@@ -2881,7 +789,7 @@
                     data-key="${f.key}"
                     class="i18n-field-input"
                     value="${currentVal.replace(/"/g, '&quot;')}"
-                    placeholder="${dict.defaultPH}${defaultVal.replace(/"/g, '&quot;')}"
+                    placeholder="Default: ${defaultVal.replace(/"/g, '&quot;')}"
                     style="width:100%; padding:7px 10px; border-color:${currentVal ? '#10b981' : 'var(--card-border)'};"
                   />
                 </div>
@@ -2906,58 +814,40 @@
           }
         });
       });
-    }
+    };
 
-    // Dynamic UI Translation
-    function updateDashboardLanguage(lang) {
-      const t = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
-
-      // Header
-      document.getElementById("dash-title-txt").textContent = "Wheel of Fortune Dashboard";
-      document.getElementById("dash-sub-txt").textContent = t.dashSubtitle;
-      document.getElementById("btn-save-dash").textContent = "💾 " + t.saveAll;
-
-      // Tabs
-      document.getElementById("tab-nav-overview").textContent = t.tabOverview;
-      document.getElementById("tab-nav-prizes").textContent = t.tabPrizes;
-      document.getElementById("tab-nav-leads").textContent = t.tabLeads;
-      document.getElementById("tab-nav-theme").textContent = t.tabTheme;
-      document.getElementById("tab-nav-texts").textContent = t.tabTexts;
-
-      // Stats
-      document.getElementById("lbl-stat-spins").textContent = t.statSpins;
-      document.getElementById("lbl-stat-coupons").textContent = t.statCoupons;
-      document.getElementById("lbl-stat-leads").textContent = t.statLeads;
-      document.getElementById("lbl-stat-rate").textContent = t.statRate;
-
-      // Labels
-      document.getElementById("lbl-prize-table-title").textContent = "🎡 " + t.prizesTitle;
-      document.getElementById("lbl-prize-table-desc").textContent = t.prizesSubtitle;
-      document.getElementById("lbl-crm-title").textContent = "👥 " + t.leadsTitle;
-      document.getElementById("lbl-crm-desc").textContent = t.leadsSubtitle;
-      document.getElementById("lbl-theme-title").textContent = "🎨 " + t.themeTitle;
-      document.getElementById("lbl-i18n-title").textContent = "🌍 " + t.textsTitle;
-      document.getElementById("lbl-i18n-desc").textContent = t.textsSubtitle;
-      document.getElementById("btn-reset-lang-texts").textContent = t.resetLangBtn;
-
+    // Language Change
+    window.onLanguageChange = function(lang) {
+      if (typeof DASHBOARD_I18N !== "undefined" && DASHBOARD_I18N[lang]) {
+        const t = DASHBOARD_I18N[lang];
+        try {
+          if (document.getElementById("dash-sub-txt")) document.getElementById("dash-sub-txt").textContent = t.dashSubtitle;
+          if (document.getElementById("btn-save-dash")) document.getElementById("btn-save-dash").textContent = "💾 " + t.saveAll;
+          if (document.getElementById("tab-btn-overview")) document.getElementById("tab-btn-overview").textContent = t.tabOverview;
+          if (document.getElementById("tab-btn-prizes")) document.getElementById("tab-btn-prizes").textContent = t.tabPrizes;
+          if (document.getElementById("tab-btn-leads")) document.getElementById("tab-btn-leads").textContent = t.tabLeads;
+          if (document.getElementById("tab-btn-theme")) document.getElementById("tab-btn-theme").textContent = t.tabTheme;
+          if (document.getElementById("tab-btn-i18n")) document.getElementById("tab-btn-i18n").textContent = t.tabTexts;
+          if (document.getElementById("lbl-stat-spins")) document.getElementById("lbl-stat-spins").textContent = t.statSpins;
+          if (document.getElementById("lbl-stat-coupons")) document.getElementById("lbl-stat-coupons").textContent = t.statCoupons;
+          if (document.getElementById("lbl-stat-leads")) document.getElementById("lbl-stat-leads").textContent = t.statLeads;
+          if (document.getElementById("lbl-stat-rate")) document.getElementById("lbl-stat-rate").textContent = t.statRate;
+        } catch (e) {}
+      }
       renderI18nFields(lang);
-    }
+    };
 
-    document.getElementById("dash-header-lang-sel").addEventListener("change", (e) => {
-      updateDashboardLanguage(e.target.value);
-    });
-
-    document.getElementById("btn-reset-lang-texts").addEventListener("click", () => {
+    window.resetLanguageTexts = function() {
       const lang = document.getElementById("dash-header-lang-sel").value;
       if (confirm("Reset custom texts for " + lang.toUpperCase() + " to defaults?")) {
         delete customTextsState[lang];
         localStorage.setItem("wheel_of_fortune_custom_texts", JSON.stringify(customTextsState));
         renderI18nFields(lang);
       }
-    });
+    };
 
-    // Save All Changes
-    document.getElementById("btn-save-dash").addEventListener("click", () => {
+    // Save All Settings
+    window.saveAllSettings = function() {
       const lang = document.getElementById("dash-header-lang-sel").value;
       const font = document.getElementById("sel-dash-font").value;
       const limit = parseInt(document.getElementById("inp-daily-limit").value, 10) || 1;
@@ -2981,15 +871,31 @@
 
       // Show Save Toast
       const banner = document.getElementById("save-banner");
-      banner.style.display = "block";
-      setTimeout(() => { banner.style.display = "none"; }, 3000);
-    });
+      if (banner) {
+        banner.style.display = "block";
+        setTimeout(() => { banner.style.display = "none"; }, 3000);
+      }
+    };
 
-    // Init
+    // Initial Boot
+    try {
+      const saved = localStorage.getItem("wof_settings");
+      if (saved) {
+        const config = JSON.parse(saved);
+        if (config.colorTheme) selectedTheme = config.colorTheme;
+        if (config.fontFamily && document.getElementById("sel-dash-font")) document.getElementById("sel-dash-font").value = config.fontFamily;
+        if (config.dailyLimit && document.getElementById("inp-daily-limit")) document.getElementById("inp-daily-limit").value = config.dailyLimit;
+        if (config.lang && document.getElementById("dash-header-lang-sel")) document.getElementById("dash-header-lang-sel").value = config.lang;
+        if (config.prizes && Array.isArray(config.prizes)) currentPrizes = config.prizes;
+      }
+      const rawTexts = localStorage.getItem("wheel_of_fortune_custom_texts");
+      if (rawTexts) customTextsState = JSON.parse(rawTexts);
+    } catch (e) {}
+
     selectTheme(selectedTheme);
     renderPrizeTable();
     renderLeadsTable();
-    updateDashboardLanguage(document.getElementById("dash-header-lang-sel").value);
+    onLanguageChange(document.getElementById("dash-header-lang-sel").value);
   </script>
 </body>
 </html>

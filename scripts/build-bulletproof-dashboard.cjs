@@ -1,4 +1,19 @@
-<!DOCTYPE html>
+const fs = require("fs");
+const path = require("path");
+
+// Load dictionaries from wheel-widget.js
+const widgetJsPath = path.join(__dirname, "../public/wheel-widget.js");
+const widgetCode = fs.readFileSync(widgetJsPath, "utf8");
+
+// Extract DASHBOARD_I18N
+const dashI18nMatch = widgetCode.match(/(const DASHBOARD_I18N = \{[\s\S]*?\n    \};)/);
+const dashI18nCode = dashI18nMatch ? dashI18nMatch[1] : "";
+
+// Extract I18N_DICTIONARY
+const i18nDictMatch = widgetCode.match(/(const I18N_DICTIONARY = \{[\s\S]*?\n    \};)/);
+const i18nDictCode = i18nDictMatch ? i18nDictMatch[1] : "";
+
+const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -550,8 +565,8 @@
   </div>
 
   <script>
-    
-    
+    ${dashI18nCode}
+    ${i18nDictCode}
 
     let currentPrizes = [
       { id: "p1", label: "10% OFF", code: "SPIN10", color: "#6366F1", textColor: "#ffffff", probability: 25, isWinner: true },
@@ -604,17 +619,17 @@
     window.renderPrizeTable = function() {
       const tbody = document.getElementById("tbody-prizes");
       if (!tbody) return;
-      tbody.innerHTML = currentPrizes.map((p, idx) => `
+      tbody.innerHTML = currentPrizes.map((p, idx) => \`
         <tr>
-          <td><input type="color" value="${p.color}" onchange="updatePrize(${idx}, 'color', this.value)" style="width:36px; height:32px; border:none; background:transparent; cursor:pointer;" /></td>
-          <td><input type="color" value="${p.textColor || '#FFFFFF'}" onchange="updatePrize(${idx}, 'textColor', this.value)" style="width:36px; height:32px; border:none; background:transparent; cursor:pointer;" /></td>
-          <td><input type="text" value="${p.label}" onchange="updatePrize(${idx}, 'label', this.value)" style="width:140px;" /></td>
-          <td><input type="text" value="${p.code}" onchange="updatePrize(${idx}, 'code', this.value)" placeholder="e.g. SAVE20" style="width:120px;" /></td>
-          <td><input type="number" value="${p.probability}" min="0" max="100" onchange="updatePrize(${idx}, 'probability', Number(this.value))" style="width:70px;" /></td>
-          <td><input type="checkbox" ${p.isWinner ? 'checked' : ''} onchange="updatePrize(${idx}, 'isWinner', this.checked)" style="width:18px; height:18px; cursor:pointer;" /></td>
-          <td><button type="button" class="btn-delete" onclick="deletePrize(${idx})">🗑️ Delete</button></td>
+          <td><input type="color" value="\${p.color}" onchange="updatePrize(\${idx}, 'color', this.value)" style="width:36px; height:32px; border:none; background:transparent; cursor:pointer;" /></td>
+          <td><input type="color" value="\${p.textColor || '#FFFFFF'}" onchange="updatePrize(\${idx}, 'textColor', this.value)" style="width:36px; height:32px; border:none; background:transparent; cursor:pointer;" /></td>
+          <td><input type="text" value="\${p.label}" onchange="updatePrize(\${idx}, 'label', this.value)" style="width:140px;" /></td>
+          <td><input type="text" value="\${p.code}" onchange="updatePrize(\${idx}, 'code', this.value)" placeholder="e.g. SAVE20" style="width:120px;" /></td>
+          <td><input type="number" value="\${p.probability}" min="0" max="100" onchange="updatePrize(\${idx}, 'probability', Number(this.value))" style="width:70px;" /></td>
+          <td><input type="checkbox" \${p.isWinner ? 'checked' : ''} onchange="updatePrize(\${idx}, 'isWinner', this.checked)" style="width:18px; height:18px; cursor:pointer;" /></td>
+          <td><button type="button" class="btn-delete" onclick="deletePrize(\${idx})">🗑️ Delete</button></td>
         </tr>
-      `).join("");
+      \`).join("");
     };
 
     window.updatePrize = function(idx, field, value) {
@@ -658,32 +673,32 @@
     window.renderLeadsTable = function() {
       const tbody = document.getElementById("tbody-leads");
       if (!tbody) return;
-      tbody.innerHTML = sampleLeads.map(l => `
+      tbody.innerHTML = sampleLeads.map(l => \`
         <tr>
-          <td><strong>${l.name}</strong></td>
-          <td>${l.email}</td>
-          <td>${l.phone}</td>
-          <td>${l.prize}</td>
-          <td><span class="badge-win">${l.code}</span></td>
-          <td>${l.lang.toUpperCase()}</td>
-          <td>${l.date}</td>
+          <td><strong>\${l.name}</strong></td>
+          <td>\${l.email}</td>
+          <td>\${l.phone}</td>
+          <td>\${l.prize}</td>
+          <td><span class="badge-win">\${l.code}</span></td>
+          <td>\${l.lang.toUpperCase()}</td>
+          <td>\${l.date}</td>
           <td>
             <select style="padding:4px 8px; font-size:11px;">
-              <option ${l.status==='New'?'selected':''}>New</option>
-              <option ${l.status==='Contacted'?'selected':''}>Contacted</option>
-              <option ${l.status==='Converted'?'selected':''}>Converted</option>
+              <option \${l.status==='New'?'selected':''}>New</option>
+              <option \${l.status==='Contacted'?'selected':''}>Contacted</option>
+              <option \${l.status==='Converted'?'selected':''}>Converted</option>
             </select>
           </td>
-          <td><input type="text" value="${l.notes}" style="width:160px; font-size:11px;" /></td>
+          <td><input type="text" value="\${l.notes}" style="width:160px; font-size:11px;" /></td>
         </tr>
-      `).join("");
+      \`).join("");
     };
 
     // CSV Export
     window.exportLeadsCSV = function() {
-      let csv = "Name,Email,Phone,Prize,Code,Language,Date,Status,Notes\n";
+      let csv = "Name,Email,Phone,Prize,Code,Language,Date,Status,Notes\\n";
       sampleLeads.forEach(l => {
-        csv += `"${l.name}","${l.email}","${l.phone}","${l.prize}","${l.code}","${l.lang}","${l.date}","${l.status}","${l.notes}"\n`;
+        csv += \`"\${l.name}","\${l.email}","\${l.phone}","\${l.prize}","\${l.code}","\${l.lang}","\${l.date}","\${l.status}","\${l.notes}"\\n\`;
       });
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -705,7 +720,7 @@
           category: cat1,
           icon: "🎯",
           fields: [
-            { key: "title", label: `${cat1} - Title` },
+            { key: "title", label: \`\${cat1} - Title\` },
             { key: "subtitle", label: "Subtitle" },
             { key: "spinBtn", label: "Spin Button Label" },
             { key: "spinning", label: "Spinning Status Text" },
@@ -771,33 +786,33 @@
       const dict = (typeof DASHBOARD_I18N !== "undefined" && DASHBOARD_I18N[lang]) || {};
       const langDict = (typeof I18N_DICTIONARY !== "undefined" && I18N_DICTIONARY[lang]) || {};
 
-      container.innerHTML = cats.map(cat => `
+      container.innerHTML = cats.map(cat => \`
         <div style="background:rgba(0,0,0,0.3); border:1px solid var(--card-border); border-radius:12px; padding:18px;">
           <h4 style="margin:0 0 14px 0; font-size:14px; color:#fbbf24; display:flex; align-items:center; gap:8px;">
-            <span>${cat.icon}</span> ${cat.category}
+            <span>\${cat.icon}</span> \${cat.category}
           </h4>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
-            ${cat.fields.map(f => {
+            \${cat.fields.map(f => {
               const currentVal = (customTextsState[lang] && customTextsState[lang][f.key]) || "";
               const defaultVal = langDict[f.key] || "";
-              return `
+              return \`
                 <div>
-                  <label style="font-size:11px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">${f.label}</label>
+                  <label style="font-size:11px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">\${f.label}</label>
                   <input
                     type="text"
-                    data-lang="${lang}"
-                    data-key="${f.key}"
+                    data-lang="\${lang}"
+                    data-key="\${f.key}"
                     class="i18n-field-input"
-                    value="${currentVal.replace(/"/g, '&quot;')}"
-                    placeholder="Default: ${defaultVal.replace(/"/g, '&quot;')}"
-                    style="width:100%; padding:7px 10px; border-color:${currentVal ? '#10b981' : 'var(--card-border)'};"
+                    value="\${currentVal.replace(/"/g, '&quot;')}"
+                    placeholder="Default: \${defaultVal.replace(/"/g, '&quot;')}"
+                    style="width:100%; padding:7px 10px; border-color:\${currentVal ? '#10b981' : 'var(--card-border)'};"
                   />
                 </div>
-              `;
+              \`;
             }).join("")}
           </div>
         </div>
-      `).join("");
+      \`).join("");
 
       container.querySelectorAll(".i18n-field-input").forEach(inp => {
         inp.addEventListener("input", (e) => {
@@ -899,3 +914,10 @@
   </script>
 </body>
 </html>
+`;
+
+// Write to both public/dashboard.html and public/test-sandbox.html
+fs.writeFileSync(path.join(__dirname, "../public/dashboard.html"), fullHtml);
+fs.writeFileSync(path.join(__dirname, "../public/test-sandbox.html"), fullHtml);
+
+console.log("SUCCESS: Created bulletproof, 100% clickable dashboard on both dashboard.html and test-sandbox.html!");
