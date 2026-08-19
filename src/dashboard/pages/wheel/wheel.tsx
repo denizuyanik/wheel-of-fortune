@@ -28,6 +28,7 @@ import {
   type Lead,
   DEFAULT_SETTINGS,
 } from "../../services/leads";
+import { TEXT_CATEGORIES, I18N_DICTIONARY } from "../../constants/i18nDefaults";
 
 const TABS = [
   { id: "overview", title: "📊 Overview & Stats" },
@@ -95,8 +96,9 @@ const WheelDashboard: FC = () => {
   const [leadStatusFilter, setLeadStatusFilter] = useState("all");
   const [leadSearch, setLeadSearch] = useState("");
 
-  // Custom Texts
-  const [customTexts, setCustomTexts] = useState<Record<string, string>>({});
+  // Custom Texts State: { [lang]: { [key]: value } }
+  const [customTexts, setCustomTexts] = useState<Record<string, Record<string, string>>>({});
+  const [selectedEditLang, setSelectedEditLang] = useState<string>("tr");
 
   useEffect(() => {
     loadAllData();
@@ -116,9 +118,20 @@ const WheelDashboard: FC = () => {
         if (fetchedSettings.rewardPool && Array.isArray(fetchedSettings.rewardPool)) {
           setPrizes(fetchedSettings.rewardPool);
         }
+        if (fetchedSettings.defaultLang) {
+          setSelectedEditLang(fetchedSettings.defaultLang);
+        }
         if (fetchedSettings.customTextsJSON) {
           try {
-            setCustomTexts(JSON.parse(fetchedSettings.customTextsJSON));
+            const parsed = JSON.parse(fetchedSettings.customTextsJSON);
+            if (parsed && typeof parsed === "object") {
+              const isNested = Object.keys(parsed).some((k) => LANGUAGES.some((l) => l.id === k));
+              if (isNested) {
+                setCustomTexts(parsed);
+              } else {
+                setCustomTexts({ [fetchedSettings.defaultLang || "en"]: parsed });
+              }
+            }
           } catch {}
         }
       }
@@ -128,6 +141,38 @@ const WheelDashboard: FC = () => {
       console.error("Failed to load dashboard data:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTextChange = (lang: string, key: string, val: string) => {
+    setCustomTexts((prev) => ({
+      ...prev,
+      [lang]: {
+        ...(prev[lang] || {}),
+        [key]: val,
+      },
+    }));
+  };
+
+  const handleResetField = (lang: string, key: string) => {
+    setCustomTexts((prev) => {
+      if (!prev[lang]) return prev;
+      const langCopy = { ...prev[lang] };
+      delete langCopy[key];
+      return {
+        ...prev,
+        [lang]: langCopy,
+      };
+    });
+  };
+
+  const handleResetLang = (lang: string) => {
+    if (confirm(`"${LANGUAGES.find((l) => l.id === lang)?.value}" dili için yapılan tüm özel metinler varsayılana sıfırlansın mı?`)) {
+      setCustomTexts((prev) => {
+        const copy = { ...prev };
+        delete copy[lang];
+        return copy;
+      });
     }
   };
 
@@ -613,59 +658,113 @@ const WheelDashboard: FC = () => {
 
             {/* ─── TAB 5: 16 LANGUAGES & CUSTOM TEXTS ─── */}
             {activeTab === "translations" && (
-              <Card>
-                <Card.Header
-                  title="🌍 16 Languages & Custom Texts"
-                  subtitle="Override texts for all languages or select default store language"
-                />
-                <Card.Content>
-                  <div style={{ maxWidth: 400, marginBottom: 20 }}>
-                    <FormField label="Default Store Language">
-                      <Dropdown
-                        selectedId={settings.defaultLang}
-                        options={LANGUAGES}
-                        onSelect={(opt) => setSettings({ ...settings, defaultLang: opt.id as string })}
-                      />
-                    </FormField>
-                  </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {/* Language Selection Bar */}
+                <Card>
+                  <Card.Header
+                    title="🌍 16 Dil & Tüm Metinleri Özelleştirme"
+                    subtitle="Uygulama üzerindeki tüm başlık, form, onay ve kupon metinlerini her dil için ayrı ayrı düzenleyebilirsiniz."
+                    suffix={
+                      <div style={{ display: "flex", gap: 10 }}>
+                        <Button
+                          priority="secondary"
+                          skin="destructive"
+                          size="small"
+                          onClick={() => handleResetLang(selectedEditLang)}
+                        >
+                          🔄 Dili Varsayılana Sıfırla
+                        </Button>
+                      </div>
+                    }
+                  />
+                  <Card.Content>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                      <FormField label="🌐 Düzenlenen Dil (Edit Language)">
+                        <Dropdown
+                          selectedId={selectedEditLang}
+                          options={LANGUAGES}
+                          onSelect={(opt) => setSelectedEditLang(opt.id as string)}
+                        />
+                      </FormField>
+                      <FormField label="🏪 Sitenin Varsayılan Ana Dili (Default Store Language)">
+                        <Dropdown
+                          selectedId={settings.defaultLang}
+                          options={LANGUAGES}
+                          onSelect={(opt) => setSettings({ ...settings, defaultLang: opt.id as string })}
+                        />
+                      </FormField>
+                    </div>
+                  </Card.Content>
+                </Card>
 
-                  <div style={{ margin: "20px 0" }}><Divider /></div>
+                {/* 4 Categorized Cards */}
+                {TEXT_CATEGORIES.map((cat, catIdx) => (
+                  <Card key={catIdx}>
+                    <Card.Header
+                      title={`${cat.icon} ${cat.category}`}
+                      subtitle={`${LANGUAGES.find((l) => l.id === selectedEditLang)?.value} dili için metin ayarları`}
+                    />
+                    <Card.Content>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                        {cat.fields.map((field) => {
+                          const defaultVal =
+                            I18N_DICTIONARY[selectedEditLang]?.[field.key] ||
+                            I18N_DICTIONARY.en[field.key] ||
+                            "";
+                          const customVal = customTexts[selectedEditLang]?.[field.key] ?? "";
+                          const isCustomized = customVal.trim().length > 0;
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <FormField label="Custom Widget Title">
-                      <Input
-                        value={customTexts.title || ""}
-                        placeholder="Leave empty for dictionary default"
-                        onChange={(e) => setCustomTexts({ ...customTexts, title: e.target.value })}
-                      />
-                    </FormField>
-
-                    <FormField label="Custom Subtitle">
-                      <Input
-                        value={customTexts.subtitle || ""}
-                        placeholder="Leave empty for dictionary default"
-                        onChange={(e) => setCustomTexts({ ...customTexts, subtitle: e.target.value })}
-                      />
-                    </FormField>
-
-                    <FormField label="Custom Spin Button Label">
-                      <Input
-                        value={customTexts.spinBtn || ""}
-                        placeholder="e.g. SPIN TO WIN"
-                        onChange={(e) => setCustomTexts({ ...customTexts, spinBtn: e.target.value })}
-                      />
-                    </FormField>
-
-                    <FormField label="Custom Claim Button Label">
-                      <Input
-                        value={customTexts.cta || ""}
-                        placeholder="e.g. Claim My Reward"
-                        onChange={(e) => setCustomTexts({ ...customTexts, cta: e.target.value })}
-                      />
-                    </FormField>
-                  </div>
-                </Card.Content>
-              </Card>
+                          return (
+                            <div
+                              key={field.key}
+                              style={{
+                                gridColumn: field.isLong ? "1 / -1" : "span 1",
+                                background: isCustomized ? "#f0fdf4" : "transparent",
+                                padding: isCustomized ? "8px 12px" : "0",
+                                borderRadius: 8,
+                                border: isCustomized ? "1px solid #86efac" : "none",
+                              }}
+                            >
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                                <label style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>
+                                  {field.label}
+                                </label>
+                                {isCustomized && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleResetField(selectedEditLang, field.key)}
+                                    style={{
+                                      background: "transparent",
+                                      border: "none",
+                                      color: "#15803d",
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                    title="Varsayılan çeviriye geri dön"
+                                  >
+                                    ↩️ Varsayılana Dön
+                                  </button>
+                                )}
+                              </div>
+                              <Input
+                                value={customVal}
+                                placeholder={`Varsayılan: ${defaultVal}`}
+                                onChange={(e) => handleTextChange(selectedEditLang, field.key, e.target.value)}
+                              />
+                              {field.desc && (
+                                <span style={{ fontSize: 11, color: "#64748b", marginTop: 2, display: "block" }}>
+                                  {field.desc}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </Card.Content>
+                  </Card>
+                ))}
+              </div>
             )}
           </div>
         </Page.Content>

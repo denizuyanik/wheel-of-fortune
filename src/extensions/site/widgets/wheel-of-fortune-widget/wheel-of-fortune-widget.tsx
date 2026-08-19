@@ -881,10 +881,16 @@ export class WheelOfFortuneElement extends HTMLElement {
   }
 
   private valOr(key: string, fb: string): string {
-    const v = this.customTexts[key];
-    if (!v || !v.trim()) return fb;
-    if (this.isDefaultInOtherLang(v, key)) return fb;
-    return v;
+    const langSpecific = (this.customTexts as any)?.[this.widgetLang];
+    if (langSpecific && typeof langSpecific === "object" && langSpecific[key]) {
+      const val = langSpecific[key];
+      if (val && val.trim() && !this.isDefaultInOtherLang(val, key)) return val;
+    }
+    const flat = this.customTexts[key];
+    if (flat && typeof flat === "string" && flat.trim() && !this.isDefaultInOtherLang(flat, key)) {
+      return flat;
+    }
+    return fb;
   }
 
   private render(): void {

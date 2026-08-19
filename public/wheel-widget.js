@@ -780,10 +780,16 @@ export class WheelOfFortuneElement extends HTMLElement {
   }
 
   valOr(key, fb) {
-    const v = this.customTexts[key];
-    if (!v || !v.trim()) return fb;
-    if (this.isDefaultInOtherLang(v, key)) return fb;
-    return v;
+    const langSpecific = this.customTexts?.[this.widgetLang];
+    if (langSpecific && typeof langSpecific === "object" && langSpecific[key]) {
+      const val = langSpecific[key];
+      if (val && val.trim() && !this.isDefaultInOtherLang(val, key)) return val;
+    }
+    const flat = this.customTexts?.[key];
+    if (flat && typeof flat === "string" && flat.trim() && !this.isDefaultInOtherLang(flat, key)) {
+      return flat;
+    }
+    return fb;
   }
 
   render() {
