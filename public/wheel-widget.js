@@ -1419,23 +1419,50 @@ class WheelOfFortuneElement extends HTMLElement {
       ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
       ctx.stroke();
 
-      // Slice Text
+      // Slice Text with Multi-line Wrapping & Inward Placement
       ctx.save();
       const midAngle = startAngle + segmentAngle / 2;
       ctx.rotate(midAngle);
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.fillStyle = prize.textColor || "#ffffff";
-      const fontSize = Math.max(11, Math.min(24, Math.floor(220 / totalSegments)));
+      const fontSize = Math.max(11, Math.min(21, Math.floor(200 / totalSegments)));
       const fontFam = this.fontFamily || "Poppins";
       ctx.font = "bold " + fontSize + "px '" + fontFam + "', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-      ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
       ctx.shadowBlur = 4;
 
-      let label = prize.label || "Prize";
-      const maxChars = Math.max(8, Math.floor(180 / fontSize));
-      if (label.length > maxChars) label = label.substring(0, maxChars - 1) + "…";
-      ctx.fillText(label, radius - 35, 0);
+      let label = (prize.label || "Prize").trim();
+      const words = label.split(" ");
+      let lines = [];
+      if (words.length === 1) {
+        if (label.length > 9) {
+          lines = [label.substring(0, 8) + "-", label.substring(8)];
+        } else {
+          lines = [label];
+        }
+      } else {
+        let currentLine = words[0];
+        for (let w = 1; w < words.length; w++) {
+          if ((currentLine + " " + words[w]).length <= 10) {
+            currentLine += " " + words[w];
+          } else {
+            lines.push(currentLine);
+            currentLine = words[w];
+          }
+        }
+        lines.push(currentLine);
+      }
+
+      // Moved inward (4 chars closer to center: radius - 58 instead of radius - 35)
+      const textRadius = radius - 58;
+      const lineHeight = fontSize * 1.18;
+      const startY = -((lines.length - 1) * lineHeight) / 2;
+
+      lines.forEach((line, lIdx) => {
+        const y = startY + lIdx * lineHeight;
+        ctx.fillText(line, textRadius, y);
+      });
       ctx.restore();
     }
 
