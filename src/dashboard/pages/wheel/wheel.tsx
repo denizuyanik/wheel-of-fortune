@@ -21,6 +21,7 @@ import {
   persistSettings,
   fetchLeads,
   patchLeadStatus,
+  patchLeadNotes,
   fetchMetrics,
   type AppSettings,
   type PrizeSegment,
@@ -187,13 +188,22 @@ const WheelDashboard: FC = () => {
     }
   };
 
+  const handleUpdateNotes = async (leadId: string, newNotes: string) => {
+    try {
+      await patchLeadNotes(leadId, newNotes);
+      setLeads((curr) => curr.map((item) => (item._id === leadId ? { ...item, notes: newNotes } : item)));
+    } catch (err) {
+      console.error("Notes update error:", err);
+    }
+  };
+
   // CSV Export for Leads
   const exportLeadsToCSV = () => {
     if (leads.length === 0) {
       alert("No leads to export.");
       return;
     }
-    const headers = ["First Name", "Last Name", "Email", "Phone", "Reward Code", "Prize", "Spun Date", "Status", "Marketing Consent"];
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Reward Code", "Prize", "Notes", "Spun Date", "Status", "Marketing Consent"];
     const rows = leads.map((l) => [
       `"${l.firstName || ""}"`,
       `"${l.lastName || ""}"`,
@@ -201,6 +211,7 @@ const WheelDashboard: FC = () => {
       `"${l.phone || ""}"`,
       `"${l.rewardCode || ""}"`,
       `"${l.prizeLabel || ""}"`,
+      `"${(l.notes || "").replace(/"/g, '""')}"`,
       `"${l.spunAt ? new Date(l.spunAt as string).toLocaleString() : ""}"`,
       `"${l.status || "new"}"`,
       `"${l.marketingConsent ? "Yes" : "No"}"`,
@@ -517,6 +528,32 @@ const WheelDashboard: FC = () => {
                         title: "Prize Won",
                         render: (row: Lead) => (
                           <span>{String(row.prizeLabel || "—")}</span>
+                        ),
+                      },
+                      {
+                        title: "Notes / Notlar",
+                        render: (row: Lead) => (
+                          <input
+                            type="text"
+                            placeholder="Not ekle..."
+                            defaultValue={String(row.notes || "")}
+                            onBlur={(e) => handleUpdateNotes(String(row._id), e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                (e.target as HTMLInputElement).blur();
+                              }
+                            }}
+                            style={{
+                              padding: "4px 8px",
+                              borderRadius: 6,
+                              border: "1px solid #cbd5e1",
+                              fontSize: 12,
+                              width: 160,
+                              background: "#ffffff",
+                              color: "#0f172a",
+                            }}
+                            title="Not yazıp Enter'a basın veya dışarı tıklayın"
+                          />
                         ),
                       },
                       {

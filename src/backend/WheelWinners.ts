@@ -70,6 +70,11 @@ export default {
     },
     {
       type: "TEXT",
+      displayName: "Notes / Follow-up",
+      key: "notes",
+    },
+    {
+      type: "TEXT",
       displayName: "Site ID",
       key: "siteId",
     },

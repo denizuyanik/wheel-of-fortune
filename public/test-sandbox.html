@@ -436,6 +436,7 @@
               <th>Telefon</th>
               <th>Kupon Kodu</th>
               <th>Ödül</th>
+              <th>Notlar (Müşteri Takip)</th>
               <th>Durum</th>
             </tr>
           </thead>
@@ -446,6 +447,7 @@
               <td>0532 123 4567</td>
               <td><span class="badge-win">CARK10</span></td>
               <td>%10 İNDİRİM</td>
+              <td><input type="text" class="lead-note-input" value="Kuponu WhatsApp üzerinden kullandı." style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:4px 8px; border-radius:6px; font-size:12px; width:180px;" /></td>
               <td><span style="color:#34d399;">Yeni Lead</span></td>
             </tr>
             <tr>
@@ -454,6 +456,7 @@
               <td>+1 555 019 2834</td>
               <td><span class="badge-win">FREESHIP</span></td>
               <td>FREE SHIPPING</td>
+              <td><input type="text" class="lead-note-input" value="E-posta ile teyit edildi, sipariş bekliyor." style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:4px 8px; border-radius:6px; font-size:12px; width:180px;" /></td>
               <td><span style="color:#60a5fa;">İletişime Geçildi</span></td>
             </tr>
           </tbody>
@@ -603,10 +606,43 @@
         <td>${e.detail.phone || "—"}</td>
         <td><span class="badge-win">${e.detail.code || "CARK2026"}</span></td>
         <td>KAZANILAN ÖDÜL</td>
+        <td><input type="text" class="lead-note-input" placeholder="Not ekle..." style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; padding:4px 8px; border-radius:6px; font-size:12px; width:180px;" /></td>
         <td><span style="color:#34d399; font-weight:700;">Yeni Lead (Canlı)</span></td>
       `;
       leadsTbody.prepend(tr);
     });
+
+    // CSV Export
+    const btnExportCSV = document.getElementById("btn-export-csv");
+    if (btnExportCSV) {
+      btnExportCSV.addEventListener("click", () => {
+        const rows = [];
+        rows.push(["Ad Soyad", "E-Posta", "Telefon", "Kupon Kodu", "Ödül", "Notlar", "Durum"]);
+        document.querySelectorAll("#leads-tbody tr").forEach((tr) => {
+          const cols = tr.querySelectorAll("td");
+          if (cols.length >= 7) {
+            const name = cols[0].innerText.trim();
+            const email = cols[1].innerText.trim();
+            const phone = cols[2].innerText.trim();
+            const code = cols[3].innerText.trim();
+            const prize = cols[4].innerText.trim();
+            const noteInput = cols[5].querySelector("input");
+            const note = noteInput ? noteInput.value.trim() : cols[5].innerText.trim();
+            const status = cols[6].innerText.trim();
+            rows.push([`"${name}"`, `"${email}"`, `"${phone}"`, `"${code}"`, `"${prize}"`, `"${note.replace(/"/g, '""')}"`, `"${status}"`]);
+          }
+        });
+        const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + rows.map((r) => r.join(",")).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `wheel-of-fortune-leads-${new Date().toISOString().split("T")[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        log("📥 CRM Lead tablosu (Notlar dahil) CSV olarak indirildi.");
+      });
+    }
 
     // Initial setup
     updateWidget();

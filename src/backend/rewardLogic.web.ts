@@ -380,7 +380,7 @@ export const getLeads = webMethod(
   }
 );
 
-// ─── 6. Update Lead Status ──────────────────────────────────────────────────
+// ─── 6. Update Lead Status & Notes ──────────────────────────────────────────
 export const updateLeadStatus = webMethod(
   Permissions.SiteMember,
   async (leadId: string, status: "new" | "contacted" | "converted" | "lost"): Promise<{ success: boolean }> => {
@@ -389,6 +389,24 @@ export const updateLeadStatus = webMethod(
         const existing = await items.get(coll, leadId);
         if (existing) {
           await items.update(coll, { ...existing, status, updatedAt: new Date(), _id: leadId });
+          return { success: true };
+        }
+      } catch {
+        // Next
+      }
+    }
+    return { success: false };
+  }
+);
+
+export const updateLeadNotes = webMethod(
+  Permissions.SiteMember,
+  async (leadId: string, notes: string): Promise<{ success: boolean }> => {
+    for (const coll of WINNERS_COLLECTIONS) {
+      try {
+        const existing = await items.get(coll, leadId);
+        if (existing) {
+          await items.update(coll, { ...existing, notes, updatedAt: new Date(), _id: leadId });
           return { success: true };
         }
       } catch {

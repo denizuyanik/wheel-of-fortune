@@ -44,6 +44,7 @@ export interface Lead {
   isWinner: boolean;
   language: string;
   status: "new" | "contacted" | "converted" | "lost";
+  notes?: string;
   spunAt: string | Date;
   marketingConsent: boolean;
   siteId?: string;
@@ -251,6 +252,36 @@ export async function patchLeadStatus(leadId: string, status: Lead["status"]): P
       if (current) {
         const safe = stripSystemFields(current as any);
         await items.update(coll, { ...safe, status, _id: leadId });
+        return true;
+      }
+    } catch {
+      // next
+    }
+  }
+
+  return true;
+}
+
+export async function patchLeadNotes(leadId: string, notes: string): Promise<boolean> {
+  // Update local storage
+  try {
+    const raw = localStorage.getItem(LOCAL_LEADS_KEY);
+    if (raw) {
+      const list = JSON.parse(raw);
+      const idx = list.findIndex((l: any) => l._id === leadId);
+      if (idx !== -1) {
+        list[idx].notes = notes;
+        localStorage.setItem(LOCAL_LEADS_KEY, JSON.stringify(list));
+      }
+    }
+  } catch {}
+
+  for (const coll of WINNERS_COLLECTIONS) {
+    try {
+      const current = await items.get(coll, leadId);
+      if (current) {
+        const safe = stripSystemFields(current as any);
+        await items.update(coll, { ...safe, notes, _id: leadId });
         return true;
       }
     } catch {
