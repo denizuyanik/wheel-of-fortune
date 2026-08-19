@@ -809,10 +809,22 @@ class WheelOfFortuneElement extends HTMLElement {
           display: block;
           width: 100%;
           box-sizing: border-box;
-          --wof-font: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          --wof-font: '${this.fontFamily || "Poppins"}', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           font-family: var(--wof-font);
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
+          --wof-bg: ${th.bg};
+          --wof-card-bg: ${th.cardBg};
+          --wof-text-primary: ${th.textPrimary};
+          --wof-text-secondary: ${th.textSecondary};
+          --wof-accent1: ${th.accent1};
+          --wof-accent2: ${th.accent2};
+          --wof-gold-border: ${th.goldBorder};
+          --wof-wheel-rim: ${th.wheelRim};
+          --wof-hub-bg: ${th.hubBg};
+          --wof-pointer-color: ${th.pointerColor};
+          --wof-input-bg: rgba(15, 23, 42, 0.6);
+          --wof-input-border: rgba(255, 255, 255, 0.2);
         }
 
         *, *::before, *::after {
@@ -823,10 +835,10 @@ class WheelOfFortuneElement extends HTMLElement {
           position: relative;
           max-width: 680px;
           margin: 0 auto;
-          background: var(--wof-bg);
+          background: ${th.bg};
           border-radius: 24px;
           padding: 32px 24px;
-          color: var(--wof-text-primary);
+          color: ${th.textPrimary};
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
           overflow: hidden;
           text-align: center;
@@ -864,14 +876,14 @@ class WheelOfFortuneElement extends HTMLElement {
           font-weight: 900;
           margin: 0 0 8px 0;
           letter-spacing: -0.5px;
-          background: linear-gradient(135deg, #ffffff 40%, var(--wof-accent2) 100%);
+          background: linear-gradient(135deg, #ffffff 40%, ${th.accent2} 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
 
         p.subtitle {
           font-size: 15px;
-          color: var(--wof-text-secondary);
+          color: ${th.textSecondary};
           margin: 0 0 24px 0;
           line-height: 1.5;
         }
@@ -923,7 +935,7 @@ class WheelOfFortuneElement extends HTMLElement {
           width: 36px;
           height: 44px;
           display: block;
-          fill: var(--wof-pointer-color);
+          fill: ${th.pointerColor};
         }
 
         .center-hub-btn {
@@ -1026,22 +1038,23 @@ class WheelOfFortuneElement extends HTMLElement {
           width: 100%;
           max-width: 320px;
           padding: 16px 28px;
-          background: linear-gradient(135deg, var(--wof-accent1) 0%, var(--wof-accent2) 100%);
+          background: linear-gradient(135deg, ${th.accent1} 0%, ${th.accent2} 100%);
           color: #0f172a;
-          border: none;
+          border: 2px solid rgba(255, 255, 255, 0.4);
           border-radius: 14px;
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 900;
           letter-spacing: 0.5px;
           cursor: pointer;
-          box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.5);
+          box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.6), inset 0 1px 2px #fff;
           transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
           user-select: none;
           margin-bottom: 8px;
+          text-transform: uppercase;
         }
         .spin-action-btn:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 0 15px 30px -5px rgba(245, 158, 11, 0.7);
+          box-shadow: 0 15px 30px -5px rgba(245, 158, 11, 0.8);
         }
         .spin-action-btn:active:not(:disabled) {
           transform: translateY(1px);
@@ -1055,7 +1068,7 @@ class WheelOfFortuneElement extends HTMLElement {
         .lead-box {
           display: none;
           margin-top: 24px;
-          background: var(--wof-card-bg);
+          background: ${th.cardBg};
           backdrop-filter: blur(16px);
           border: 1px solid rgba(251, 191, 36, 0.3);
           border-radius: 18px;
@@ -1082,7 +1095,7 @@ class WheelOfFortuneElement extends HTMLElement {
         }
         .prize-icon { font-size: 28px; }
         .prize-text-wrap h4 { margin: 0; font-size: 16px; color: #fbbf24; font-weight: 800; }
-        .prize-text-wrap p { margin: 2px 0 0 0; font-size: 13px; color: var(--wof-text-secondary); }
+        .prize-text-wrap p { margin: 2px 0 0 0; font-size: 13px; color: ${th.textSecondary}; }
 
         .mandatory-warning {
           background: rgba(239, 68, 68, 0.12);
@@ -1115,21 +1128,21 @@ class WheelOfFortuneElement extends HTMLElement {
         .form-group label {
           font-size: 12px;
           font-weight: 600;
-          color: var(--wof-text-secondary);
+          color: ${th.textSecondary};
         }
         .form-group input {
           width: 100%;
           padding: 10px 12px;
-          background: var(--wof-input-bg);
-          border: 1px solid var(--wof-input-border);
+          background: rgba(15, 23, 42, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 8px;
-          color: var(--wof-text-primary);
+          color: ${th.textPrimary};
           font-size: 14px;
           outline: none;
           transition: border-color 0.2s;
         }
         .form-group input:focus {
-          border-color: var(--wof-accent1);
+          border-color: ${th.accent1};
         }
 
         .checkbox-group {
@@ -1138,14 +1151,14 @@ class WheelOfFortuneElement extends HTMLElement {
           gap: 8px;
           margin-bottom: 10px;
           font-size: 12px;
-          color: var(--wof-text-secondary);
+          color: ${th.textSecondary};
           cursor: pointer;
           line-height: 1.4;
           text-align: left;
         }
         .checkbox-group input {
           margin-top: 2px;
-          accent-color: var(--wof-accent1);
+          accent-color: ${th.accent1};
         }
 
         .claim-btn {
