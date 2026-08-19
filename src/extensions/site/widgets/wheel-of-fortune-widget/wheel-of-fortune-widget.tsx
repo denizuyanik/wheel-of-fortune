@@ -8,6 +8,7 @@
  */
 
 import { items } from "@wix/data";
+import { calculatePrizeOutcome, submitLeadDetails } from "../../../../backend/rewardLogic.web";
 
 export interface PrizeSegment {
   id: string;
@@ -740,6 +741,7 @@ class WheelOfFortuneElement extends HTMLElement {
     this.initCanvas();
     this.checkDailyLimit();
     this.setupEventListeners();
+    this.setupMessageListener();
   }
 
   attributeChangedCallback() {
@@ -757,7 +759,17 @@ class WheelOfFortuneElement extends HTMLElement {
     this.widgetLang = this.getAttribute("lang") || "en";
     this.theme = this.getAttribute("color-theme") || "gold";
     this.dailyLimit = Number(this.getAttribute("daily-limit")) || 1;
-    this.fontFamily = this.getAttribute("font-family") || "Poppins";
+    this.fontFamily = this.getAttribute("font-family") || "Outfit";
+    try {
+      const savedSettings = localStorage.getItem("wof_settings");
+      if (savedSettings) {
+        const parsedSettings = JSON.parse(savedSettings);
+        if (parsedSettings.lang) this.widgetLang = parsedSettings.lang;
+        if (parsedSettings.colorTheme) this.theme = parsedSettings.colorTheme;
+        if (parsedSettings.fontFamily) this.fontFamily = parsedSettings.fontFamily;
+        if (parsedSettings.dailyLimit) this.dailyLimit = Number(parsedSettings.dailyLimit);
+      }
+    } catch {}
 
     try {
       const rawCustom = this.getAttribute("custom-texts");
@@ -2168,6 +2180,40 @@ class WheelOfFortuneElement extends HTMLElement {
         bottomBtn.disabled = false;
       }
     }
+  }
+
+  
+  setupMessageListener() {
+    if (this._hasMsgListener) return;
+    this._hasMsgListener = true;
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.type === "wof-update-settings" && event.data.settings) {
+        const s = event.data.settings;
+        if (s.colorTheme) {
+          this.theme = s.colorTheme;
+          this.setAttribute("color-theme", s.colorTheme);
+        }
+        if (s.lang) {
+          this.widgetLang = s.lang;
+          this.setAttribute("lang", s.lang);
+        }
+        if (s.fontFamily) {
+          this.fontFamily = s.fontFamily;
+          this.setAttribute("font-family", s.fontFamily);
+        }
+        if (s.dailyLimit) {
+          this.dailyLimit = Number(s.dailyLimit) || 1;
+          this.setAttribute("daily-limit", s.dailyLimit);
+        }
+        this.render();
+        this.initCanvas();
+        this.updateTexts();
+        this.drawWheel();
+        this.setupEventListeners();
+      } else if (event.data && event.data.type === "wof-reset-limit") {
+        this.checkDailyLimit();
+      }
+    });
   }
 
   setupEventListeners() {
