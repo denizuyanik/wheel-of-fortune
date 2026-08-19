@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎡 Wheel of Fortune — Local Test Sandbox & Interactive Studio</title>
+  <title>🎡 Wheel of Fortune — Local Test Studio & Dashboard</title>
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #09090b 100%);
       --accent: #f59e0b;
+      --card-bg: rgba(15, 23, 42, 0.85);
     }
     body {
       margin: 0;
@@ -22,10 +23,10 @@
 
     /* ─── Control Bar ─── */
     .control-header {
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 14px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -58,6 +59,32 @@
       padding: 2px 8px;
       border-radius: 999px;
       text-transform: uppercase;
+    }
+
+    /* View Switcher Tabs */
+    .view-switcher {
+      display: flex;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .view-tab {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .view-tab.active {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #0f172a;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
     }
 
     .controls-group {
@@ -104,13 +131,20 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       gap: 24px;
       max-width: 1200px;
       margin: 0 auto;
       width: 100%;
+      box-sizing: border-box;
     }
 
+    .widget-view {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
     .widget-wrapper {
       width: 100%;
       max-width: 680px;
@@ -142,10 +176,98 @@
       font-family: monospace;
       font-size: 12px;
       color: #a7f3d0;
-      max-height: 140px;
+      max-height: 120px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-word;
+    }
+
+    /* ─── Dashboard Studio View ─── */
+    .dashboard-view {
+      display: none;
+      width: 100%;
+      max-width: 1100px;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+    .dash-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    .dash-tab-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .dash-tab-btn.active {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: #f59e0b;
+      color: #fbbf24;
+    }
+
+    .dash-content-pane { display: none; }
+    .dash-content-pane.active { display: block; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+    }
+    .stat-card h4 { margin: 0; font-size: 13px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+    .stat-card .val { margin: 8px 0 0 0; font-size: 28px; font-weight: 900; }
+
+    .dash-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    .dash-table th {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 12px 14px;
+      color: #fbbf24;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .dash-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .badge-win {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid #10b981;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
     }
   </style>
 </head>
@@ -155,10 +277,16 @@
   <header class="control-header">
     <div class="header-brand">
       <h1>🎡 Wheel of Fortune</h1>
-      <span class="badge">Local Testbench</span>
+      <span class="badge">Local Studio</span>
     </div>
 
-    <div class="controls-group">
+    <!-- View Switcher -->
+    <div class="view-switcher">
+      <button type="button" class="view-tab active" id="tab-btn-widget">🎡 Site Widget Önizleme</button>
+      <button type="button" class="view-tab" id="tab-btn-dashboard">📊 Dashboard Yönetim Paneli</button>
+    </div>
+
+    <div class="controls-group" id="widget-controls">
       <!-- Language Selector -->
       <div class="ctrl-item">
         <label for="sel-lang">🌐 Dil:</label>
@@ -168,7 +296,7 @@
           <option value="de">Deutsch 🇩🇪</option>
           <option value="fr">Français 🇫🇷</option>
           <option value="es">Español 🇪🇸</option>
-          <option value="he">עברית 🇮🇱</option>
+          <option value="he">עברית 🇮🇱 (RTL)</option>
           <option value="zh">中文 🇨🇳</option>
           <option value="ja">日本語 🇯🇵</option>
           <option value="ko">한국어 🇰🇷</option>
@@ -178,7 +306,7 @@
           <option value="uk">Українська 🇺🇦</option>
           <option value="el">Ελληνικά 🇬🇷</option>
           <option value="it">Italiano 🇮🇹</option>
-          <option value="ar">العربية 🇸🇦</option>
+          <option value="ar">العربية 🇸🇦 (RTL)</option>
         </select>
       </div>
 
@@ -193,17 +321,6 @@
         </select>
       </div>
 
-      <!-- Segments Preset -->
-      <div class="ctrl-item">
-        <label for="sel-segments">🎡 Dilim Sayısı:</label>
-        <select id="sel-segments">
-          <option value="6" selected>6 Dilim</option>
-          <option value="8">8 Dilim</option>
-          <option value="10">10 Dilim</option>
-          <option value="12">12 Dilim</option>
-        </select>
-      </div>
-
       <!-- Daily Limit -->
       <div class="ctrl-item">
         <label for="sel-limit">⚙️ Limit:</label>
@@ -214,108 +331,251 @@
         </select>
       </div>
 
-      <!-- Actions -->
       <button type="button" class="btn-reset" id="btn-reset" title="LocalStorage sıfırla">🔄 Limiti Sıfırla</button>
     </div>
   </header>
 
-  <!-- Main Sandbox Stage -->
+  <!-- Main Stage -->
   <main class="main-stage">
-    <div class="widget-wrapper" id="widget-host">
-      <!-- Native Custom Element -->
-      <wheel-of-fortune-widget
-        id="test-widget"
-        lang="tr"
-        color-theme="gold"
-        daily-limit="99"
-      ></wheel-of-fortune-widget>
+    
+    <!-- ─── 1. WIDGET VIEW ─── -->
+    <div class="widget-view" id="view-widget">
+      <div class="widget-wrapper">
+        <wheel-of-fortune-widget
+          id="test-widget"
+          lang="tr"
+          color-theme="gold"
+          daily-limit="99"
+        ></wheel-of-fortune-widget>
+      </div>
+
+      <div class="log-panel">
+        <div class="log-header">
+          <span>📡 Canlı Olay & CRM Günlüğü (Event Monitor)</span>
+          <button type="button" id="btn-clear-log" style="font-size:11px; padding:2px 8px;">Temizle</button>
+        </div>
+        <div class="log-content" id="log-console">[Sistem] Yerel test ortamı hazır. Çarkı çevirerek test başlatabilirsiniz...</div>
+      </div>
     </div>
 
-    <!-- Live Event & CRM Monitor -->
-    <div class="log-panel">
-      <div class="log-header">
-        <span>📡 Canlı Olay & CRM Günlüğü (Event Monitor)</span>
-        <button type="button" id="btn-clear-log" style="font-size:11px; padding:2px 8px;">Temizle</button>
+    <!-- ─── 2. DASHBOARD VIEW ─── -->
+    <div class="dashboard-view" id="view-dashboard">
+      <div class="dash-header">
+        <div>
+          <h2 style="margin:0; font-size:22px; color:#fbbf24;">🎡 Wheel of Fortune — Dashboard Pano</h2>
+          <p style="margin:4px 0 0 0; font-size:13px; color:#94a3b8;">Kura istatistikleri, ödül havuzu, CRM leadleri ve çoklu dil yönetimi</p>
+        </div>
+        <button type="button" style="background:#10b981; border:none; font-weight:700; color:#fff; padding:8px 16px; border-radius:8px;" id="btn-save-dash">💾 Tüm Değişiklikleri Kaydet</button>
       </div>
-      <div class="log-content" id="log-console">[Sistem] Yerel test ortamı hazır. Çarkı çevirerek test başlatabilirsiniz...</div>
+
+      <!-- Dashboard Tabs -->
+      <div class="dash-nav">
+        <button type="button" class="dash-tab-btn active" data-pane="dash-overview">📊 Genel Bakış & Metrikler</button>
+        <button type="button" class="dash-tab-btn" data-pane="dash-prizes">🎡 Çark Dilimleri & Olasılıklar</button>
+        <button type="button" class="dash-tab-btn" data-pane="dash-leads">👥 CRM Lead & Kazananlar</button>
+        <button type="button" class="dash-tab-btn" data-pane="dash-theme">🎨 Tasarım & Görsel</button>
+        <button type="button" class="dash-tab-btn" data-pane="dash-i18n">🌍 16 Dil & Metinler</button>
+      </div>
+
+      <!-- Tab 1: Overview -->
+      <div class="dash-content-pane active" id="dash-overview">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h4>Toplam Çevirme</h4>
+            <div class="val" style="color:#60a5fa;" id="stat-spins">24</div>
+          </div>
+          <div class="stat-card">
+            <h4>Kazananlar</h4>
+            <div class="val" style="color:#34d399;" id="stat-winners">19</div>
+          </div>
+          <div class="stat-card">
+            <h4>Alınan Lead (CRM)</h4>
+            <div class="val" style="color:#a78bfa;" id="stat-leads">16</div>
+          </div>
+          <div class="stat-card">
+            <h4>Dönüşüm Oranı</h4>
+            <div class="val" style="color:#fbbf24;" id="stat-conv">67%</div>
+          </div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px; border:1px solid rgba(255,255,255,0.08);">
+          <h4 style="margin:0 0 8px 0; color:#fbbf24;">🚀 Canlı Kampanya Durumu</h4>
+          <p style="margin:0; font-size:13px; color:#cbd5e1;">Çarkıfelek durumu: <strong style="color:#34d399;">🟢 Aktif</strong>. Ziyaretçiler günde 1 kez çevirebilir. Sunucu tarafı hile koruması (anti-cheat) ve otomatik CRM senkronizasyonu devrededir.</p>
+        </div>
+      </div>
+
+      <!-- Tab 2: Prizes -->
+      <div class="dash-content-pane" id="dash-prizes">
+        <p style="font-size:13px; color:#94a3b8; margin-top:0;">Çark üzerindeki dilimlerin renklerini, etiketlerini, kupon kodlarını ve sunucu kura olasılıklarını belirleyin:</p>
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>Renk</th>
+              <th>Ödül Etiketi</th>
+              <th>Kupon Kodu</th>
+              <th>Ağırlık %</th>
+              <th>Kazanma Durumu</th>
+            </tr>
+          </thead>
+          <tbody id="prizes-tbody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab 3: CRM Leads -->
+      <div class="dash-content-pane" id="dash-leads">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <p style="font-size:13px; color:#94a3b8; margin:0;">Ziyaretçilerin çarkı çevirdikten sonra doldurduğu resmi lead form kayıtları:</p>
+          <button type="button" style="background:#6366f1; border:none; color:#fff; font-weight:700; padding:6px 14px; border-radius:8px;" id="btn-export-csv">📥 CSV Olarak İndir</button>
+        </div>
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>Ad Soyad</th>
+              <th>E-Posta</th>
+              <th>Telefon</th>
+              <th>Kupon Kodu</th>
+              <th>Ödül</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody id="leads-tbody">
+            <tr>
+              <td><strong>Ahmet Yılmaz</strong></td>
+              <td>ahmet@example.com</td>
+              <td>0532 123 4567</td>
+              <td><span class="badge-win">CARK10</span></td>
+              <td>%10 İNDİRİM</td>
+              <td><span style="color:#34d399;">Yeni Lead</span></td>
+            </tr>
+            <tr>
+              <td><strong>Sarah Jenkins</strong></td>
+              <td>sarah.j@email.com</td>
+              <td>+1 555 019 2834</td>
+              <td><span class="badge-win">FREESHIP</span></td>
+              <td>FREE SHIPPING</td>
+              <td><span style="color:#60a5fa;">İletişime Geçildi</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab 4: Theme -->
+      <div class="dash-content-pane" id="dash-theme">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px;">
+            <label style="font-size:13px; font-weight:700; color:#fbbf24; display:block; margin-bottom:8px;">🎨 Renk Teması Seçimi</label>
+            <select style="width:100%; padding:8px;" id="dash-theme-sel">
+              <option value="gold">👑 Royal Gold Luxury</option>
+              <option value="dark">🌌 Dark Nebula</option>
+              <option value="neon">⚡ Cyberpunk Emerald Neon</option>
+              <option value="light">✨ Clean Light Modern</option>
+            </select>
+          </div>
+          <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:12px;">
+            <label style="font-size:13px; font-weight:700; color:#fbbf24; display:block; margin-bottom:8px;">⚙️ Günlük Çevirme Limiti</label>
+            <input type="number" value="1" style="width:100%; padding:8px;" id="dash-limit-inp" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 5: Translations -->
+      <div class="dash-content-pane" id="dash-i18n">
+        <p style="font-size:13px; color:#94a3b8; margin-top:0;">Varsayılan metinleri özelleştirin (Özel bir metin yazmazsanız seçilen dilin resmi sözlüğü kullanılır):</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+          <div>
+            <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:4px;">Özel Başlık (Title)</label>
+            <input type="text" placeholder="Varsayılan: Çevir & Kazan!" style="width:100%; padding:8px;" />
+          </div>
+          <div>
+            <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:4px;">Özel Alt Başlık (Subtitle)</label>
+            <input type="text" placeholder="Varsayılan: Şanslı çarkı çevirerek sana özel sürpriz..." style="width:100%; padding:8px;" />
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
-  <!-- Local Script & Custom Element Integration -->
+  <!-- Scripts -->
   <script type="module">
     const widget = document.getElementById("test-widget");
     const selLang = document.getElementById("sel-lang");
     const selTheme = document.getElementById("sel-theme");
-    const selSegments = document.getElementById("sel-segments");
     const selLimit = document.getElementById("sel-limit");
     const btnReset = document.getElementById("btn-reset");
     const logConsole = document.getElementById("log-console");
     const btnClearLog = document.getElementById("btn-clear-log");
+
+    // Tab Switching between Widget and Dashboard
+    const tabWidget = document.getElementById("tab-btn-widget");
+    const tabDashboard = document.getElementById("tab-btn-dashboard");
+    const viewWidget = document.getElementById("view-widget");
+    const viewDashboard = document.getElementById("view-dashboard");
+    const widgetControls = document.getElementById("widget-controls");
+
+    tabWidget.onclick = () => {
+      tabWidget.classList.add("active");
+      tabDashboard.classList.remove("active");
+      viewWidget.style.display = "flex";
+      viewDashboard.style.display = "none";
+      widgetControls.style.display = "flex";
+    };
+
+    tabDashboard.onclick = () => {
+      tabDashboard.classList.add("active");
+      tabWidget.classList.remove("active");
+      viewWidget.style.display = "none";
+      viewDashboard.style.display = "block";
+      widgetControls.style.display = "none";
+    };
+
+    // Dashboard Internal Tabs
+    document.querySelectorAll(".dash-tab-btn").forEach((btn) => {
+      btn.onclick = () => {
+        document.querySelectorAll(".dash-tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".dash-content-pane").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        const paneId = btn.getAttribute("data-pane");
+        const target = document.getElementById(paneId);
+        if (target) target.classList.add("active");
+      };
+    });
+
+    // Populate Prizes in Dashboard
+    const DEFAULT_PRIZES = [
+      { id: "p1", label: "%10 İNDİRİM", code: "CARK10", color: "#6366F1", probability: 25, isWinner: true },
+      { id: "p2", label: "ÜCRETSİZ KARGO", code: "BEDAVAKARGO", color: "#EC4899", probability: 20, isWinner: true },
+      { id: "p3", label: "TEKRAR DENE", code: "", color: "#64748B", probability: 15, isWinner: false },
+      { id: "p4", label: "%20 İNDİRİM", code: "SANSLI20", color: "#F59E0B", probability: 15, isWinner: true },
+      { id: "p5", label: "SÜRPRİZ HEDİYE", code: "GIFT50", color: "#10B981", probability: 10, isWinner: true },
+      { id: "p6", label: "%5 İNDİRİM", code: "HOSGELDIN5", color: "#8B5CF6", probability: 15, isWinner: true },
+    ];
+
+    const prizesTbody = document.getElementById("prizes-tbody");
+    prizesTbody.innerHTML = DEFAULT_PRIZES.map((p) => `
+      <tr>
+        <td><input type="color" value="${p.color}" style="width:36px; height:32px; padding:0; border:none; border-radius:4px; cursor:pointer;" /></td>
+        <td><strong>${p.label}</strong></td>
+        <td><span class="badge-win">${p.code || "KODSUZ"}</span></td>
+        <td><input type="number" value="${p.probability}" style="width:60px; padding:4px;" /> %</td>
+        <td>${p.isWinner ? "✅ Kazanan Dilim" : "❌ Pas"}</td>
+      </tr>
+    `).join("");
 
     function log(msg) {
       const time = new Date().toLocaleTimeString();
       logConsole.textContent = `[${time}] ${msg}\n` + logConsole.textContent;
     }
 
-    // Dynamic Prize Pools for 6, 8, 10, 12 segments
-    const POOLS = {
-      "6": [
-        { id: "p1", label: "%10 İNDİRİM", code: "CARK10", color: "#6366F1", probability: 25, isWinner: true, isActive: true },
-        { id: "p2", label: "ÜCRETSİZ KARGO", code: "BEDAVAKARGO", color: "#EC4899", probability: 20, isWinner: true, isActive: true },
-        { id: "p3", label: "TEKRAR DENE", code: "", color: "#64748B", probability: 15, isWinner: false, isActive: true },
-        { id: "p4", label: "%20 İNDİRİM", code: "SANSLI20", color: "#F59E0B", probability: 15, isWinner: true, isActive: true },
-        { id: "p5", label: "SÜRPRİZ HEDİYE", code: "GIFT50", color: "#10B981", probability: 10, isWinner: true, isActive: true },
-        { id: "p6", label: "%5 İNDİRİM", code: "HOSGELDIN5", color: "#8B5CF6", probability: 15, isWinner: true, isActive: true },
-      ],
-      "8": [
-        { id: "p1", label: "%10 İNDİRİM", code: "CARK10", color: "#4f46e5", probability: 20, isWinner: true, isActive: true },
-        { id: "p2", label: "ÜCRETSİZ KARGO", code: "KARGO", color: "#ec4899", probability: 15, isWinner: true, isActive: true },
-        { id: "p3", label: "PAS", code: "", color: "#64748b", probability: 10, isWinner: false, isActive: true },
-        { id: "p4", label: "%25 İNDİRİM", code: "SUPER25", color: "#f59e0b", probability: 10, isWinner: true, isActive: true },
-        { id: "p5", label: "HEDİYE ÇEKİ", code: "CEK100", color: "#10b981", probability: 10, isWinner: true, isActive: true },
-        { id: "p6", label: "%15 İNDİRİM", code: "INDIRIM15", color: "#06b6d4", probability: 15, isWinner: true, isActive: true },
-        { id: "p7", label: "TEKRAR DENE", code: "", color: "#475569", probability: 10, isWinner: false, isActive: true },
-        { id: "p8", label: "%5 İNDİRİM", code: "MINI5", color: "#8b5cf6", probability: 10, isWinner: true, isActive: true },
-      ],
-      "10": [
-        { id: "p1", label: "%10 OFF", code: "OFF10", color: "#4f46e5", probability: 15, isWinner: true, isActive: true },
-        { id: "p2", label: "FREE SHIP", code: "SHIPFREE", color: "#ec4899", probability: 10, isWinner: true, isActive: true },
-        { id: "p3", label: "TRY AGAIN", code: "", color: "#64748b", probability: 10, isWinner: false, isActive: true },
-        { id: "p4", label: "%20 OFF", code: "OFF20", color: "#f59e0b", probability: 10, isWinner: true, isActive: true },
-        { id: "p5", label: "MYSTERY", code: "MYSTERY", color: "#10b981", probability: 10, isWinner: true, isActive: true },
-        { id: "p6", label: "%5 OFF", code: "OFF5", color: "#06b6d4", probability: 10, isWinner: true, isActive: true },
-        { id: "p7", label: "%30 VIP", code: "VIP30", color: "#d97706", probability: 5, isWinner: true, isActive: true },
-        { id: "p8", label: "BONUS", code: "BONUS", color: "#7c3aed", probability: 10, isWinner: true, isActive: true },
-        { id: "p9", label: "ZERO", code: "", color: "#334155", probability: 10, isWinner: false, isActive: true },
-        { id: "p10", label: "%15 OFF", code: "OFF15", color: "#db2777", probability: 10, isWinner: true, isActive: true },
-      ],
-      "12": [
-        { id: "p1", label: "10% OFF", code: "C10", color: "#4f46e5", probability: 10, isWinner: true, isActive: true },
-        { id: "p2", label: "FREE SHIP", code: "CFS", color: "#ec4899", probability: 10, isWinner: true, isActive: true },
-        { id: "p3", label: "TRY AGAIN", code: "", color: "#64748b", probability: 10, isWinner: false, isActive: true },
-        { id: "p4", label: "20% OFF", code: "C20", color: "#f59e0b", probability: 10, isWinner: true, isActive: true },
-        { id: "p5", label: "GIFT", code: "CGIFT", color: "#10b981", probability: 8, isWinner: true, isActive: true },
-        { id: "p6", label: "5% OFF", code: "C5", color: "#06b6d4", probability: 10, isWinner: true, isActive: true },
-        { id: "p7", label: "30% OFF", code: "C30", color: "#f97316", probability: 5, isWinner: true, isActive: true },
-        { id: "p8", label: "BONUS", code: "CBONUS", color: "#8b5cf6", probability: 8, isWinner: true, isActive: true },
-        { id: "p9", label: "NO LUCK", code: "", color: "#475569", probability: 10, isWinner: false, isActive: true },
-        { id: "p10", label: "15% OFF", code: "C15", color: "#14b8a6", probability: 9, isWinner: true, isActive: true },
-        { id: "p11", label: "JACKPOT", code: "JACKPOT", color: "#eab308", probability: 2, isWinner: true, isActive: true },
-        { id: "p12", label: "25% OFF", code: "C25", color: "#d946ef", probability: 8, isWinner: true, isActive: true },
-      ]
-    };
-
     function updateWidget() {
       widget.setAttribute("lang", selLang.value);
       widget.setAttribute("color-theme", selTheme.value);
       widget.setAttribute("daily-limit", selLimit.value);
-      widget.setAttribute("reward-pool", JSON.stringify(POOLS[selSegments.value]));
-      log(`Ayar güncellendi: Dil=${selLang.value.toUpperCase()}, Tema=${selTheme.value}, Dilim=${selSegments.value}, Limit=${selLimit.value}`);
+      log(`Ayar güncellendi: Dil=${selLang.value.toUpperCase()}, Tema=${selTheme.value}, Limit=${selLimit.value}`);
     }
 
     selLang.addEventListener("change", updateWidget);
     selTheme.addEventListener("change", updateWidget);
-    selSegments.addEventListener("change", updateWidget);
     selLimit.addEventListener("change", updateWidget);
 
     btnReset.addEventListener("click", () => {
@@ -328,20 +588,31 @@
       logConsole.textContent = "";
     });
 
-    // Listen to custom DOM events fired by the widget
     window.addEventListener("onSpinComplete", (e) => {
       log(`🎡 [onSpinComplete] Sonuç: ${JSON.stringify(e.detail)}`);
     });
 
     window.addEventListener("onFormSubmit", (e) => {
-      log(`📝 [onFormSubmit] Lead Bilgisi Alındı: Ad=${e.detail.firstName} ${e.detail.lastName}, Email=${e.detail.email}, Kupon=${e.detail.code}`);
+      log(`📝 [onFormSubmit] Lead Alındı: ${e.detail.firstName} ${e.detail.lastName} (${e.detail.email}) - Kupon: ${e.detail.code}`);
+      // Add row to dashboard leads table
+      const leadsTbody = document.getElementById("leads-tbody");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${e.detail.firstName} ${e.detail.lastName || ""}</strong></td>
+        <td>${e.detail.email}</td>
+        <td>${e.detail.phone || "—"}</td>
+        <td><span class="badge-win">${e.detail.code || "CARK2026"}</span></td>
+        <td>KAZANILAN ÖDÜL</td>
+        <td><span style="color:#34d399; font-weight:700;">Yeni Lead (Canlı)</span></td>
+      `;
+      leadsTbody.prepend(tr);
     });
 
     // Initial setup
     updateWidget();
   </script>
 
-  <!-- Load the Standalone Custom Element bundle -->
+  <!-- Standalone Custom Element bundle -->
   <script type="module" src="/wheel-widget.js"></script>
 </body>
 </html>
