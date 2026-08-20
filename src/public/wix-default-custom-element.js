@@ -1,3 +1,24 @@
+
+// ─── Global Google Font Loader Engine ──────────────────────────────────────
+const LOADED_FONTS = new Set();
+function loadGoogleFontGlobally(fontFamily) {
+  if (!fontFamily || LOADED_FONTS.has(fontFamily)) return;
+  LOADED_FONTS.add(fontFamily);
+  try {
+    const linkId = "wof-font-" + fontFamily.replace(/\s+/g, "-").toLowerCase();
+    if (!document.getElementById(linkId)) {
+      const link = document.createElement("link");
+      link.id = linkId;
+      link.rel = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(fontFamily) + ":wght@400;600;700;800;900&display=swap";
+      document.head.appendChild(link);
+    }
+  } catch (e) {}
+}
+
+// Pre-load all available fonts globally
+["Outfit", "Poppins", "Inter", "Montserrat", "Roboto", "Playfair Display", "Cinzel", "Orbitron", "Comic Neue"].forEach(loadGoogleFontGlobally);
+
 /**
  * Wheel of Fortune (Çarkıfelek) — Standalone Web Component Script
  * ================================================================
@@ -820,8 +841,12 @@ class WheelOfFortuneElement extends HTMLElement {
           display: block;
           width: 100%;
           box-sizing: border-box;
-          --wof-font: '${this.fontFamily || "Poppins"}', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          font-family: var(--wof-font);
+          --wof-font: '${this.fontFamily || "Outfit"}', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-family: var(--wof-font) !important;
+        }
+
+        .wof-container, .wof-container *, h2, p, button, input, label, span, div {
+          font-family: var(--wof-font) !important;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
           --wof-bg: ${th.bg};
@@ -2171,9 +2196,15 @@ class WheelOfFortuneElement extends HTMLElement {
         this.widgetLang = s.lang;
         this.setAttribute("lang", s.lang);
       }
-      if (s.fontFamily) {
+            if (s.fontFamily) {
         this.fontFamily = s.fontFamily;
         this.setAttribute("font-family", s.fontFamily);
+        loadGoogleFontGlobally(s.fontFamily);
+        if (document.fonts && document.fonts.load) {
+          document.fonts.load("bold 16px '" + s.fontFamily + "'").then(() => {
+            this.drawWheel();
+          }).catch(() => {});
+        }
       }
       if (s.dailyLimit) {
         this.dailyLimit = Number(s.dailyLimit) || 1;
