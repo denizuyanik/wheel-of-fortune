@@ -8,6 +8,7 @@
  */
 
 import { items } from "@wix/data";
+import { httpClient } from "@wix/essentials";
 import { calculatePrizeOutcome, submitLeadDetails } from "../../../../backend/rewardLogic.web";
 
 export interface PrizeSegment {
@@ -32,6 +33,27 @@ export interface ConfettiParticle {
   rotSpeed: number;
   opacity: number;
 }
+
+// Shown instead of the wheel when the site has no active plan. Visitors see it,
+// so it says nothing about billing.
+const UNAVAILABLE_TEXT = {
+  "en": "This feature is temporarily unavailable.",
+  "tr": "Bu özellik geçici olarak kullanılamıyor.",
+  "de": "Diese Funktion ist vorübergehend nicht verfügbar.",
+  "fr": "Cette fonctionnalité est temporairement indisponible.",
+  "es": "Esta función no está disponible temporalmente.",
+  "he": "התכונה אינה זמינה זמנית.",
+  "zh": "此功能暂时不可用。",
+  "ja": "この機能は現在ご利用いただけません。",
+  "ko": "이 기능은 일시적으로 사용할 수 없습니다.",
+  "hi": "यह सुविधा अस्थायी रूप से उपलब्ध नहीं है।",
+  "pt": "Esta funcionalidade está temporariamente indisponível.",
+  "ru": "Эта функция временно недоступна.",
+  "uk": "Ця функція тимчасово недоступна.",
+  "el": "Αυτή η λειτουργία δεν είναι προσωρινά διαθέσιμη.",
+  "it": "Questa funzione non è temporaneamente disponibile.",
+  "ar": "هذه الميزة غير متاحة مؤقتًا."
+};
 
 const I18N = {
   "en": {
@@ -710,6 +732,9 @@ const DEFAULT_PRIZES = [
 ];
 
 class WheelOfFortuneElement extends HTMLElement {
+  /** The site has no paid plan or running trial, so the wheel stays off. */
+  planClosed = false;
+
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
@@ -742,9 +767,36 @@ class WheelOfFortuneElement extends HTMLElement {
     this.checkDailyLimit();
     this.setupEventListeners();
     this.setupMessageListener();
+    void this.checkPlan();
+  }
+
+  /** Switches the wheel off when the site has no paid plan or running trial. Fails open. */
+  async checkPlan() {
+    try {
+      const origin = new URL(import.meta.url).origin;
+      const res = await httpClient.fetchWithAuth(`${origin}/api/plan-status`);
+      const body = await res.json();
+      if (res.ok && body?.active === false) {
+        this.planClosed = true;
+        this.renderClosed();
+      }
+    } catch {
+      // keep the wheel on: a lookup failure must never lock a paying site out
+    }
+  }
+
+  renderClosed() {
+    if (this.spinAnimId) cancelAnimationFrame(this.spinAnimId);
+    const text = UNAVAILABLE_TEXT[this.widgetLang] || UNAVAILABLE_TEXT.en;
+    this.shadow.innerHTML = `<div role="status" style="padding:28px 16px;text-align:center;font:14px/1.5 sans-serif;color:#475569;border:1px dashed #cbd5e1;border-radius:12px;background:#f8fafc">${text}</div>`;
   }
 
   attributeChangedCallback() {
+    if (this.planClosed) {
+      this.readProps();
+      this.renderClosed();
+      return;
+    }
     if (this.shadow && this.shadow.childElementCount > 0) {
       this.readProps();
       this.render();
@@ -1736,6 +1788,7 @@ class WheelOfFortuneElement extends HTMLElement {
   }
 
   async triggerSpin() {
+    if (this.planClosed) return;
     if (this.isSpinning) {
       // ⚡ TURBO RE-ACCELERATE / BOOST!
       this.applyBoost();

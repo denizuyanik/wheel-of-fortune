@@ -16,6 +16,7 @@ import {
   Divider,
 } from "@wix/design-system";
 import "@wix/design-system/styles.global.css";
+import { httpClient } from "@wix/essentials";
 import {
   fetchSettings,
   persistSettings,
@@ -66,6 +67,7 @@ const WheelDashboard: FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [plan, setPlan] = useState<{ active: boolean; upgradeUrl?: string }>({ active: true });
 
   // App Settings State - Default language is English (en) & font is Poppins
   const [settings, setSettings] = useState<AppSettings>({
@@ -113,6 +115,11 @@ const WheelDashboard: FC = () => {
 
   useEffect(() => {
     loadAllData();
+    httpClient
+      .fetchWithAuth(`${new URL(import.meta.url).origin}/api/plan-status`)
+      .then((res) => res.json())
+      .then((body) => setPlan({ active: body?.active !== false, upgradeUrl: body?.upgradeUrl }))
+      .catch(() => undefined);
   }, []);
 
   const loadAllData = async () => {
@@ -345,6 +352,20 @@ const WheelDashboard: FC = () => {
         />
 
         <Page.Content>
+          {!plan.active && (
+            <div style={{ marginBottom: 16 }}>
+              <Notification type="sticky" theme="warning">
+                <Notification.TextLabel>
+                  The free trial has ended or no paid plan is active, so the wheel is switched off on your site. Your settings and leads are kept.
+                </Notification.TextLabel>
+                {plan.upgradeUrl && (
+                  <Notification.ActionButton onClick={() => window.open(plan.upgradeUrl, "_blank")}>
+                    Choose a plan
+                  </Notification.ActionButton>
+                )}
+              </Notification>
+            </div>
+          )}
           {notice && (
             <div style={{ marginBottom: 16 }}>
               <Notification type="sticky" theme={notice.type === "success" ? "standard" : "error"}>
